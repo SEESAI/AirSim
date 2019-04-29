@@ -22,6 +22,15 @@ public:
 
         gyro_bias_stability_norm = params_.gyro.bias_stability / sqrt(params_.gyro.tau);
         accel_bias_stability_norm = params_.accel.bias_stability / sqrt(params_.accel.tau);
+
+		imu_info_.pose = Pose::zero();
+
+		imu_info_.angle_random_walk = params_.gyro.arw;
+		imu_info_.gyro_bias_stability = gyro_bias_stability_norm;
+
+		imu_info_.velocity_random_walk = params_.accel.vrw;
+		imu_info_.accelerometer_bias_stability = accel_bias_stability_norm;
+
     }
 
     //*** Start: UpdatableState implementation ***//
@@ -52,6 +61,7 @@ private: //methods
     {
         Output output;
         const GroundTruth& ground_truth = getGroundTruth();
+		output.time_stamp = clock()->nowNanos();
 
         output.angular_velocity = ground_truth.kinematics->twist.angular;
         output.linear_acceleration = ground_truth.kinematics->accelerations.linear - ground_truth.environment->getState().gravity;

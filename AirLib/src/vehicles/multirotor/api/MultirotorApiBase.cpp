@@ -102,14 +102,17 @@ bool MultirotorApiBase::moveByAngleThrottle(float pitch, float roll, float throt
 
 bool MultirotorApiBase::moveByVelocity(float vx, float vy, float vz, float duration, DrivetrainType drivetrain, const YawMode& yaw_mode)
 {
+	// For the drone to point forwards in the direction of travel then set yaw_mode to (false, 0.0), and drivetrain to ForwardOnly.
     SingleTaskCall lock(this);
 
     if (duration <= 0)
         return true;
 
+	// Work out the target yaw
     YawMode adj_yaw_mode(yaw_mode.is_rate, yaw_mode.yaw_or_rate);
     adjustYaw(vx, vy, drivetrain, adj_yaw_mode);
 
+	// Call internal function to execute manoeuvre
     return waitForFunction([&]() {
         moveByVelocityInternal(vx, vy, vz, adj_yaw_mode);
         return false; //keep moving until timeout
@@ -160,7 +163,7 @@ bool MultirotorApiBase::moveOnPath(const vector<Vector3r>& path, float velocity,
     else {
         //if auto mode requested for lookahead then calculate based on velocity
         lookahead = getAutoLookahead(velocity, adaptive_lookahead);
-        Utils::log(Utils::stringf("lookahead = %f, adaptive_lookahead = %f", lookahead, adaptive_lookahead));        
+        Utils::log(Utils::stringf("lookahead = %f, adaptive_lookahead = %f", lookahead, adaptive_lookahead), Utils::kLogLevelInfo);
     }
 
     //add current position as starting point
@@ -213,7 +216,8 @@ bool MultirotorApiBase::moveOnPath(const vector<Vector3r>& path, float velocity,
         float path_length_remaining = path_length - path_segs.at(cur_path_loc.seg_index).seg_path_length - cur_path_loc.offset;
         if (seg_velocity > getMultirotorApiParams().min_vel_for_breaking && path_length_remaining <= breaking_dist) {
             seg_velocity = getMultirotorApiParams().breaking_vel;
-            //Utils::logMessage("path_length_remaining = %f, Switched to breaking vel %f", path_length_remaining, seg_velocity);
+            // Utils::log(Utils::stringf("Path Tracking: path_length_remaining = %f, Switched to breaking vel %f", 
+			//	path_length_remaining, seg_velocity), Utils::kLogLevelInfo);
         }
 
         //send drone command to get to next lookahead
@@ -290,9 +294,9 @@ bool MultirotorApiBase::moveOnPath(const vector<Vector3r>& path, float velocity,
             waiter.complete();
         }
 
-        // Utils::logMessage("PF: cur=%s, goal_dist=%f, cur_path_loc=%s, next_path_loc=%s, lookahead_error=%f",
-        //     VectorMath::toString(getPosition()).c_str(), goal_dist, VectorMath::toString(cur_path_loc.position).c_str(),
-        //     VectorMath::toString(next_path_loc.position).c_str(), lookahead_error);
+		// Utils::log(Utils::stringf("PF: cur=%s, goal_dist=%f, cur_path_loc=%s, next_path_loc=%s, lookahead_error=%f",
+        //      VectorMath::toString(getPosition()).c_str(), goal_dist, VectorMath::toString(cur_path_loc.position).c_str(),
+        //      VectorMath::toString(next_path_loc.position).c_str(), lookahead_error), Utils::kLogLevelInfo);
 
         //if drone moved backward, we don't want goal to move backward as well
         //so only climb forward on the path, never back. Also note >= which means

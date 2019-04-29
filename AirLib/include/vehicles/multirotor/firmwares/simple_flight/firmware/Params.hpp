@@ -16,8 +16,8 @@ public:
     //simulation board should respect possible values
     struct Motor {
         uint16_t motor_count = 4;
-        float min_motor_output = 0;
-        float max_motor_output = 1;
+        float min_motor_output = 0.0f; // don't change these - they are hard coded in the physics to be between 0-1
+        float max_motor_output = 1.0f; // don't change these - they are hard coded in the physics to be between 0-1
         //if min_armed_output too low then noise in pitch/roll can destabilize quad copter when throttle is zero
         float min_angling_throttle = Params::min_armed_throttle() / 2;
     } motor;
@@ -50,46 +50,45 @@ public:
 
     struct AngleRatePid {
         //max_xxx_rate > 5 would introduce wobble/oscillations
-        const float kMaxLimit = 2.5f;
+        const float kMaxLimit = 200.0f * 3.1416 / 180; // Airsim Default = 2.5f, but then changed way limits work
         Axis3r max_limit = Axis3r(kMaxLimit, kMaxLimit, kMaxLimit); //roll, pitch, yaw - in radians/sec
 
-        //p_xxx_rate params are sensitive to gyro noise. Values higher than 0.5 would require 
-        //noise filtration
-        const float kP = 0.25f;
-        Axis4r p = Axis4r(kP, kP, kP, 1.0f);
-    } angle_rate_pid;
+        //p_xxx_rate params are sensitive to gyro noise. Values higher than 0.5 would require noise filtration
+        Axis3r p = Axis3r(0.25f, 0.25f, 0.2f); //roll, pitch, yaw gains, Airsim Default = 0.25f
+		Axis3r d = Axis3r(0.003f, 0.003f, 0.0f); //roll, pitch, yaw gains
+	} angle_rate_pid;
 
     struct AngleLevelPid {
         const float pi = 3.14159265359f; //180-degrees
         
-        //max_pitch/roll_angle > 5.5 would produce versicle thrust that is not enough to keep vehicle in air at extremities of controls
-        Axis4r max_limit = Axis4r(pi / 5.5f, pi / 5.5f, pi, 1.0f); //roll, pitch, yaw - in radians/sec
+        //max_pitch/roll_angle > pi/5.5 would produce versicle thrust that is not enough to keep vehicle in air at extremities of controls
+		Axis3r max_limit = Axis3r(pi / 4.0f, pi / 4.0f, pi); //roll, pitch, yaw - in radians
 
-        const float kP = 2.5f;
-        Axis4r p = Axis4r(kP, kP, kP, 1.0f);
+        Axis3r p = Axis3r(6.5f, 6.5f, 2.8f); //roll, pitch, yaw
     } angle_level_pid;
 
-    struct PositionPid {
+
+	struct VelocityPid {
+		Axis4r max_limit = Axis4r(6.0f, 6.0f, 0, 6.0f); //x, y, <not used>, z in meters
+
+		Axis4r p = Axis4r(0.2, -0.2, 0, -0.5f); //roll, pitch, <not used>, throttle, airsim default 0.2f
+		Axis4r i = Axis4r(0, 0, 0, -0.5f); //roll, pitch, <not used>, throttle
+		Axis4r d = Axis4r(0.02, -0.02, 0, 0); //roll, pitch, <not used>, throttle
+		Axis4r iterm_discount = Axis4r(1, 1, 1, 1); //roll, pitch, <not used>, throttle, throttle was 0.9999f
+		Axis4r output_bias = Axis4r(0, 0, 0, 0);
+
+		//we keep min throttle higher so that if we are angling a lot, its still supported
+		float min_throttle = 0.1f; // std::min(1.0f, Params::min_armed_throttle() * 3.0f);
+		float max_throttle = 0.9f; // stops saturation
+
+	} velocity_pid;
+	
+	struct PositionPid {
         const float kMaxLimit = 8.8E26f; //some big number like size of known universe
-        Axis4r max_limit = Axis4r(kMaxLimit, kMaxLimit, kMaxLimit, 1.0f); //x, y, z in meters
+        Axis4r max_limit = Axis4r(kMaxLimit, kMaxLimit, 0, 1.0f); //x, y, <not used>, z in meters
 
         Axis4r p = Axis4r( 0.25f,  0.25f, 0, 0.25f);
     } position_pid;
-
-    struct VelocityPid {
-        const float kMinThrottle = std::min(1.0f, Params::min_armed_throttle() * 3.0f);
-        const float kMaxLimit = 6.0f; // m/s
-        Axis4r max_limit = Axis4r(kMaxLimit, kMaxLimit, 0, kMaxLimit); //x, y, yaw, z in meters
-
-        Axis4r p = Axis4r(0.2f, 0.2f, 0, 2.0f);
-
-        Axis4r i = Axis4r(0, 0, 0, 2.0f);
-        Axis4r iterm_discount = Axis4r(1, 1, 1, 0.9999f);
-        Axis4r output_bias = Axis4r(0, 0, 0, 0);
-                
-        //we keep min throttle higher so that if we are angling a lot, its still supported
-        float min_throttle =kMinThrottle ;
-    } velocity_pid;
 
     struct Takeoff {
         float takeoff_z = -2.0f;

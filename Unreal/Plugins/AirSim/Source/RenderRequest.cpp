@@ -172,7 +172,9 @@ void RenderRequest::ExecuteTask()
                 }
             }
 
-            results_[i]->time_stamp = msr::airlib::ClockFactory::get()->nowNanos();
+			// Timestamp testing - I think this is incorrect as it appears to be too late
+			// Moved up to the same place as the pose query
+            // results_[i]->time_stamp = msr::airlib::ClockFactory::get()->nowNanos();
         }
 
         req_size_ = 0;

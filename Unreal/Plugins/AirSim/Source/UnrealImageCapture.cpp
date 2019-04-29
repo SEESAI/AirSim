@@ -48,6 +48,7 @@ void UnrealImageCapture::getSceneCaptureImage(const std::vector<msr::airlib::Ima
         std::this_thread::sleep_for(std::chrono::duration<double>(0.2));
     }
 
+	// Set up the renderer parameters
     UGameViewportClient * gameViewport = nullptr;
     for (unsigned int i = 0; i < requests.size(); ++i) {
         APIPCamera* camera = cameras_->at(requests.at(i).camera_name);
@@ -76,6 +77,7 @@ void UnrealImageCapture::getSceneCaptureImage(const std::vector<msr::airlib::Ima
         return;
     }
 
+	// Set up a callback for checking camera pose at the right time
     auto query_camera_pose_cb = [this, &requests, &responses]() {
         size_t count = requests.size();
         for (size_t i = 0; i < count; i++) {
@@ -83,20 +85,23 @@ void UnrealImageCapture::getSceneCaptureImage(const std::vector<msr::airlib::Ima
             APIPCamera* camera = cameras_->at(request.camera_name);
             ImageResponse& response = responses.at(i);
             auto camera_pose = camera->getPose();
-            response.camera_position = camera_pose.position;
+			response.time_stamp = msr::airlib::ClockFactory::get()->nowNanos();
+			response.camera_position = camera_pose.position;
             response.camera_orientation = camera_pose.orientation;
         }
     };
     RenderRequest render_request { gameViewport, std::move(query_camera_pose_cb) };
 
+	// Get the screenshots
     render_request.getScreenshot(render_params.data(), render_results, render_params.size(), use_safe_method);
 
+	// Process the results
     for (unsigned int i = 0; i < requests.size(); ++i) {
         const ImageRequest& request = requests.at(i);
         ImageResponse& response = responses.at(i);
               
         response.camera_name = request.camera_name;
-        response.time_stamp = render_results[i]->time_stamp;
+        // response.time_stamp = render_results[i]->time_stamp;
         response.image_data_uint8 = std::vector<uint8_t>(render_results[i]->image_data_uint8.GetData(), render_results[i]->image_data_uint8.GetData() + render_results[i]->image_data_uint8.Num());
         response.image_data_float = std::vector<float>(render_results[i]->image_data_float.GetData(), render_results[i]->image_data_float.GetData() + render_results[i]->image_data_float.Num());
 

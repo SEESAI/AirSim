@@ -21,7 +21,8 @@ public:
 
 protected:
     virtual void getPointCloud(const msr::airlib::Pose& lidar_pose, const msr::airlib::Pose& vehicle_pose,
-        msr::airlib::TTimeDelta delta_time, msr::airlib::vector<msr::airlib::real_T>& point_cloud) override;
+        msr::airlib::TTimeDelta delta_time, msr::airlib::vector<msr::airlib::real_T>& point_cloud,
+		std::vector<uint64_t> & ts, std::vector<msr::airlib::real_T> & az, std::vector<msr::airlib::real_T> & r) override;
 
 private:
     using Vector3r = msr::airlib::Vector3r;
@@ -29,13 +30,13 @@ private:
 
     void createLasers();
     bool shootLaser(const msr::airlib::Pose& lidar_pose, const msr::airlib::Pose& vehicle_pose,
-        const uint32 channel, const float horizontal_angle, const float vertical_angle, 
+        const float horizontal_angle, const float vertical_angle, 
         const msr::airlib::LidarSimpleParams params, Vector3r &point);
 
 private:
     AActor* actor_;
     const NedTransform* ned_transform_;
 
-    msr::airlib::vector<msr::airlib::real_T> laser_angles_;
-    float current_horizontal_angle_ = 0.0f;
+	msr::airlib::vector<msr::airlib::real_T> laser_polar_angles_;
+	msr::airlib::vector<msr::airlib::real_T> laser_azimuth_angles_;
 };

@@ -1,5 +1,6 @@
 #include "SimModeBase.h"
 #include "Recording/RecordingThread.h"
+#include "Recording/VideoCameraThread.h"
 #include "Misc/MessageDialog.h"
 #include "Misc/EngineVersion.h"
 #include "Runtime/Launch/Resources/Version.h"
@@ -89,6 +90,12 @@ void ASimModeBase::BeginPlay()
         UWeatherLib::initWeather(World, spawned_actors_);
         //UWeatherLib::showWeatherMenu(World);
     }
+
+	// Start the video camera thread to record images for the API
+	FVideoCameraThread::startRecording(getVehicleSimApi()->getImageCapture(),
+		getVehicleSimApi()->getGroundTruthKinematics(), 
+		getSettings().video_camera_setting,
+		getVehicleSimApi());
 }
 
 const NedTransform& ASimModeBase::getGlobalNedTransform()
@@ -126,6 +133,7 @@ void ASimModeBase::setStencilIDs()
 void ASimModeBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
     FRecordingThread::stopRecording();
+	FVideoCameraThread::stopRecording();
     world_sim_api_.reset();
     api_provider_.reset();
     api_server_.reset();
@@ -637,8 +645,8 @@ void ASimModeBase::drawLidarDebugPoints()
 
             for (msr::airlib::uint i = 0; i < count_lidars; i++) {
                 // TODO: Is it incorrect to assume LidarSimple here?
-                const msr::airlib::LidarSimple* lidar =
-                    static_cast<const msr::airlib::LidarSimple*>(api->getSensors().getByType(msr::airlib::SensorBase::SensorType::Lidar, i));
+                msr::airlib::LidarSimple* lidar =
+                    static_cast<msr::airlib::LidarSimple*>(api->getSensors().getByType(msr::airlib::SensorBase::SensorType::Lidar, i));
                 if (lidar != nullptr && lidar->getParams().draw_debug_points) {
                     lidar_draw_debug_points_ = true;
 

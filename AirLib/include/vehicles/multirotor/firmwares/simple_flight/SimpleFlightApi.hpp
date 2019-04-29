@@ -120,7 +120,7 @@ public: //MultirotorApiBase implementation
             board_->setInputChannel(0, rc_data.roll); //X
             board_->setInputChannel(1, rc_data.yaw); //Y
             board_->setInputChannel(2, rc_data.throttle); //F
-            board_->setInputChannel(3, -rc_data.pitch); //Z
+            board_->setInputChannel(3, rc_data.pitch); //Z
             board_->setInputChannel(4, static_cast<float>(rc_data.getSwitch(0))); //angle rate or level
             board_->setInputChannel(5, static_cast<float>(rc_data.getSwitch(1))); //Allow API control
             board_->setInputChannel(6, static_cast<float>(rc_data.getSwitch(2)));
@@ -296,6 +296,13 @@ private:
         remote_control_id_ = vehicle_setting.rc.remote_control_id;
         params_.rc.allow_api_when_disconnected = vehicle_setting.rc.allow_api_when_disconnected;
         params_.rc.allow_api_always = vehicle_setting.allow_api_always;
+
+		// allow update of PID from json
+		params_.velocity_pid.max_limit[0] = vehicle_setting.rc.max_velocity;
+		params_.velocity_pid.max_limit[1] = vehicle_setting.rc.max_velocity;
+		params_.velocity_pid.max_limit[3] = vehicle_setting.rc.max_velocity;
+		params_.angle_rate_pid.max_limit.yaw() = vehicle_setting.rc.max_angle_rate;
+
     }
 
 private:

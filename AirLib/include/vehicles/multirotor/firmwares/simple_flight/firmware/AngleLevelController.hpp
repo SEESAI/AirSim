@@ -37,11 +37,12 @@ public:
 
         //initialize level PID
         pid_.reset(new PidController<float>(clock_,
-            PidConfig<float>(params_->angle_level_pid.p[axis], 0, 0)));
+            PidConfig<float>(params_->angle_level_pid.p[axis], 0, 0, 
+				-params_->angle_rate_pid.max_limit[axis], params_->angle_rate_pid.max_limit[axis])));
 
         //initialize rate controller
-        rate_controller_.reset(new AngleRateController(params_, clock_));
-        rate_controller_->initialize(axis, this, state_estimator_);
+		body_rate_controller_.reset(new AngleRateController(params_, clock_));
+		body_rate_controller_->initialize(axis, this, state_estimator_);
 
         //we will be setting goal for rate controller so we need these two things
         rate_mode_  = GoalMode::getUnknown();
@@ -53,8 +54,8 @@ public:
         IAxisController::reset();
 
         pid_->reset();
-        rate_controller_->reset();
-        rate_goal_ = Axis4r();
+		body_rate_controller_->reset();
+		euler_rate_goal_ = Axis4r();
         output_ = TReal();
     }
 
@@ -63,23 +64,27 @@ public:
         IAxisController::update();
 
         //get response of level PID
-        const auto& level_goal = goal_->getGoalValue();
+        TReal goal_euler_angle = goal_->getGoalValue()[axis_];
+        TReal measured_euler_angle = state_estimator_->getAngles()[axis_];
 
-        TReal goal_angle = level_goal[axis_];
-        TReal measured_angle = state_estimator_->getAngles()[axis_];
-
-        adjustToMinDistanceAngles(measured_angle, goal_angle);
+		// adjust to smallest distance (to deal with angle wrap in yaw)
+        adjustToMinDistanceAngles(measured_euler_angle, goal_euler_angle);
             
-        pid_->setGoal(goal_angle);
-        pid_->setMeasured(measured_angle);
+        pid_->setGoal(goal_euler_angle);
+        pid_->setMeasured(measured_euler_angle);
         pid_->update();
 
-        //use this to drive rate controller
-        rate_goal_[axis_] = pid_->getOutput() * params_->angle_rate_pid.max_limit[axis_];
-        rate_controller_->update();
+		//get the required euler rates as output
+		euler_rate_goal_[axis_] = pid_->getOutput();
+
+		// update the body rate controller
+        body_rate_controller_->update();
 
         //rate controller's output is final output
-        output_ = rate_controller_->getOutput();
+        output_ = body_rate_controller_->getOutput();
+
+		// msr::airlib::Utils::log(msr::airlib::Utils::stringf("Output: %i\t%f\t%f",
+		// 	axis_, goal_euler_angle * 180 / 3.142, measured_euler_angle*180/3.142));
     }
 
     
@@ -91,7 +96,7 @@ public:
     /********************  IGoal ********************/
     virtual const Axis4r& getGoalValue() const override
     {
-        return rate_goal_;
+        return euler_rate_goal_;
     }
 
     virtual const GoalMode& getGoalMode() const  override
@@ -131,14 +136,14 @@ private:
     const IStateEstimator* state_estimator_;
 
     GoalMode rate_mode_;
-    Axis4r rate_goal_;
+	Axis4r euler_rate_goal_;
 
     TReal output_;
 
     const Params* params_;
     const IBoardClock* clock_;
     std::unique_ptr<PidController<float>> pid_;
-    std::unique_ptr<AngleRateController> rate_controller_;
+    std::unique_ptr<AngleRateController> body_rate_controller_;
 
 };
 

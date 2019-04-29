@@ -115,9 +115,19 @@ void MultirotorPawnSimApi::updateRendering(float dt)
     UAirBlueprintLib::LogMessage(TEXT("Collision Count:"), 
         FString::FromInt(collision_response.collision_count_non_resting), LogDebugLevel::Informational);
 
+	// Separate out the topic of the log message, so you only display each topic once
     for (auto i = 0; i < vehicle_api_messages_.size(); ++i) {
-        UAirBlueprintLib::LogMessage(FString(vehicle_api_messages_[i].c_str()), TEXT(""), LogDebugLevel::Success, 30);
+		std::string text = vehicle_api_messages_[i].c_str();
+		std::string title = "LogMessage: ";
+		std::size_t found = text.find(":");
+		if (!(found == std::string::npos)) {
+			title = text.substr(0, found + 1);
+			text = text.substr(found + 1);
+		}
+		UAirBlueprintLib::LogMessage(FString(title.c_str()), FString(text.c_str()), LogDebugLevel::Informational, 30);
     }
+	// Clear the message vectory now that they are displayed (it is refilled above)
+	vehicle_api_messages_.clear();
 
     try {
         vehicle_api_->sendTelemetry(dt);

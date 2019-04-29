@@ -244,6 +244,35 @@ struct CameraInfo {
     }
 };
 
+
+struct LidarInfo {
+	Pose pose;
+	float vertical_fov_lower;
+	float vertical_fov_upper;
+	float horizontal_fov_lower;
+	float horizontal_fov_upper;
+	float channels_per_scan;
+	float scans_per_revolution;
+	float revolutions_per_second;
+
+	LidarInfo()
+	{}
+
+};
+
+
+struct IMUInfo {
+	Pose pose;
+	float angle_random_walk;
+	float gyro_bias_stability;
+	float velocity_random_walk;
+	float accelerometer_bias_stability;
+
+	IMUInfo()
+	{}
+
+};
+
 struct CollisionResponse {
     unsigned int collision_count_raw = 0;
     unsigned int collision_count_non_resting = 0;
@@ -269,7 +298,8 @@ struct RCData {
 
     unsigned int getSwitch(uint16_t index) const
     {
-        return switches && (1 << index) ? 1 : 0;
+		int switch_on = (switches & (1 << index)) ? 1 : 0;
+        return switch_on;
     }
 
     void add(const RCData& other)
@@ -293,6 +323,39 @@ struct RCData {
     {
         return Utils::stringf("RCData[pitch=%f, roll=%f, throttle=%f, yaw=%f]", pitch, roll, throttle, yaw);
     }
+};
+
+struct GPSDataBuffer {
+
+	vector<uint64_t> timestamps_ns;
+	vector<double> latitude;
+	vector<double> longitude;
+	vector<float> altitude;
+
+	GPSDataBuffer()
+	{}
+};
+
+struct IMUDataBuffer {
+
+	vector<uint64_t> timestamps_ns;
+	vector<float> orientation;
+	vector<float> angular_velocity;
+	vector<float> linear_acceleration;
+
+	IMUDataBuffer()
+	{}
+};
+
+struct LidarDataBuffer {
+
+	Pose sensor_pose_in_world_frame;
+	vector<uint64_t> timestamps_ns;
+	vector<real_T> azimuth_angles;
+	vector<real_T> ranges;
+
+	LidarDataBuffer()
+	{}
 };
 
 struct LidarData {

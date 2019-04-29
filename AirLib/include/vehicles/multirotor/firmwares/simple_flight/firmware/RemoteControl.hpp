@@ -62,21 +62,23 @@ public:
         //state machine
         switch (vehicle_state_->getState()) {
         case VehicleStateType::Inactive:
-            //comm_link_->log(std::string("State:\t ").append("Inactive state"));
+			comm_link_->log(std::string("State:\t ").append("Inactive"));
 
             if (rc_action == RcRequestType::ArmRequest) {
-                comm_link_->log(std::string("State:\t ").append("Inactive state, Arm request received"));
+                comm_link_->log(std::string("State:\t ").append("Inactive, Arm request received"));
                 request_duration_ += dt;
 
                 if (request_duration_ > params_->rc.arm_duration) {
                     vehicle_state_->setState(VehicleStateType::BeingArmed);
                     request_duration_ = 0;
                 }
-            }
-            //else ignore
+            } else
+				request_duration_ = 0;
+
             break;
+
         case VehicleStateType::BeingArmed:
-            comm_link_->log(std::string("State:\t ").append("Being armed"));
+            comm_link_->log(std::string("State:\t ").append("Being armed, Awaiting neutral sticks"));
 
             //start the motors
             goal_ = Axis4r::zero(); //neural activation while still being armed
@@ -89,16 +91,19 @@ public:
                 if (request_duration_ > params_->rc.neutral_duration) {
                     //TODO: this code should be reused in OffboardApi
                     vehicle_state_->setState(VehicleStateType::Armed, state_estimator_->getHomeGeoPoint());
-                    comm_link_->log(std::string("State:\t ").append("Armed"));
                     request_duration_ = 0;
                 }
-            }
-            //else ignore
+            } else
+				request_duration_ = 0;
+
             break;
+
         case VehicleStateType::Armed:
-            //unless disarm is being requested, set goal from stick position
+			comm_link_->log(std::string("State:\t ").append("Armed"));
+			
+			//unless disarm is being requested, set goal from stick position
             if (rc_action == RcRequestType::DisarmRequest) {
-                comm_link_->log(std::string("State:\t ").append("Armed state, disarm request received"));
+                comm_link_->log(std::string("State:\t ").append("Armed, disarm request received"));
                 request_duration_ += dt;
 
                 if (request_duration_ > params_->rc.disarm_duration) {
@@ -110,9 +115,11 @@ public:
                 request_duration_ = 0; //if there was spurious disarm request
                 updateGoal(channels);
             }
+
             break;
+
         case VehicleStateType::BeingDisarmed:
-            comm_link_->log(std::string("State:\t ").append("Being state"));
+            comm_link_->log(std::string("State:\t ").append("Being Disarmed"));
 
             //TODO: this code should be reused in OffboardApi
             goal_.setAxis3(Axis3r::zero()); //neutral activation while being disarmed
@@ -120,6 +127,7 @@ public:
             request_duration_ = 0;
 
             break;
+
         case VehicleStateType::Disarmed:
             comm_link_->log(std::string("State:\t ").append("Disarmed"));
 
@@ -128,6 +136,7 @@ public:
             request_duration_ = 0;
 
             break;
+
         default:
             throw std::runtime_error("VehicleStateType has unknown value for RemoteControl::update()");
         }
@@ -155,29 +164,36 @@ private:
 
     void updateGoalMode()
     {
-        if (!board_inputs_->isRcConnected()) {
-            //TODO: is it good idea to keep the last mode?
-            //if (!goal_mode_.equals4(GoalMode::getUnknown()))
-            //    goal_mode_ = GoalMode::getUnknown();
+		// Test for RC connection
+		if (!board_inputs_->isRcConnected()) {
+			// if joystick disconnected go into velocity mode and stay stationary
+			goal_mode_ = GoalMode::getVelocityMode();//GoalMode::getStandardAngleMode();
+			goal_ = Axis4r(0, 0, 0, 0);
 
-            //For angle as well as rate mode, keep only throttle
-            goal_.setAxis3(Axis3r());
+			//TODO: is it good idea to keep the last mode?
+			//if (!goal_mode_.equals4(GoalMode::getUnknown()))
+			//    goal_mode_ = GoalMode::getUnknown();
 
-            return;
-        }
+			//For angle as well as rate mode, keep only throttle
+			// goal_.setAxis3(Axis3r());
 
-        //set up RC mode as level or rate
+			// And stop here (don't look at next section)
+			return;
+		}
+		
+		//if joystick connected, set up RC mode as velocity or angle
         angle_mode_ = board_inputs_->readChannel(params_->rc.rate_level_mode_channel);
         if (last_angle_mode_ != angle_mode_) {
             //for 3 way switch, 1/3 value for each position
-            if (angle_mode_ < params_->rc.max_angle_level_switch)
-                goal_mode_ = GoalMode::getStandardAngleMode();
-            else
-                goal_mode_ = GoalMode::getAllRateMode();
+			if (angle_mode_ < params_->rc.max_angle_level_switch)
+				goal_mode_ = GoalMode::getVelocityMode();//GoalMode::getStandardAngleMode();
+			else
+				goal_mode_ = GoalMode::getStandardAngleMode();//GoalMode::getVelocityMode();
 
             last_angle_mode_ = angle_mode_;
         }
-    }
+
+	}
 
     void updateAllowApiControl()
     {
@@ -196,18 +212,36 @@ private:
     {
         //for 3 way switch, 1/3 value for each position
         if (angle_mode_ < params_->rc.max_angle_level_switch) { 
-            //we are in control-by-level mode
-            goal_ = channels.colWiseMultiply4(params_->angle_level_pid.max_limit); 
-        }
-        else { //we are in control-by-rate mode
-            goal_ = channels.colWiseMultiply4(params_->angle_level_pid.max_limit);
-        }
 
-        //if throttle is too low then set all motors to same value as throttle because
-        //otherwise values in pitch/roll/yaw would get clipped randomly and can produce random results
-        //in other words: we can't do angling if throttle is too low
-        if (channels.throttle() < params_->rc.min_angling_throttle)
-            goal_.throttle() = params_->rc.min_angling_throttle;
+            //we are in control-by-velocity mode
+			
+			//get the control inputs and convert to velocity demands
+            //goal_ = channels.colWiseMultiply4(params_->angle_level_pid.max_limit);
+			TReal vx = channels.roll() * params_->velocity_pid.max_limit[0]; 
+			TReal vy = -channels.pitch() * params_->velocity_pid.max_limit[1];
+			TReal vyaw = channels.yaw() * params_->angle_rate_pid.max_limit[2];
+			TReal vz = -channels.throttle() * params_->velocity_pid.max_limit[3];
+
+			//rotate x & y velocity demands to align with the drone heading and save
+			TReal yaw = state_estimator_->getAngles().yaw();
+			TReal vxtemp = vx * cos(yaw) + vy * sin(yaw);
+			vy = -vx * sin(yaw) + vy * cos(yaw);
+			vx = vxtemp;
+
+			goal_ = Axis4r(vx, vy, vyaw, vz);
+        }
+        else { //we are in control-by-angle mode
+			/// Adjust the angle requests to match the max rates (but not the throttle)
+            goal_ = channels.colWiseMultiply3(params_->angle_level_pid.max_limit);
+			goal_.throttle() = (channels.throttle() + 1) / 2;
+
+			//if throttle is too low then set all motors to same value as throttle because
+			//otherwise values in pitch/roll/yaw would get clipped randomly and can produce random results
+			//in other words: we can't do angling if throttle is too low
+			if (channels.throttle() < params_->rc.min_angling_throttle)
+				goal_.throttle() = params_->rc.min_angling_throttle;
+		}
+
     }
 
     static bool isInTolerance(TReal val, TReal tolerance, TReal center = TReal())
@@ -230,8 +264,10 @@ private:
         bool pitch_action = normalized_pitch >= stick_min;
 
         if (yaw_action_positive && throttle_action && roll_action_negative && pitch_action)
+			// Left stick down-right, right stick left
             return RcRequestType::ArmRequest;
         else if (yaw_action_negative && throttle_action && roll_action_positive && pitch_action)
+			// Left stick down-left, right stick right
             return RcRequestType::DisarmRequest;
         else if (isInTolerance(channels.roll(), tolerance)
             && isInTolerance(channels.pitch(), tolerance)

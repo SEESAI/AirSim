@@ -179,21 +179,59 @@ void MultirotorRpcLibClient::moveByRC(const RCData& rc_data, const std::string& 
 MultirotorRpcLibClient* MultirotorRpcLibClient::waitOnLastTask(bool* task_result, float timeout_sec)
 {
     bool result;
-    if (std::isnan(timeout_sec) || timeout_sec == Utils::max<float>())
-        result = pimpl_->last_future.get().as<bool>();
-    else {
-        auto future_status = pimpl_->last_future.wait_for(std::chrono::duration<double>(timeout_sec));
-        if (future_status == std::future_status::ready)
-            result = pimpl_->last_future.get().as<bool>();
-        else
-            result = false;
-    }
-
-    if (task_result)
-        *task_result = result;
+	// Check whether future is valid
+	if (pimpl_->last_future.valid()) {
+		if (std::isnan(timeout_sec) || timeout_sec == Utils::max<float>())
+			result = pimpl_->last_future.get().as<bool>();
+		else {
+			auto future_status = pimpl_->last_future.wait_for(std::chrono::duration<double>(timeout_sec));
+			if (future_status == std::future_status::ready)
+				result = pimpl_->last_future.get().as<bool>();
+			else
+				result = false;
+		}
+		if (task_result)
+			*task_result = result;
+	}
 
     return this;
 }
+
+// As above but returns true if future still valid, false otherwise
+bool MultirotorRpcLibClient::checkLastTask(bool* task_result, bool* task_complete, float timeout_sec)
+{
+	bool valid = false;
+	bool complete = false;
+	bool result = false;
+	// Check whether future is valid
+	// ToDo need to return something if result is not complete
+	if (pimpl_->last_future.valid()) {
+		if (std::isnan(timeout_sec) || timeout_sec == Utils::max<float>()) {
+			result = pimpl_->last_future.get().as<bool>();
+			valid = true;
+			complete = true;
+		}
+		else {
+			auto future_status = pimpl_->last_future.wait_for(std::chrono::duration<double>(timeout_sec));
+			if (future_status == std::future_status::ready) {
+				result = pimpl_->last_future.get().as<bool>();
+				valid = true;
+				complete = true;
+			}
+		}
+	}
+	else {
+		complete = true;
+		valid = false;
+	}
+	if (valid)
+		if (task_result)
+			*task_result = result;
+	if (task_complete)
+		* task_complete = complete;
+	return valid;
+}
+
 
 }} //namespace
 

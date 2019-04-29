@@ -84,6 +84,17 @@ void APIPCamera::BeginPlay()
     this->SetActorTickEnabled(false);
 }
 
+float APIPCamera::getFOV(const APIPCamera::ImageType image_type) const
+{
+	const_cast<APIPCamera*>(this)->setCameraTypeEnabled(image_type, true);
+	const USceneCaptureComponent2D* capture = const_cast<APIPCamera*>(this)->getCaptureComponent(image_type, false);
+	float FOVangle = 0.0f;
+	if (capture)
+		FOVangle = capture->FOVAngle;
+
+	return FOVangle;
+}
+
 msr::airlib::ProjectionMatrix APIPCamera::getProjectionMatrix(const APIPCamera::ImageType image_type) const
 {
     //TODO: avoid the need to override const cast here
@@ -250,8 +261,16 @@ void APIPCamera::setCameraOrientation(const FRotator& rotator)
         gimbald_rotator_.Pitch = rotator.Pitch;
         gimbald_rotator_.Roll = rotator.Roll;
         gimbald_rotator_.Yaw = rotator.Yaw;
-    }
-    this->SetActorRelativeRotation(rotator);
+    } else
+		this->SetActorRelativeRotation(rotator);
+}
+
+void APIPCamera::setCameraFovDegrees(float fov_degree) {
+	int image_count = static_cast<int>(Utils::toNumeric(ImageType::Count));
+	for (int image_type = 0; image_type < image_count; ++image_type) {
+		captures_[image_type]->FOVAngle = fov_degree;
+	}
+	camera_->SetFieldOfView(fov_degree);
 }
 
 void APIPCamera::setupCameraFromSettings(const APIPCamera::CameraSetting& camera_setting, const NedTransform& ned_transform)
@@ -261,7 +280,7 @@ void APIPCamera::setupCameraFromSettings(const APIPCamera::CameraSetting& camera
     //TODO: can we eliminate storing NedTransform?
     ned_transform_ = &ned_transform;
 
-    gimbal_stabilization_ = Utils::clip(camera_setting.gimbal.stabilization, 0.0f, 1.0f);
+	gimbal_stabilization_ = Utils::clip(camera_setting.gimbal.stabilization, 0.0f, 1.0f);
     if (gimbal_stabilization_ > 0) {
         this->SetActorTickEnabled(true);
         gimbald_rotator_.Pitch = camera_setting.gimbal.rotation.pitch;
@@ -337,6 +356,24 @@ void APIPCamera::updateCameraSetting(UCameraComponent* camera, const CaptureSett
 msr::airlib::Pose APIPCamera::getPose() const
 {
     return ned_transform_->toLocalNed(this->GetActorTransform());
+}
+
+msr::airlib::Pose APIPCamera::getPoseInParentFrame() const
+{
+	/// Works out the camera pose in parent frame.
+	/// Note - not totally robust (would have to execute on game thread to ensure same timestamp).
+
+	msr::airlib::Pose cameraPose = ned_transform_->toLocalNed(this->GetActorTransform());
+
+	msr::airlib::Pose bodyPose;
+	if (this->GetParentActor())
+		bodyPose = ned_transform_->toLocalNed(this->GetParentActor()->GetActorTransform());
+	else if (this->GetAttachParentActor())
+		bodyPose = ned_transform_->toLocalNed(this->GetAttachParentActor()->GetActorTransform());
+	else
+		return msr::airlib::Pose::zero();
+
+	return cameraPose - bodyPose;
 }
 
 void APIPCamera::updateCameraPostProcessingSetting(FPostProcessSettings& obj, const CaptureSetting& setting)

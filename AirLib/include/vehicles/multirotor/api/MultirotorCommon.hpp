@@ -19,8 +19,8 @@ enum class LandedState : uint {
 
 //Yaw mode specifies if yaw should be set as angle or angular velocity around the center of drone
 struct YawMode {
-    bool is_rate = true;
-    float yaw_or_rate = 0.0f;
+    bool is_rate = true;		// True if control is by angle-rate, false if control is by angle.  Needs to be false for the ForwardOnly mode to work
+    float yaw_or_rate = 0.0f;	// The actual target yaw or rate.  Leave at zero and the internal controller will do the rest.
 
     YawMode()
     {}

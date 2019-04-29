@@ -36,7 +36,7 @@ namespace msr {
             real_T C_P = 0.040164f; // the torque co-efficient at @ 6396.667 RPM, measured by UIUC.
             real_T air_density = 1.225f; //  kg/m^3
             real_T max_rpm = 6396.667f; // revolutions per minute
-            real_T propeller_diameter = 0.2286f;   //diameter in meters, default is for DJI Phantom 2
+            real_T propeller_diameter = 0.2286f * 1.05;   //diameter in meters, default is for DJI Phantom 2 (with a bit added)
             real_T propeller_height = 1 / 100.0f;   //height of cylindrical area when propeller rotates, 1 cm
             real_T control_signal_filter_tc = 0.005f;    //time constant for low pass filter
 

@@ -42,14 +42,17 @@ public:
     bool getCameraTypeEnabled(ImageType type) const;
     void setupCameraFromSettings(const APIPCamera::CameraSetting& camera_setting, const NedTransform& ned_transform);
     void setCameraOrientation(const FRotator& rotator);
+	void setCameraFovDegrees(float fov_degree);
 
     msr::airlib::ProjectionMatrix getProjectionMatrix(const APIPCamera::ImageType image_type) const;
+	float getFOV(const APIPCamera::ImageType image_type) const;
 
 
     USceneCaptureComponent2D* getCaptureComponent(const ImageType type, bool if_active);
     UTextureRenderTarget2D* getRenderTarget(const ImageType type, bool if_active);
 
     msr::airlib::Pose getPose() const;
+	msr::airlib::Pose getPoseInParentFrame() const;
     
 private: //members
     UPROPERTY() TArray<USceneCaptureComponent2D*> captures_;
