@@ -170,10 +170,10 @@ private:
         angle_mode_ = board_inputs_->readChannel(params_->rc.rate_level_mode_channel);
         if (last_angle_mode_ != angle_mode_) {
             //for 3 way switch, 1/3 value for each position
-            if (angle_mode_ < params_->rc.max_angle_level_switch)
-                goal_mode_ = GoalMode::getStandardAngleMode();
-            else
-                goal_mode_ = GoalMode::getAllRateMode();
+			if (angle_mode_ < params_->rc.max_angle_level_switch)
+				goal_mode_ = GoalMode::getVelocityMode();//GoalMode::getStandardAngleMode();
+			else
+				goal_mode_ = GoalMode::getStandardAngleMode();//GoalMode::getVelocityMode();
 
             last_angle_mode_ = angle_mode_;
         }
@@ -196,18 +196,35 @@ private:
     {
         //for 3 way switch, 1/3 value for each position
         if (angle_mode_ < params_->rc.max_angle_level_switch) { 
-            //we are in control-by-level mode
-            goal_ = channels.colWiseMultiply4(params_->angle_level_pid.max_limit); 
-        }
-        else { //we are in control-by-rate mode
-            goal_ = channels.colWiseMultiply4(params_->angle_level_pid.max_limit);
-        }
 
-        //if throttle is too low then set all motors to same value as throttle because
-        //otherwise values in pitch/roll/yaw would get clipped randomly and can produce random results
-        //in other words: we can't do angling if throttle is too low
-        if (channels.throttle() < params_->rc.min_angling_throttle)
-            goal_.throttle() = params_->rc.min_angling_throttle;
+            //we are in control-by-velocity mode
+			
+			//get the control inputs and convert to velocity demands
+            //goal_ = channels.colWiseMultiply4(params_->angle_level_pid.max_limit);
+			TReal vx = channels.roll() * 10.0; // vx = roll?: this is odd but it works...
+			TReal vy = -channels.pitch() * 10.0;
+			TReal vyaw = channels.yaw() * 3.0;
+			TReal vz = -(channels.throttle()-0.5) * 10.0;
+
+			if (true) {
+				//rotate x & y velocity demands to align with the drone heading and save
+				TReal yaw = state_estimator_->getAngles().yaw();
+				TReal vxtemp = vx * cos(yaw) + vy * sin(yaw);
+				vy = -vx * sin(yaw) + vy * cos(yaw);
+				vx = vxtemp;
+			}
+			goal_ = Axis4r(vx, vy, vyaw, vz);
+        }
+        else { //we are in control-by-angle mode
+            goal_ = channels.colWiseMultiply4(params_->angle_level_pid.max_limit);
+
+			//if throttle is too low then set all motors to same value as throttle because
+			//otherwise values in pitch/roll/yaw would get clipped randomly and can produce random results
+			//in other words: we can't do angling if throttle is too low
+			if (channels.throttle() < params_->rc.min_angling_throttle)
+				goal_.throttle() = params_->rc.min_angling_throttle;
+		}
+
     }
 
     static bool isInTolerance(TReal val, TReal tolerance, TReal center = TReal())

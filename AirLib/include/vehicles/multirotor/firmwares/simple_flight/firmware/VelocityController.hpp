@@ -84,12 +84,22 @@ public:
             goal_->getGoalValue(), true);
         const Axis4r& goal_velocity_local = Axis4r::xyzToAxis4(
             state_estimator_->transformToBodyFrame(goal_velocity_world), true);
-        pid_->setGoal(goal_velocity_local[axis_]);
+
+        TReal vx = goal_velocity_local.x();
+        TReal vy = goal_velocity_local.y();
+        TReal vz = goal_velocity_world.z();
+        Axis4r goal_velocity_new(vx, vy, 0, vz);
+        pid_->setGoal(goal_velocity_new[axis_]);//pid_->setGoal(goal_velocity_local[axis_]);
 
         const Axis3r& measured_velocity_world = state_estimator_->getLinearVelocity();
         const Axis4r& measured_velocity_local = Axis4r::xyzToAxis4(
             state_estimator_->transformToBodyFrame(measured_velocity_world), true);
-        pid_->setMeasured(measured_velocity_local[axis_]);
+
+        vx = measured_velocity_local.x();
+        vy = measured_velocity_local.y();
+        vz = measured_velocity_world.z();
+        Axis4r measured_velocity_new(vx, vy, 0, vz);
+        pid_->setMeasured(measured_velocity_new[axis_]);//pid_->setMeasured(measured_velocity_local[axis_]);
         pid_->update();
 
         //use this to drive child controller
