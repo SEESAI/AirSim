@@ -42,17 +42,43 @@ public:
 
     const LidarData& getOutput() const
     {
+		// this call is used for pretty green dots on the screen
         return output_;
     }
 
+	const LidarData& getAPIOutput()
+	{
+		// this call is used for the API
+
+		// this differs from getOutput in that it returns all points since it was last called
+		// or a full scan, whichever is smaller
+		// whereas output_ is cleared every LIDAR update even if the API hasn't called
+
+		// copy the buffer into the output
+		APIoutput_.pose = output_.pose;
+		APIoutput_.time_stamp = output_.time_stamp;
+		APIoutput_.point_cloud = scan_buffer_;
+
+		// and clear the buffer
+		scan_buffer_.clear();
+
+		return APIoutput_;
+	}
+
 protected:
-    void setOutput(const LidarData& output)
+    void setOutput(TTimePoint updateTime, Pose & lidar_pose, vector<real_T> & point_cloud) // was previously LidarData& output
     {
-        output_ = output;
+		output_.pose = lidar_pose;
+		output_.time_stamp = updateTime;
+		output_.point_cloud = point_cloud;
     }
 
+protected:
+	vector<real_T> scan_buffer_;
+
 private:
-    LidarData output_;
+	LidarData APIoutput_;
+	LidarData output_;
 };
 
 }} //namespace

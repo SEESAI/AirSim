@@ -18,95 +18,119 @@ UnrealLidarSensor::UnrealLidarSensor(const AirSimSettings::LidarSetting& setting
 // initializes information based on lidar configuration
 void UnrealLidarSensor::createLasers()
 {
-    msr::airlib::LidarSimpleParams params = getParams();
+	// Make sure angle data sensible
+	float azimuth_start = params_.horizontal_FOV_start;
+	float azimuth_end = params_.horizontal_FOV_end;
+	float altitude_lower = params_.vertical_FOV_lower;
+	float altitude_upper = params_.vertical_FOV_upper;
+	azimuth_start = std::fmod(360.0f + azimuth_start, 360.0f);
+	azimuth_end = std::fmod(360.0f + azimuth_end, 360.0f);
+	azimuth_end = (azimuth_end <= azimuth_start) ? azimuth_end + 360.0f : azimuth_end;
+	if (azimuth_start > 180.0f) {
+		azimuth_start -= 360.0f;
+		azimuth_end -= 360.0f;
+	}
 
-    const auto number_of_lasers = params.number_of_channels;
-
-    if (number_of_lasers <= 0)
-        return;
+	altitude_upper = (altitude_upper <= altitude_lower) ? altitude_lower : altitude_upper;
 
     // calculate verticle angle distance between each laser
     float delta_angle = 0;
-    if (number_of_lasers > 1)
-        delta_angle = (params.vertical_FOV_upper - (params.vertical_FOV_lower)) /
-            static_cast<float>(number_of_lasers - 1);
+    if (channels_per_scan_ > 1)
+        delta_angle = (altitude_upper - altitude_lower) /
+            static_cast<float>(channels_per_scan_ - 1);
 
     // store vertical angles for each laser
-    laser_angles_.clear();
-    for (auto i = 0u; i < number_of_lasers; ++i)
+    laser_altitude_angles_.clear();
+    for (int32 i = 0; i < channels_per_scan_; ++i)
     {
-        const float vertical_angle = params.vertical_FOV_upper - static_cast<float>(i) * delta_angle;
-        laser_angles_.emplace_back(vertical_angle);
+        const float angle = altitude_lower + static_cast<float>(i) * delta_angle;
+		laser_altitude_angles_.emplace_back(angle);
     }
+
+	// calculate horizontal angle distance between each laser
+	delta_angle = 0;
+	if (scans_per_revolution_ > 1)
+		delta_angle = (azimuth_end - azimuth_start) /
+		static_cast<float>(scans_per_revolution_);
+
+	// store horizontal angles for each laser
+	laser_azimuth_angles_.clear();
+	for (int32 i = 0; i < scans_per_revolution_; ++i)
+	{
+		const float angle = azimuth_start + static_cast<float>(i) * delta_angle;
+		laser_azimuth_angles_.emplace_back(angle);
+	}
+
 }
 
 // returns a point-cloud for the tick
 void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const msr::airlib::Pose& vehicle_pose,
-    const msr::airlib::TTimeDelta delta_time, msr::airlib::vector<msr::airlib::real_T>& point_cloud)
+    const msr::airlib::TTimeDelta update_time, msr::airlib::vector<msr::airlib::real_T>& point_cloud)
 {
-    point_cloud.clear();
+	// work out number of revolutions since start, and make sure you only look at the last full revolution of data
+	double revsLastUpdate= static_cast<double>(last_time_ - start_time_) * rotation_rate_ / 1000000000;
+	double revs = static_cast<double>(update_time - start_time_) * rotation_rate_ / 1000000000;
+	revsLastUpdate = (revsLastUpdate < (revs - 1)) ? (revs - 1) : revsLastUpdate;
 
-    msr::airlib::LidarSimpleParams params = getParams();
-    const auto number_of_lasers = params.number_of_channels;
+	// work out start and end sectors
+	int32 startSector = static_cast<int32>(FMath::RoundHalfFromZero((revsLastUpdate * static_cast<double>(scans_per_revolution_)))) %
+		scans_per_revolution_;
+	int32 endSector = static_cast<int32>(FMath::RoundHalfFromZero((revs * static_cast<double>(scans_per_revolution_)))) %
+		scans_per_revolution_;
 
-    // cap the points to scan via ray-tracing; this is currently needed for car/Unreal tick scenarios
+	// Work out num sectors to scan
+	int32 numSectors = endSector - startSector;
+	numSectors = (numSectors < 0) ? (numSectors + scans_per_revolution_) : numSectors;
+
+	// cap the points to scan via ray-tracing; this is currently needed for car/Unreal tick scenarios
     // since SensorBase mechanism uses the elapsed clock time instead of the tick delta-time.
-    constexpr float MAX_POINTS_IN_SCAN = 1e+5f;
-    uint32 total_points_to_scan = FMath::RoundHalfFromZero(params.points_per_second * delta_time);
-    if (total_points_to_scan > MAX_POINTS_IN_SCAN)
-    {
-        total_points_to_scan = MAX_POINTS_IN_SCAN;
+    constexpr int32 MAX_POINTS_IN_SCAN = 1e+5f;
+	int32 maxSectors = MAX_POINTS_IN_SCAN / channels_per_scan_;
+	if (numSectors > maxSectors){
+		numSectors = maxSectors;
         UAirBlueprintLib::LogMessageString("Lidar: ", "Capping number of points to scan", LogDebugLevel::Failure);
     }
 
-    // calculate number of points needed for each laser/channel
-    const uint32 points_to_scan_with_one_laser = FMath::RoundHalfFromZero(total_points_to_scan / float(number_of_lasers));
-    if (points_to_scan_with_one_laser <= 0)
-    {
-        //UAirBlueprintLib::LogMessageString("Lidar: ", "No points requested this frame", LogDebugLevel::Failure);
-        return;
-    }
-
-    // calculate needed angle/distance between each point
-    const float angle_distance_of_tick = params.horizontal_rotation_frequency * 360.0f * delta_time;
-    const float angle_distance_of_laser_measure = angle_distance_of_tick / points_to_scan_with_one_laser;
-
-    // normalize FOV start/end
-    const float laser_start = std::fmod(360.0f + params.horizontal_FOV_start, 360.0f);
-    const float laser_end = std::fmod(360.0f + params.horizontal_FOV_end, 360.0f);
-
     // shoot lasers
-    for (auto laser = 0u; laser < number_of_lasers; ++laser)
+    for (int32 i = 0; i < numSectors; ++i)
     {
-        const float vertical_angle = laser_angles_[laser];
+		int32 sector = endSector - numSectors + i;
+		sector = (sector < 0) ? (sector + scans_per_revolution_) : sector;
+		const float azimuth_angle = laser_azimuth_angles_[sector];
 
-        for (auto i = 0u; i < points_to_scan_with_one_laser; ++i)
+		scan_buffer_.emplace_back(static_cast<float>(update_time - start_time_));
+		scan_buffer_.emplace_back(azimuth_angle);
+
+        for (int32 j = 0; j < channels_per_scan_; ++j)
         {
-            const float horizontal_angle = std::fmod(current_horizontal_angle_ + angle_distance_of_laser_measure * i, 360.0f);
+			const float altitude_angle = laser_altitude_angles_[j];
 
-            // check if the laser is outside the requested horizontal FOV
-            if (!VectorMath::isAngleBetweenAngles(horizontal_angle, laser_start, laser_end))
-                continue;
-       
             Vector3r point;
             // shoot laser and get the impact point, if any
-            if (shootLaser(lidar_pose, vehicle_pose, laser, horizontal_angle, vertical_angle, params, point))
-            {
-                point_cloud.emplace_back(point.x());
-                point_cloud.emplace_back(point.y());
-                point_cloud.emplace_back(point.z());
-            }
+			if (shootLaser(lidar_pose, vehicle_pose, azimuth_angle, altitude_angle, params_, point)) {
+				point_cloud.emplace_back(point.x());
+				point_cloud.emplace_back(point.y());
+				point_cloud.emplace_back(point.z());
+				scan_buffer_.emplace_back(point.norm());
+			}
+			else
+				scan_buffer_.emplace_back(0);
         }
     }
 
-    current_horizontal_angle_ = std::fmod(current_horizontal_angle_ + angle_distance_of_tick, 360.0f);
+	// Trim scan_buffer to be one revolution
+	int32 max_buffer_length = scans_per_revolution_ * (2 + channels_per_scan_);
+	if (scan_buffer_.size() > max_buffer_length) {
+		int32 excess_length = scan_buffer_.size() - max_buffer_length;
+		scan_buffer_.erase(scan_buffer_.begin(), scan_buffer_.begin() + excess_length);
+	}
 
     return;
 }
 
 // simulate shooting a laser via Unreal ray-tracing.
 bool UnrealLidarSensor::shootLaser(const msr::airlib::Pose& lidar_pose, const msr::airlib::Pose& vehicle_pose,
-    const uint32 laser, const float horizontal_angle, const float vertical_angle, 
+    const float horizontal_angle, const float vertical_angle, 
     const msr::airlib::LidarSimpleParams params, Vector3r &point)
 {
     // start position

@@ -29,13 +29,13 @@ private:
 
     void createLasers();
     bool shootLaser(const msr::airlib::Pose& lidar_pose, const msr::airlib::Pose& vehicle_pose,
-        const uint32 channel, const float horizontal_angle, const float vertical_angle, 
+        const float horizontal_angle, const float vertical_angle, 
         const msr::airlib::LidarSimpleParams params, Vector3r &point);
 
 private:
     AActor* actor_;
     const NedTransform* ned_transform_;
 
-    msr::airlib::vector<msr::airlib::real_T> laser_angles_;
-    float current_horizontal_angle_ = 0.0f;
+	msr::airlib::vector<msr::airlib::real_T> laser_altitude_angles_;
+	msr::airlib::vector<msr::airlib::real_T> laser_azimuth_angles_;
 };
