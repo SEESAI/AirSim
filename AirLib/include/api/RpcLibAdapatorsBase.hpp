@@ -468,7 +468,7 @@ public:
 
     struct LidarAPIData {
 
-        std::vector<uint64> time_stamps;    // timestamps
+        std::vector<uint64_t> time_stamps;    // timestamps
 		std::vector<float> azimuth_angles;  // azimuth_angles
         std::vector<float> ranges;          // ranges
         Pose pose;
