@@ -159,9 +159,9 @@ msr::airlib::GeoPoint RpcLibClientBase::getHomeGeoPoint(const std::string& vehic
     return pimpl_->client.call("getHomeGeoPoint", vehicle_name).as<RpcLibAdapatorsBase::GeoPoint>().to();
 }
 
-msr::airlib::LidarData RpcLibClientBase::getLidarData(const std::string& lidar_name, const std::string& vehicle_name) const
+msr::airlib::LidarAPIData RpcLibClientBase::getLidarData(const std::string& lidar_name, const std::string& vehicle_name) const
 {
-    return pimpl_->client.call("getLidarData", lidar_name, vehicle_name).as<RpcLibAdapatorsBase::LidarData>().to();
+    return pimpl_->client.call("getLidarData", lidar_name, vehicle_name).as<RpcLibAdapatorsBase::LidarAPIData>().to();
 }
 
 bool RpcLibClientBase::simSetSegmentationObjectID(const std::string& mesh_name, int object_id, bool is_name_regex)

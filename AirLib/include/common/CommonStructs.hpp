@@ -295,6 +295,17 @@ struct RCData {
     }
 };
 
+struct LidarAPIData {
+
+	vector<real_T> azimuth_angles;
+	vector<uint64> time_stamps;
+	vector<real_T> ranges;
+	Pose pose;
+
+	LidarAPIData()
+	{}
+};
+
 struct LidarData {
 
     TTimePoint time_stamp = 0;

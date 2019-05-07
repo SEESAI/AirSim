@@ -46,7 +46,7 @@ public:
         return output_;
     }
 
-	const LidarData& getAPIOutput()
+	const LidarAPIData& getAPIOutput()
 	{
 		// this call is used for the API
 
@@ -55,12 +55,15 @@ public:
 		// whereas output_ is cleared every LIDAR update even if the API hasn't called
 
 		// copy the buffer into the output
-		APIoutput_.pose = output_.pose;
-		APIoutput_.time_stamp = output_.time_stamp;
-		APIoutput_.point_cloud = scan_buffer_;
-
+		APIoutput_.pose = scan_buffer_.pose;
+		APIoutput_.time_stamps = scan_buffer_.time_stamps;
+		APIoutput_.azimuth_angles = scan_buffer_.azimuth_angles;
+		APIoutput_.ranges = scan_buffer_.ranges;
+		
 		// and clear the buffer
-		scan_buffer_.clear();
+		scan_buffer_.time_stamps.clear();
+		scan_buffer_.azimuth_angles.clear();
+		scan_buffer_.ranges.clear();
 
 		return APIoutput_;
 	}
@@ -74,10 +77,10 @@ protected:
     }
 
 protected:
-	vector<real_T> scan_buffer_;
+	LidarAPIData scan_buffer_;
 
 private:
-	LidarData APIoutput_;
+	LidarAPIData APIoutput_;
 	LidarData output_;
 };
 

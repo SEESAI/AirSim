@@ -466,36 +466,43 @@ public:
         }
     };
 
-    struct LidarData {
+    struct LidarAPIData {
 
-        msr::airlib::TTimePoint time_stamp;    // timestamp
-        std::vector<float> point_cloud;        // data
+        std::vector<uint64> time_stamps;    // timestamps
+		std::vector<float> azimuth_angles;  // azimuth_angles
+        std::vector<float> ranges;          // ranges
         Pose pose;
 
-        MSGPACK_DEFINE_MAP(time_stamp, point_cloud, pose);
+        MSGPACK_DEFINE_MAP(pose, time_stamps, azimuth_angles, ranges);
 
-        LidarData()
+        LidarAPIData()
         {}
 
-        LidarData(const msr::airlib::LidarData& s)
+        LidarAPIData(const msr::airlib::LidarAPIData& s)
         {
-            time_stamp = s.time_stamp;
-            point_cloud = s.point_cloud;
+			azimuth_angles = s.azimuth_angles;
+			time_stamps = s.time_stamps;
+			ranges = s.ranges;
+			pose = s.pose;
 
             //TODO: remove bug workaround for https://github.com/rpclib/rpclib/issues/152
-            if (point_cloud.size() == 0)
-                point_cloud.push_back(0);
+			if (azimuth_angles.size() == 0) {
+				time_stamps.push_back(0);
+				ranges.push_back(0);
+				azimuth_angles.push_back(0);
+			}
 
             pose = s.pose;
         }
 
-        msr::airlib::LidarData to() const
+        msr::airlib::LidarAPIData to() const
         {
-            msr::airlib::LidarData d;
+            msr::airlib::LidarAPIData d;
 
-            d.time_stamp = time_stamp;
-            d.point_cloud = point_cloud;
-            d.pose = pose.to();
+			d.azimuth_angles = azimuth_angles;
+			d.time_stamps = time_stamps;
+			d.ranges = ranges;
+			d.pose = pose.to();
 
             return d;
         }

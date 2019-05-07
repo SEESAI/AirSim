@@ -103,7 +103,7 @@ public:
     }
 
     // Lidar APIs
-    virtual LidarData getLidarData(const std::string& lidar_name) const
+    virtual LidarAPIData getLidarData(const std::string& lidar_name) const
     {
         LidarBase* lidar = nullptr;
 

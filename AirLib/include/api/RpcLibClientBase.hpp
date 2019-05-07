@@ -61,7 +61,7 @@ public:
 
     msr::airlib::GeoPoint getHomeGeoPoint(const std::string& vehicle_name = "") const;
 
-    msr::airlib::LidarData getLidarData(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
+    msr::airlib::LidarAPIData getLidarData(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
 
     Pose simGetVehiclePose(const std::string& vehicle_name = "") const;
     void simSetVehiclePose(const Pose& pose, bool ignore_collision, const std::string& vehicle_name = "");
