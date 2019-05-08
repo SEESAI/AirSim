@@ -23,7 +23,10 @@ public:
 
 		//initialize frequency limiter
 		freq_limiter_.initialize(params_.update_frequency, params_.startup_delay);
+
+		//reset the LIDAR rotation calculations
 		start_time_ = clock()->nowNanos();
+		previous_sectors_since_start_ = 0;
 
 		// Get channel params
 		channels_per_scan_ = params_.number_of_channels;
@@ -46,6 +49,7 @@ public:
 
         freq_limiter_.reset();
 		start_time_ = clock()->nowNanos();
+		previous_sectors_since_start_ = 0;
 
         updateOutput();
     }
@@ -107,15 +111,14 @@ private: //methods
 		Pose lidar_pose = params_.relative_pose + ground_truth.kinematics->pose;
 		
         setOutput(updateTime, lidar_pose, point_cloud);
-		last_time_ = updateTime;
     }
 
 protected:
 	LidarSimpleParams params_;
-	TTimePoint last_time_;
 	TTimePoint start_time_;
 	int32 channels_per_scan_ = 0;
 	int32 scans_per_revolution_ = 0;
+	int32 previous_sectors_since_start_ = 0;
 	double rotation_rate_ = 0.0f;
 
 private:

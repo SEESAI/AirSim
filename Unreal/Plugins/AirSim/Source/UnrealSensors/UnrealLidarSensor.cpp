@@ -67,20 +67,18 @@ void UnrealLidarSensor::createLasers()
 void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const msr::airlib::Pose& vehicle_pose,
     const msr::airlib::TTimeDelta update_time, msr::airlib::vector<msr::airlib::real_T>& point_cloud)
 {
-	// work out number of revolutions since start, and make sure you only look at the last full revolution of data
-	double revsLastUpdate= static_cast<double>(last_time_ - start_time_) * rotation_rate_ / 1000000000;
-	double revs = static_cast<double>(update_time - start_time_) * rotation_rate_ / 1000000000;
-	revsLastUpdate = (revsLastUpdate < (revs - 1)) ? (revs - 1) : revsLastUpdate;
 
-	// work out start and end sectors
-	int32 startSector = static_cast<int32>(FMath::RoundHalfFromZero((revsLastUpdate * static_cast<double>(scans_per_revolution_)))) %
-		scans_per_revolution_;
-	int32 endSector = static_cast<int32>(FMath::RoundHalfFromZero((revs * static_cast<double>(scans_per_revolution_)))) %
-		scans_per_revolution_;
+	// work out the current sector based on time since start
+	double revsSinceStart = static_cast<double>(update_time - start_time_) * rotation_rate_ / 1000000000;
+	int32 sectorsSinceStart = static_cast<int32>(FMath::RoundHalfFromZero((revsSinceStart * static_cast<double>(scans_per_revolution_))));
 
-	// Work out num sectors to scan
-	int32 numSectors = endSector - startSector;
-	numSectors = (numSectors < 0) ? (numSectors + scans_per_revolution_) : numSectors;
+	// if we're not at a new sector then give up
+	if (sectorsSinceStart <= previous_sectors_since_start_)
+		return;
+
+	// Work out the number of sectors in this scan, capped to 1 revolution
+	int32 numSectors = (sectorsSinceStart - previous_sectors_since_start_);
+	numSectors = (numSectors < scans_per_revolution_) ? numSectors : scans_per_revolution_;
 
 	// cap the points to scan via ray-tracing; this is currently needed for car/Unreal tick scenarios
     // since SensorBase mechanism uses the elapsed clock time instead of the tick delta-time.
@@ -91,6 +89,11 @@ void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const
         UAirBlueprintLib::LogMessageString("Lidar: ", "Capping number of points to scan", LogDebugLevel::Failure);
     }
 
+	// Work out the actual end sector, and remember the total for next time
+	int32 endSector = sectorsSinceStart % scans_per_revolution_;
+	previous_sectors_since_start_ = sectorsSinceStart;
+
+	// Save the pose
 	scan_buffer_.pose = vehicle_pose + lidar_pose;
 
     // shoot lasers
