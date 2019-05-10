@@ -201,8 +201,8 @@ private:
 			
 			//get the control inputs and convert to velocity demands
             //goal_ = channels.colWiseMultiply4(params_->angle_level_pid.max_limit);
-			TReal vx = channels.roll() * 10.0; // vx = roll?: this is odd but it works...
-			TReal vy = -channels.pitch() * 10.0;
+			TReal vx = channels.roll() * 5.0; // vx = roll?: this is odd but it works...
+			TReal vy = -channels.pitch() * 5.0;
 			TReal vyaw = channels.yaw() * 3.0;
 			TReal vz = -(channels.throttle()-0.5) * 10.0;
 
