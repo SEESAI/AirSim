@@ -86,15 +86,13 @@ public:
 
 protected:
     virtual void getPointCloud(const Pose& lidar_pose, const Pose& vehicle_pose, 
-        TTimeDelta delta_time, vector<real_T>& point_cloud) = 0;
+        TTimeDelta delta_time, vector<real_T>& point_cloud, std::vector<uint64_t> & ts, 
+		std::vector<msr::airlib::real_T> & az, std::vector<msr::airlib::real_T> & r) = 0;
 
     
 private: //methods
 	void updateOutput()
 	{
-		TTimePoint updateTime = clock()->nowNanos();
-        const GroundTruth& ground_truth = getGroundTruth();
-		vector<real_T> point_cloud;
         // calculate the pose before obtaining the point-cloud. Before/after is a bit arbitrary
         // decision here. If the pose can change while obtaining the point-cloud (could happen for drones)
         // then the pose won't be very accurate either way.
@@ -103,14 +101,21 @@ private: //methods
         //    That could be a bit unintuitive but seems consistent with the position/orientation returned as part of 
         //    ImageResponse for cameras and pose returned by getCameraInfo API.
         //    Do we need to convert pose to Global NED frame before returning to clients?
+		TTimePoint updateTime = clock()->nowNanos();
+		const GroundTruth& ground_truth = getGroundTruth();
+		std::vector<uint64_t> ts;
+		std::vector<msr::airlib::real_T> az;
+		std::vector<msr::airlib::real_T> r;
+		msr::airlib::vector<msr::airlib::real_T> pc;
+
         getPointCloud(params_.relative_pose, // relative lidar pose
             ground_truth.kinematics->pose,   // relative vehicle pose
-			updateTime,
-			point_cloud);
+			updateTime, pc, ts, az, r);
 
 		Pose lidar_pose = params_.relative_pose + ground_truth.kinematics->pose;
 		
-        setOutput(updateTime, lidar_pose, point_cloud);
+        setOutput(updateTime, lidar_pose, pc);
+		setAPIOutput(lidar_pose, ts, az, r, scans_per_revolution_, channels_per_scan_);
     }
 
 protected:

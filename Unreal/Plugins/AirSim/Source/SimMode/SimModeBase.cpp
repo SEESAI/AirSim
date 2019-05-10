@@ -637,8 +637,8 @@ void ASimModeBase::drawLidarDebugPoints()
 
             for (msr::airlib::uint i = 0; i < count_lidars; i++) {
                 // TODO: Is it incorrect to assume LidarSimple here?
-                const msr::airlib::LidarSimple* lidar =
-                    static_cast<const msr::airlib::LidarSimple*>(api->getSensors().getByType(msr::airlib::SensorBase::SensorType::Lidar, i));
+                msr::airlib::LidarSimple* lidar =
+                    static_cast<msr::airlib::LidarSimple*>(api->getSensors().getByType(msr::airlib::SensorBase::SensorType::Lidar, i));
                 if (lidar != nullptr && lidar->getParams().draw_debug_points) {
                     lidar_draw_debug_points_ = true;
 

@@ -65,7 +65,8 @@ void UnrealLidarSensor::createLasers()
 
 // returns a point-cloud for the tick
 void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const msr::airlib::Pose& vehicle_pose,
-    const msr::airlib::TTimeDelta update_time, msr::airlib::vector<msr::airlib::real_T>& point_cloud)
+    const msr::airlib::TTimeDelta update_time, msr::airlib::vector<msr::airlib::real_T>& point_cloud, 	
+	std::vector<uint64_t> & ts, std::vector<msr::airlib::real_T> & az, std::vector<msr::airlib::real_T> & r)
 {
 
 	// work out the current sector based on time since start
@@ -93,18 +94,15 @@ void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const
 	int32 endSector = sectorsSinceStart % scans_per_revolution_;
 	previous_sectors_since_start_ = sectorsSinceStart;
 
-	// Save the pose
-	scan_buffer_.pose = vehicle_pose + lidar_pose;
-
-    // shoot lasers
+    // shoot lasers and append
     for (int32 i = 0; i < numSectors; ++i)
     {
 		int32 sector = endSector - numSectors + i;
 		sector = (sector < 0) ? (sector + scans_per_revolution_) : sector;
 		const float azimuth_angle = laser_azimuth_angles_[sector];
 
-		scan_buffer_.time_stamps.emplace_back(update_time);
-		scan_buffer_.azimuth_angles.emplace_back(azimuth_angle);
+		ts.emplace_back(update_time);
+		az.emplace_back(azimuth_angle);
 
         for (int32 j = 0; j < channels_per_scan_; ++j)
         {
@@ -116,21 +114,12 @@ void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const
 				point_cloud.emplace_back(point.x());
 				point_cloud.emplace_back(point.y());
 				point_cloud.emplace_back(point.z());
-				scan_buffer_.ranges.emplace_back(point.norm());
+				r.emplace_back(point.norm());
 			}
 			else
-				scan_buffer_.ranges.emplace_back(0);
+				r.emplace_back(0);
         }
     }
-
-	// Trim scan_buffer to be one revolution
-	int32 max_buffer_length = scans_per_revolution_;
-	if (scan_buffer_.time_stamps.size() > max_buffer_length) {
-		int32 excess_length = scan_buffer_.time_stamps.size() - max_buffer_length;
-		scan_buffer_.time_stamps.erase(scan_buffer_.time_stamps.begin(), scan_buffer_.time_stamps.begin() + excess_length);
-		scan_buffer_.azimuth_angles.erase(scan_buffer_.azimuth_angles.begin(), scan_buffer_.azimuth_angles.begin() + excess_length);
-		scan_buffer_.ranges.erase(scan_buffer_.ranges.begin(), scan_buffer_.ranges.begin() + (excess_length * channels_per_scan_));
-	}
 
     return;
 }

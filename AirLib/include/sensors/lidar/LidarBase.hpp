@@ -40,13 +40,7 @@ public:
         reporter.writeValue("Lidar-NumPoints", static_cast<int>(output_.point_cloud.size() / 3));
     }
 
-    const LidarData& getOutput() const
-    {
-		// this call is used for pretty green dots on the screen
-        return output_;
-    }
-
-	const LidarAPIData& getAPIOutput()
+	const LidarAPIData & getAPIOutput()
 	{
 		// this call is used for the API
 
@@ -54,34 +48,83 @@ public:
 		// or a full scan, whichever is smaller
 		// whereas output_ is cleared every LIDAR update even if the API hasn't called
 
+		// ToDo - mutex with writing the buffer
+
 		// copy the buffer into the output
-		APIoutput_.pose = scan_buffer_.pose;
-		APIoutput_.time_stamps = scan_buffer_.time_stamps;
-		APIoutput_.azimuth_angles = scan_buffer_.azimuth_angles;
-		APIoutput_.ranges = scan_buffer_.ranges;
+		std::lock_guard<std::mutex> APIoutput_mutex_(APIoutput_mutex_);
+
+		APIoutput_.pose = APIoutput_buffer_.pose;
+		APIoutput_.time_stamps = APIoutput_buffer_.time_stamps;
+		APIoutput_.azimuth_angles = APIoutput_buffer_.azimuth_angles;
+		APIoutput_.ranges = APIoutput_buffer_.ranges;
 		
 		// and clear the buffer
-		scan_buffer_.time_stamps.clear();
-		scan_buffer_.azimuth_angles.clear();
-		scan_buffer_.ranges.clear();
+		APIoutput_buffer_.time_stamps.clear();
+		APIoutput_buffer_.azimuth_angles.clear();
+		APIoutput_buffer_.ranges.clear();
 
 		return APIoutput_;
 	}
 
+	const LidarData & getOutput()
+	{
+		// this call is used for pretty green dots on the screen
+
+		// copy the buffer to the output
+		std::lock_guard<std::mutex> output_lock(output_mutex_);
+		output_.pose = output_buffer_.pose;
+		output_.time_stamp = output_buffer_.time_stamp;
+		output_.point_cloud = output_buffer_.point_cloud;
+
+		return output_;
+	}
+
+
 protected:
+	void setAPIOutput(Pose & pose, std::vector<uint64_t> & ts, std::vector<msr::airlib::real_T> & az, 
+		std::vector<msr::airlib::real_T> & r, int scans_per_revolution, int channels_per_scan)
+	{
+		// Append latest data to the buffer
+		ts.insert(ts.begin(), APIoutput_buffer_.time_stamps.begin(), APIoutput_buffer_.time_stamps.end());
+		az.insert(az.begin(), APIoutput_buffer_.azimuth_angles.begin(), APIoutput_buffer_.azimuth_angles.end());
+		r.insert(r.begin(), APIoutput_buffer_.ranges.begin(), APIoutput_buffer_.ranges.end());
+
+		// Trim to be one revolution
+		int max_buffer_length = scans_per_revolution;
+		if (ts.size() > max_buffer_length) {
+			int excess_length = ts.size() - max_buffer_length;
+			ts.erase(ts.begin(), ts.begin() + excess_length);
+			az.erase(az.begin(), az.begin() + excess_length);
+			r.erase(r.begin(), r.begin() + (excess_length * channels_per_scan));
+		}
+
+		// Update the buffer
+		std::lock_guard<std::mutex> APIoutput_mutex_(APIoutput_mutex_);
+		APIoutput_buffer_.pose = pose;
+		APIoutput_buffer_.time_stamps = ts;
+		APIoutput_buffer_.azimuth_angles = az;
+		APIoutput_buffer_.ranges = r;
+
+	}
     void setOutput(TTimePoint updateTime, Pose & lidar_pose, vector<real_T> & point_cloud) // was previously LidarData& output
     {
-		output_.pose = lidar_pose;
-		output_.time_stamp = updateTime;
-		output_.point_cloud = point_cloud;
+		// Update the buffer
+		std::lock_guard<std::mutex> output_lock(output_mutex_);
+		output_buffer_.pose = lidar_pose;
+		output_buffer_.time_stamp = updateTime;
+		output_buffer_.point_cloud = point_cloud;
     }
 
 protected:
-	LidarAPIData scan_buffer_;
 
 private:
+	LidarAPIData APIoutput_buffer_;
 	LidarAPIData APIoutput_;
+	std::mutex APIoutput_mutex_;
+
+	LidarData output_buffer_;
 	LidarData output_;
+	std::mutex output_mutex_;
 };
 
 }} //namespace
