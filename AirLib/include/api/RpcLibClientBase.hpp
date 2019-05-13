@@ -61,6 +61,10 @@ public:
 
     msr::airlib::GeoPoint getHomeGeoPoint(const std::string& vehicle_name = "") const;
 
+	// New methods added by Richard 13/05/19
+	msr::airlib::GPSAPIData getGPSData(const std::string& vehicle_name = "") const;
+	msr::airlib::IMUAPIData getIMUData(const std::string& vehicle_name = "") const;
+
     msr::airlib::LidarAPIData getLidarData(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
 
     Pose simGetVehiclePose(const std::string& vehicle_name = "") const;

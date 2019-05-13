@@ -102,7 +102,21 @@ public:
         throw VehicleCommandNotImplementedException("getSensors API is not supported for this vehicle");
     }
 
-    // Lidar APIs
+	virtual GPSAPIData getGPSData() const
+	{
+		uint count_gps_sensors = getSensors().size(SensorBase::SensorType::Gps);
+
+		return GPSAPIData();
+	}
+
+	virtual IMUAPIData getIMUData() const
+	{
+		uint count_imu_sensors = getSensors().size(SensorBase::SensorType::Imu);
+
+		return IMUAPIData();
+	}
+
+	// Lidar APIs
     virtual LidarAPIData getLidarData(const std::string& lidar_name) const
     {
         LidarBase* lidar = nullptr;

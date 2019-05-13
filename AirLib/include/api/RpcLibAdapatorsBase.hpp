@@ -466,6 +466,88 @@ public:
         }
     };
 
+	struct GPSAPIData {
+
+		std::vector<uint64_t> time_stamps;
+		std::vector<double> latitude;  
+		std::vector<double> longitude; 
+		std::vector<float>  altitude;
+
+		MSGPACK_DEFINE_MAP(time_stamps, latitude, longitude, altitude);
+
+		GPSAPIData()
+		{}
+
+		GPSAPIData(const msr::airlib::GPSAPIData& s)
+		{
+			time_stamps = s.time_stamps;
+			latitude = s.latitude;
+			longitude = s.longitude;
+			altitude = s.altitude;
+
+			//TODO: remove bug workaround for https://github.com/rpclib/rpclib/issues/152
+			if (time_stamps.size() == 0) {
+				time_stamps.push_back(0);
+				latitude.push_back(0);
+				longitude.push_back(0);
+				altitude.push_back(0);
+			}
+		}
+
+		msr::airlib::GPSAPIData to() const
+		{
+			msr::airlib::GPSAPIData d;
+
+			d.time_stamps = time_stamps;
+			d.latitude = latitude;
+			d.longitude = longitude;
+			d.altitude = altitude;
+
+			return d;
+		}
+	};
+
+	struct IMUAPIData {
+
+		std::vector<uint64_t> time_stamps;
+		std::vector<float> orientation;
+		std::vector<float> angular_velocity;
+		std::vector<float> linear_acceleration;
+
+		MSGPACK_DEFINE_MAP(time_stamps, orientation, angular_velocity, linear_acceleration);
+
+		IMUAPIData()
+		{}
+
+		IMUAPIData(const msr::airlib::IMUAPIData& s)
+		{
+			time_stamps = s.time_stamps;
+			orientation = s.orientation;
+			angular_velocity = s.angular_velocity;
+			linear_acceleration = s.linear_acceleration;
+
+			//TODO: remove bug workaround for https://github.com/rpclib/rpclib/issues/152
+			if (time_stamps.size() == 0) {
+				time_stamps.push_back(0);
+				orientation.push_back(0);
+				angular_velocity.push_back(0);
+				linear_acceleration.push_back(0);
+			}
+		}
+
+		msr::airlib::IMUAPIData to() const
+		{
+			msr::airlib::IMUAPIData d;
+
+			d.time_stamps = time_stamps;
+			d.orientation = orientation;
+			d.angular_velocity = angular_velocity;
+			d.linear_acceleration = linear_acceleration;
+
+			return d;
+		}
+	};
+
     struct LidarAPIData {
 
         std::vector<uint64_t> time_stamps;    // timestamps
