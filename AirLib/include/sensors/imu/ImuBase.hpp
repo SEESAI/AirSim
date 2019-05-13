@@ -81,6 +81,19 @@ protected:
 		APIoutput_buffer_.linear_acceleration.push_back(output.linear_acceleration.y());
 		APIoutput_buffer_.linear_acceleration.push_back(output.linear_acceleration.z());
 
+		// Trim to be a sensible size
+		unsigned max_buffer_length = 1000; // Hard coded for now - may wish to make this 1s of data
+		if (APIoutput_buffer_.time_stamps.size() > max_buffer_length) {
+			APIoutput_buffer_.time_stamps.erase(APIoutput_buffer_.time_stamps.begin(), 
+				APIoutput_buffer_.time_stamps.end() - max_buffer_length);
+			APIoutput_buffer_.orientation.erase(APIoutput_buffer_.orientation.begin(),
+				APIoutput_buffer_.orientation.end() - max_buffer_length *4);
+			APIoutput_buffer_.angular_velocity.erase(APIoutput_buffer_.angular_velocity.begin(),
+				APIoutput_buffer_.angular_velocity.end() - max_buffer_length * 3);
+			APIoutput_buffer_.linear_acceleration.erase(APIoutput_buffer_.linear_acceleration.begin(),
+				APIoutput_buffer_.linear_acceleration.end() - max_buffer_length * 3);
+
+		}
 	}
 
 

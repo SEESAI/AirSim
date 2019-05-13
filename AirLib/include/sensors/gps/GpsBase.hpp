@@ -146,6 +146,19 @@ protected:
 		APIoutput_buffer_.longitude.push_back(output.gnss.geo_point.longitude);
 		APIoutput_buffer_.altitude.push_back(output.gnss.geo_point.altitude);
 
+		// Trim to be a sensible size
+		unsigned max_buffer_length = 100; // Hard coded for now - may wish to make this 1s of data
+		if (APIoutput_buffer_.time_stamps.size() > max_buffer_length) {
+			APIoutput_buffer_.time_stamps.erase(APIoutput_buffer_.time_stamps.begin(),
+				APIoutput_buffer_.time_stamps.end() - max_buffer_length);
+			APIoutput_buffer_.latitude.erase(APIoutput_buffer_.latitude.begin(),
+				APIoutput_buffer_.latitude.end() - max_buffer_length);
+			APIoutput_buffer_.longitude.erase(APIoutput_buffer_.longitude.begin(),
+				APIoutput_buffer_.longitude.end() - max_buffer_length);
+			APIoutput_buffer_.altitude.erase(APIoutput_buffer_.altitude.begin(),
+				APIoutput_buffer_.altitude.end() - max_buffer_length);
+
+		}
     }
 
 
