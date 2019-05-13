@@ -51,7 +51,7 @@ public:
 		// ToDo - mutex with writing the buffer
 
 		// copy the buffer into the output
-		std::lock_guard<std::mutex> APIoutput_mutex_(APIoutput_mutex_);
+		std::lock_guard<std::mutex> APIoutput_lock(APIoutput_mutex_);
 
 		APIoutput_.pose = APIoutput_buffer_.pose;
 		APIoutput_.time_stamps = APIoutput_buffer_.time_stamps;
@@ -90,7 +90,7 @@ protected:
 		r.insert(r.begin(), APIoutput_buffer_.ranges.begin(), APIoutput_buffer_.ranges.end());
 
 		// Trim to be one revolution
-		int max_buffer_length = scans_per_revolution;
+		unsigned max_buffer_length = scans_per_revolution;
 		if (ts.size() > max_buffer_length) {
 			int excess_length = ts.size() - max_buffer_length;
 			ts.erase(ts.begin(), ts.begin() + excess_length);
@@ -99,7 +99,7 @@ protected:
 		}
 
 		// Update the buffer
-		std::lock_guard<std::mutex> APIoutput_mutex_(APIoutput_mutex_);
+		std::lock_guard<std::mutex> APIoutput_lock(APIoutput_mutex_);
 		APIoutput_buffer_.pose = pose;
 		APIoutput_buffer_.time_stamps = ts;
 		APIoutput_buffer_.azimuth_angles = az;
