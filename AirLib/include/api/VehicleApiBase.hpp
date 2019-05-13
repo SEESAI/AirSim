@@ -13,6 +13,8 @@
 #include "common/ImageCaptureBase.hpp"
 #include "sensors/SensorCollection.hpp"
 #include "sensors/lidar/LidarBase.hpp"
+#include "sensors/gps/GpsBase.hpp"
+#include "sensors/imu/ImuBase.hpp"
 #include <exception>
 #include <string>
 
@@ -104,16 +106,28 @@ public:
 
 	virtual GPSAPIData getGPSData() const
 	{
+		// just take the first gps - assuming there is one
 		uint count_gps_sensors = getSensors().size(SensorBase::SensorType::Gps);
+		if (count_gps_sensors == 0) {
+			GPSAPIData g;
+			return g;
+		}
 
-		return GPSAPIData();
+		GpsBase* gps = static_cast<GpsBase*>(getSensors().getByType(SensorBase::SensorType::Gps, 0));
+		return gps->getAPIOutput();
 	}
 
 	virtual IMUAPIData getIMUData() const
 	{
+		// just take the first imu - assuming there is one
 		uint count_imu_sensors = getSensors().size(SensorBase::SensorType::Imu);
-
-		return IMUAPIData();
+		if (count_imu_sensors == 0) {
+			IMUAPIData i;
+			return i;
+		}
+		
+		ImuBase* imu = static_cast<ImuBase*>(getSensors().getByType(SensorBase::SensorType::Imu, 0));
+		return imu->getAPIOutput();
 	}
 
 	// Lidar APIs

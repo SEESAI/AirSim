@@ -90,6 +90,7 @@ public: //types
     };
 
     struct Output {	//same as ROS message
+		uint64_t timestamp;
         GnssReport gnss;
         bool is_valid = false;
     };
@@ -112,15 +113,47 @@ public:
         return output_;
     }
 
+	const GPSAPIData& getAPIOutput()
+	{
+		// Lock the mutex to prevent buffer update during call
+		std::lock_guard<std::mutex> output_lock(APIoutput_mutex_);
+
+		// Copy the buffer into the output (which is passed by reference - hence we need a copy)
+		APIoutput_.time_stamps = APIoutput_buffer_.time_stamps;
+		APIoutput_.latitude = APIoutput_buffer_.latitude;
+		APIoutput_.longitude = APIoutput_buffer_.longitude;
+		APIoutput_.altitude = APIoutput_buffer_.altitude;
+
+		// Clear the buffer
+		APIoutput_buffer_.time_stamps.clear();
+		APIoutput_buffer_.latitude.clear();
+		APIoutput_buffer_.longitude.clear();
+		APIoutput_buffer_.altitude.clear();
+
+		return APIoutput_;
+	}
+
 protected:
     void setOutput(const Output& output)
     {
         output_ = output;
+
+		// Lock the mutex to prevent buffer update during call
+		std::lock_guard<std::mutex> output_lock(APIoutput_mutex_);
+
+		APIoutput_buffer_.time_stamps.push_back(output.timestamp);
+		APIoutput_buffer_.latitude.push_back(output.gnss.geo_point.latitude);
+		APIoutput_buffer_.longitude.push_back(output.gnss.geo_point.longitude);
+		APIoutput_buffer_.altitude.push_back(output.gnss.geo_point.altitude);
+
     }
 
 
 private: 
     Output output_;
+	GPSAPIData APIoutput_;
+	GPSAPIData APIoutput_buffer_;
+	std::mutex APIoutput_mutex_;
 };
 
 }} //namespace

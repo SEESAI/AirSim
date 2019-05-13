@@ -52,6 +52,7 @@ private: //methods
     {
         Output output;
         const GroundTruth& ground_truth = getGroundTruth();
+		output.time_stamp = clock()->nowNanos();
 
         output.angular_velocity = ground_truth.kinematics->twist.angular;
         output.linear_acceleration = ground_truth.kinematics->accelerations.linear - ground_truth.environment->getState().gravity;

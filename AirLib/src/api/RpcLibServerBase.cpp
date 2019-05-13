@@ -150,6 +150,16 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
         return RpcLibAdapatorsBase::GeoPoint(geo_point);
     });
 
+	pimpl_->server.bind("getGPSData", [&](const std::string& vehicle_name) -> RpcLibAdapatorsBase::GPSAPIData {
+		const auto& gps_data = getVehicleApi(vehicle_name)->getGPSData();
+		return RpcLibAdapatorsBase::GPSAPIData(gps_data);
+	});
+
+	pimpl_->server.bind("getIMUData", [&](const std::string& vehicle_name) -> RpcLibAdapatorsBase::IMUAPIData {
+		const auto& imu_data = getVehicleApi(vehicle_name)->getIMUData();
+		return RpcLibAdapatorsBase::IMUAPIData(imu_data);
+	});
+
     pimpl_->server.bind("getLidarData", [&](const std::string& lidar_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::LidarAPIData {
         const auto& lidar_data = getVehicleApi(vehicle_name)->getLidarData(lidar_name);
         return RpcLibAdapatorsBase::LidarAPIData(lidar_data);

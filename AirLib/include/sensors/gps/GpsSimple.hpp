@@ -72,9 +72,10 @@ private:
     {
         Output output;
         const GroundTruth& ground_truth = getGroundTruth();
+		output.timestamp = clock()->nowNanos();
 
         //GNSS
-        output.gnss.time_utc = static_cast<uint64_t>(clock()->nowNanos() / 1.0E3);
+        output.gnss.time_utc = static_cast<uint64_t>(output.timestamp / 1.0E3);
         output.gnss.geo_point = ground_truth.environment->getState().geo_point;
         output.gnss.eph = eph;
         output.gnss.epv = epv;
