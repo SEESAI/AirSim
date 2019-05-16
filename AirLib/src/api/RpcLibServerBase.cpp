@@ -160,7 +160,7 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
 		return RpcLibAdapatorsBase::IMUDataBuffer(imu_data);
 	});
 
-    pimpl_->server.bind("getLidarDataList", [&](const std::string& lidar_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::LidarDataBuffer {
+    pimpl_->server.bind("getLidarDataBuffer", [&](const std::string& lidar_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::LidarDataBuffer {
         const auto& lidar_data = getVehicleApi(vehicle_name)->getLidarDataBuffer(lidar_name);
         return RpcLibAdapatorsBase::LidarDataBuffer(lidar_data);
     });
