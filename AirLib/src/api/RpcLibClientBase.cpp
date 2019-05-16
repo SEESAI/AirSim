@@ -171,7 +171,7 @@ msr::airlib::IMUDataBuffer RpcLibClientBase::getIMUDataBuffer(const std::string&
 }
 msr::airlib::LidarDataBuffer RpcLibClientBase::getLidarDataBuffer(const std::string& lidar_name, const std::string& vehicle_name) const
 {
-    return pimpl_->client.call("getLidarDataBufer", lidar_name, vehicle_name).as<RpcLibAdapatorsBase::LidarDataBuffer>().to();
+    return pimpl_->client.call("getLidarDataBuffer", lidar_name, vehicle_name).as<RpcLibAdapatorsBase::LidarDataBuffer>().to();
 }
 
 msr::airlib::LidarData RpcLibClientBase::getLidarData(const std::string& lidar_name, const std::string& vehicle_name) const
