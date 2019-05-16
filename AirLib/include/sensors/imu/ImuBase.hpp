@@ -23,7 +23,6 @@ public: //types
         Quaternionr orientation;
 		Vector3r angular_velocity;
         Vector3r linear_acceleration;
-		uint64_t time_stamp;
 	};
 
 

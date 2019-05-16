@@ -142,7 +142,7 @@ protected:
 		// Lock the mutex to prevent buffer update during call
 		std::lock_guard<std::mutex> output_lock(APIoutput_mutex_);
 
-		output_buffer_internal_.time_stamps.push_back(output.timestamp);
+		output_buffer_internal_.time_stamps.push_back(output.time_stamp);
 		output_buffer_internal_.latitude.push_back(output.gnss.geo_point.latitude);
 		output_buffer_internal_.longitude.push_back(output.gnss.geo_point.longitude);
 		output_buffer_internal_.altitude.push_back(output.gnss.geo_point.altitude);
