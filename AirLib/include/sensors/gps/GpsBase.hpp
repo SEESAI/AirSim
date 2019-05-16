@@ -113,24 +113,24 @@ public:
         return output_;
     }
 
-	const GPSAPIData& getAPIOutput()
+	const GPSDataBuffer& getOutputBuffer()
 	{
 		// Lock the mutex to prevent buffer update during call
 		std::lock_guard<std::mutex> output_lock(APIoutput_mutex_);
 
 		// Copy the buffer into the output (which is passed by reference - hence we need a copy)
-		APIoutput_.time_stamps = APIoutput_buffer_.time_stamps;
-		APIoutput_.latitude = APIoutput_buffer_.latitude;
-		APIoutput_.longitude = APIoutput_buffer_.longitude;
-		APIoutput_.altitude = APIoutput_buffer_.altitude;
+		output_buffer_.time_stamps = output_buffer_internal_.time_stamps;
+		output_buffer_.latitude = output_buffer_internal_.latitude;
+		output_buffer_.longitude = output_buffer_internal_.longitude;
+		output_buffer_.altitude = output_buffer_internal_.altitude;
 
 		// Clear the buffer
-		APIoutput_buffer_.time_stamps.clear();
-		APIoutput_buffer_.latitude.clear();
-		APIoutput_buffer_.longitude.clear();
-		APIoutput_buffer_.altitude.clear();
+		output_buffer_internal_.time_stamps.clear();
+		output_buffer_internal_.latitude.clear();
+		output_buffer_internal_.longitude.clear();
+		output_buffer_internal_.altitude.clear();
 
-		return APIoutput_;
+		return output_buffer_;
 	}
 
 protected:
@@ -141,22 +141,22 @@ protected:
 		// Lock the mutex to prevent buffer update during call
 		std::lock_guard<std::mutex> output_lock(APIoutput_mutex_);
 
-		APIoutput_buffer_.time_stamps.push_back(output.timestamp);
-		APIoutput_buffer_.latitude.push_back(output.gnss.geo_point.latitude);
-		APIoutput_buffer_.longitude.push_back(output.gnss.geo_point.longitude);
-		APIoutput_buffer_.altitude.push_back(output.gnss.geo_point.altitude);
+		output_buffer_internal_.time_stamps.push_back(output.timestamp);
+		output_buffer_internal_.latitude.push_back(output.gnss.geo_point.latitude);
+		output_buffer_internal_.longitude.push_back(output.gnss.geo_point.longitude);
+		output_buffer_internal_.altitude.push_back(output.gnss.geo_point.altitude);
 
 		// Trim to be a sensible size
 		unsigned max_buffer_length = 100; // Hard coded for now - may wish to make this 1s of data
-		if (APIoutput_buffer_.time_stamps.size() > max_buffer_length) {
-			APIoutput_buffer_.time_stamps.erase(APIoutput_buffer_.time_stamps.begin(),
-				APIoutput_buffer_.time_stamps.end() - max_buffer_length);
-			APIoutput_buffer_.latitude.erase(APIoutput_buffer_.latitude.begin(),
-				APIoutput_buffer_.latitude.end() - max_buffer_length);
-			APIoutput_buffer_.longitude.erase(APIoutput_buffer_.longitude.begin(),
-				APIoutput_buffer_.longitude.end() - max_buffer_length);
-			APIoutput_buffer_.altitude.erase(APIoutput_buffer_.altitude.begin(),
-				APIoutput_buffer_.altitude.end() - max_buffer_length);
+		if (output_buffer_internal_.time_stamps.size() > max_buffer_length) {
+			output_buffer_internal_.time_stamps.erase(output_buffer_internal_.time_stamps.begin(),
+				output_buffer_internal_.time_stamps.end() - max_buffer_length);
+			output_buffer_internal_.latitude.erase(output_buffer_internal_.latitude.begin(),
+				output_buffer_internal_.latitude.end() - max_buffer_length);
+			output_buffer_internal_.longitude.erase(output_buffer_internal_.longitude.begin(),
+				output_buffer_internal_.longitude.end() - max_buffer_length);
+			output_buffer_internal_.altitude.erase(output_buffer_internal_.altitude.begin(),
+				output_buffer_internal_.altitude.end() - max_buffer_length);
 
 		}
     }
@@ -164,8 +164,8 @@ protected:
 
 private: 
     Output output_;
-	GPSAPIData APIoutput_;
-	GPSAPIData APIoutput_buffer_;
+	GPSDataBuffer output_buffer_;
+	GPSDataBuffer output_buffer_internal_;
 	std::mutex APIoutput_mutex_;
 };
 

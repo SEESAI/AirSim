@@ -115,7 +115,7 @@ private: //methods
 		Pose lidar_pose = params_.relative_pose + ground_truth.kinematics->pose;
 		
         setOutput(updateTime, lidar_pose, pc);
-		setAPIOutput(lidar_pose, ts, az, r, scans_per_revolution_, channels_per_scan_);
+		setOutputBuffer(lidar_pose, ts, az, r, scans_per_revolution_, channels_per_scan_);
     }
 
 protected:

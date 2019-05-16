@@ -41,24 +41,24 @@ public:
         return output_;
     }
 
-	const IMUAPIData& getAPIOutput() 
+	const IMUDataBuffer& getOutputBuffer() 
 	{
 		// Lock the mutex to prevent buffer update during call
 		std::lock_guard<std::mutex> output_lock(APIoutput_mutex_);
 
 		// Copy the buffer into the output (which is passed by reference - hence we need a copy)
-		APIoutput_.time_stamps = APIoutput_buffer_.time_stamps;
-		APIoutput_.orientation = APIoutput_buffer_.orientation;
-		APIoutput_.angular_velocity = APIoutput_buffer_.angular_velocity;
-		APIoutput_.linear_acceleration = APIoutput_buffer_.linear_acceleration;
+		output_buffer_.time_stamps = output_buffer_internal_.time_stamps;
+		output_buffer_.orientation = output_buffer_internal_.orientation;
+		output_buffer_.angular_velocity = output_buffer_internal_.angular_velocity;
+		output_buffer_.linear_acceleration = output_buffer_internal_.linear_acceleration;
 
 		// Clear the buffer
-		APIoutput_buffer_.time_stamps.clear();
-		APIoutput_buffer_.orientation.clear();
-		APIoutput_buffer_.angular_velocity.clear();
-		APIoutput_buffer_.linear_acceleration.clear();
+		output_buffer_internal_.time_stamps.clear();
+		output_buffer_internal_.orientation.clear();
+		output_buffer_internal_.angular_velocity.clear();
+		output_buffer_internal_.linear_acceleration.clear();
 
-		return APIoutput_;
+		return output_buffer_;
 	}
 
 protected:
@@ -69,29 +69,29 @@ protected:
 		// Lock the mutex to prevent buffer update during call
 		std::lock_guard<std::mutex> output_lock(APIoutput_mutex_);
 
-		APIoutput_buffer_.time_stamps.push_back(output.time_stamp);
-		APIoutput_buffer_.orientation.push_back(output.orientation.w());
-		APIoutput_buffer_.orientation.push_back(output.orientation.x());
-		APIoutput_buffer_.orientation.push_back(output.orientation.y());
-		APIoutput_buffer_.orientation.push_back(output.orientation.z());
-		APIoutput_buffer_.angular_velocity.push_back(output.angular_velocity.x());
-		APIoutput_buffer_.angular_velocity.push_back(output.angular_velocity.y());
-		APIoutput_buffer_.angular_velocity.push_back(output.angular_velocity.z());
-		APIoutput_buffer_.linear_acceleration.push_back(output.linear_acceleration.x());
-		APIoutput_buffer_.linear_acceleration.push_back(output.linear_acceleration.y());
-		APIoutput_buffer_.linear_acceleration.push_back(output.linear_acceleration.z());
+		output_buffer_internal_.time_stamps.push_back(output.time_stamp);
+		output_buffer_internal_.orientation.push_back(output.orientation.w());
+		output_buffer_internal_.orientation.push_back(output.orientation.x());
+		output_buffer_internal_.orientation.push_back(output.orientation.y());
+		output_buffer_internal_.orientation.push_back(output.orientation.z());
+		output_buffer_internal_.angular_velocity.push_back(output.angular_velocity.x());
+		output_buffer_internal_.angular_velocity.push_back(output.angular_velocity.y());
+		output_buffer_internal_.angular_velocity.push_back(output.angular_velocity.z());
+		output_buffer_internal_.linear_acceleration.push_back(output.linear_acceleration.x());
+		output_buffer_internal_.linear_acceleration.push_back(output.linear_acceleration.y());
+		output_buffer_internal_.linear_acceleration.push_back(output.linear_acceleration.z());
 
 		// Trim to be a sensible size
 		unsigned max_buffer_length = 1000; // Hard coded for now - may wish to make this 1s of data
-		if (APIoutput_buffer_.time_stamps.size() > max_buffer_length) {
-			APIoutput_buffer_.time_stamps.erase(APIoutput_buffer_.time_stamps.begin(), 
-				APIoutput_buffer_.time_stamps.end() - max_buffer_length);
-			APIoutput_buffer_.orientation.erase(APIoutput_buffer_.orientation.begin(),
-				APIoutput_buffer_.orientation.end() - max_buffer_length *4);
-			APIoutput_buffer_.angular_velocity.erase(APIoutput_buffer_.angular_velocity.begin(),
-				APIoutput_buffer_.angular_velocity.end() - max_buffer_length * 3);
-			APIoutput_buffer_.linear_acceleration.erase(APIoutput_buffer_.linear_acceleration.begin(),
-				APIoutput_buffer_.linear_acceleration.end() - max_buffer_length * 3);
+		if (output_buffer_internal_.time_stamps.size() > max_buffer_length) {
+			output_buffer_internal_.time_stamps.erase(output_buffer_internal_.time_stamps.begin(), 
+				output_buffer_internal_.time_stamps.end() - max_buffer_length);
+			output_buffer_internal_.orientation.erase(output_buffer_internal_.orientation.begin(),
+				output_buffer_internal_.orientation.end() - max_buffer_length *4);
+			output_buffer_internal_.angular_velocity.erase(output_buffer_internal_.angular_velocity.begin(),
+				output_buffer_internal_.angular_velocity.end() - max_buffer_length * 3);
+			output_buffer_internal_.linear_acceleration.erase(output_buffer_internal_.linear_acceleration.begin(),
+				output_buffer_internal_.linear_acceleration.end() - max_buffer_length * 3);
 
 		}
 	}
@@ -99,8 +99,8 @@ protected:
 
 private: 
     Output output_;
-	IMUAPIData APIoutput_;
-	IMUAPIData APIoutput_buffer_;
+	IMUDataBuffer output_buffer_;
+	IMUDataBuffer output_buffer_internal_;
 	std::mutex APIoutput_mutex_;
 
 };

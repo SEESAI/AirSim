@@ -466,7 +466,43 @@ public:
         }
     };
 
-	struct GPSAPIData {
+
+	struct LidarData {
+
+		msr::airlib::TTimePoint time_stamp;    // timestamp
+		std::vector<float> point_cloud;        // data
+		Pose pose;
+
+		MSGPACK_DEFINE_MAP(time_stamp, point_cloud, pose);
+
+		LidarData()
+		{}
+
+		LidarData(const msr::airlib::LidarData& s)
+		{
+			time_stamp = s.time_stamp;
+			point_cloud = s.point_cloud;
+
+			//TODO: remove bug workaround for https://github.com/rpclib/rpclib/issues/152
+			if (point_cloud.size() == 0)
+				point_cloud.push_back(0);
+
+			pose = s.pose;
+		}
+
+		msr::airlib::LidarData to() const
+		{
+			msr::airlib::LidarData d;
+
+			d.time_stamp = time_stamp;
+			d.point_cloud = point_cloud;
+			d.pose = pose.to();
+
+			return d;
+		}
+	};
+
+	struct GPSDataBuffer {
 
 		std::vector<uint64_t> time_stamps;
 		std::vector<double> latitude;  
@@ -475,10 +511,10 @@ public:
 
 		MSGPACK_DEFINE_MAP(time_stamps, latitude, longitude, altitude);
 
-		GPSAPIData()
+		GPSDataBuffer()
 		{}
 
-		GPSAPIData(const msr::airlib::GPSAPIData& s)
+		GPSDataBuffer(const msr::airlib::GPSDataBuffer& s)
 		{
 			time_stamps = s.time_stamps;
 			latitude = s.latitude;
@@ -494,9 +530,9 @@ public:
 			}
 		}
 
-		msr::airlib::GPSAPIData to() const
+		msr::airlib::GPSDataBuffer to() const
 		{
-			msr::airlib::GPSAPIData d;
+			msr::airlib::GPSDataBuffer d;
 
 			d.time_stamps = time_stamps;
 			d.latitude = latitude;
@@ -507,7 +543,7 @@ public:
 		}
 	};
 
-	struct IMUAPIData {
+	struct IMUDataBuffer {
 
 		std::vector<uint64_t> time_stamps;
 		std::vector<float> orientation;
@@ -516,10 +552,10 @@ public:
 
 		MSGPACK_DEFINE_MAP(time_stamps, orientation, angular_velocity, linear_acceleration);
 
-		IMUAPIData()
+		IMUDataBuffer()
 		{}
 
-		IMUAPIData(const msr::airlib::IMUAPIData& s)
+		IMUDataBuffer(const msr::airlib::IMUDataBuffer& s)
 		{
 			time_stamps = s.time_stamps;
 			orientation = s.orientation;
@@ -535,9 +571,9 @@ public:
 			}
 		}
 
-		msr::airlib::IMUAPIData to() const
+		msr::airlib::IMUDataBuffer to() const
 		{
-			msr::airlib::IMUAPIData d;
+			msr::airlib::IMUDataBuffer d;
 
 			d.time_stamps = time_stamps;
 			d.orientation = orientation;
@@ -548,7 +584,7 @@ public:
 		}
 	};
 
-    struct LidarAPIData {
+    struct LidarDataBuffer {
 
         std::vector<uint64_t> time_stamps;    // timestamps
 		std::vector<float> azimuth_angles;  // azimuth_angles
@@ -557,10 +593,10 @@ public:
 
         MSGPACK_DEFINE_MAP(pose, time_stamps, azimuth_angles, ranges);
 
-        LidarAPIData()
+        LidarDataBuffer()
         {}
 
-        LidarAPIData(const msr::airlib::LidarAPIData& s)
+        LidarDataBuffer(const msr::airlib::LidarDataBuffer& s)
         {
 			azimuth_angles = s.azimuth_angles;
 			time_stamps = s.time_stamps;
@@ -577,9 +613,9 @@ public:
             pose = s.pose;
         }
 
-        msr::airlib::LidarAPIData to() const
+        msr::airlib::LidarDataBuffer to() const
         {
-            msr::airlib::LidarAPIData d;
+            msr::airlib::LidarDataBuffer d;
 
 			d.azimuth_angles = azimuth_angles;
 			d.time_stamps = time_stamps;

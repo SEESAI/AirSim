@@ -295,36 +295,36 @@ struct RCData {
     }
 };
 
-struct GPSAPIData {
+struct GPSDataBuffer {
 
 	vector<uint64_t> time_stamps;
 	vector<double> latitude;
 	vector<double> longitude;
 	vector<float> altitude;
 
-	GPSAPIData()
+	GPSDataBuffer()
 	{}
 };
 
-struct IMUAPIData {
+struct IMUDataBuffer {
 
 	vector<uint64_t> time_stamps;
 	vector<float> orientation;
 	vector<float> angular_velocity;
 	vector<float> linear_acceleration;
 
-	IMUAPIData()
+	IMUDataBuffer()
 	{}
 };
 
-struct LidarAPIData {
+struct LidarDataBuffer {
 
 	vector<real_T> azimuth_angles;
 	vector<uint64_t> time_stamps;
 	vector<real_T> ranges;
 	Pose pose;
 
-	LidarAPIData()
+	LidarDataBuffer()
 	{}
 };
 

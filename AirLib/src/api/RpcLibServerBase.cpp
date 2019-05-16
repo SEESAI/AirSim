@@ -150,22 +150,27 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
         return RpcLibAdapatorsBase::GeoPoint(geo_point);
     });
 
-	pimpl_->server.bind("getGPSData", [&](const std::string& vehicle_name) -> RpcLibAdapatorsBase::GPSAPIData {
-		const auto& gps_data = getVehicleApi(vehicle_name)->getGPSData();
-		return RpcLibAdapatorsBase::GPSAPIData(gps_data);
+	pimpl_->server.bind("getGPSDataBuffer", [&](const std::string& vehicle_name) -> RpcLibAdapatorsBase::GPSDataBuffer {
+		const auto& gps_data = getVehicleApi(vehicle_name)->getGPSDataBuffer();
+		return RpcLibAdapatorsBase::GPSDataBuffer(gps_data);
 	});
 
-	pimpl_->server.bind("getIMUData", [&](const std::string& vehicle_name) -> RpcLibAdapatorsBase::IMUAPIData {
-		const auto& imu_data = getVehicleApi(vehicle_name)->getIMUData();
-		return RpcLibAdapatorsBase::IMUAPIData(imu_data);
+	pimpl_->server.bind("getIMUDataBuffer", [&](const std::string& vehicle_name) -> RpcLibAdapatorsBase::IMUDataBuffer {
+		const auto& imu_data = getVehicleApi(vehicle_name)->getIMUDataBuffer();
+		return RpcLibAdapatorsBase::IMUDataBuffer(imu_data);
 	});
 
-    pimpl_->server.bind("getLidarData", [&](const std::string& lidar_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::LidarAPIData {
-        const auto& lidar_data = getVehicleApi(vehicle_name)->getLidarData(lidar_name);
-        return RpcLibAdapatorsBase::LidarAPIData(lidar_data);
+    pimpl_->server.bind("getLidarDataList", [&](const std::string& lidar_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::LidarDataBuffer {
+        const auto& lidar_data = getVehicleApi(vehicle_name)->getLidarDataBuffer(lidar_name);
+        return RpcLibAdapatorsBase::LidarDataBuffer(lidar_data);
     });
 
-    pimpl_->server.bind("simGetCameraInfo", [&](const std::string& camera_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::CameraInfo {
+	pimpl_->server.bind("getLidarData", [&](const std::string& lidar_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::LidarData {
+		const auto& lidar_data = getVehicleApi(vehicle_name)->getLidarData(lidar_name);
+		return RpcLibAdapatorsBase::LidarData(lidar_data);
+	});
+	
+	pimpl_->server.bind("simGetCameraInfo", [&](const std::string& camera_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::CameraInfo {
         const auto& camera_info = getVehicleSimApi(vehicle_name)->getCameraInfo(camera_name);
         return RpcLibAdapatorsBase::CameraInfo(camera_info);
     });

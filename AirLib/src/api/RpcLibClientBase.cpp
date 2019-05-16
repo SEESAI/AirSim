@@ -160,20 +160,23 @@ msr::airlib::GeoPoint RpcLibClientBase::getHomeGeoPoint(const std::string& vehic
 }
 
 // New methods added by Richard 13/05/19
-msr::airlib::GPSAPIData RpcLibClientBase::getGPSData(const std::string& vehicle_name) const
+msr::airlib::GPSDataBuffer RpcLibClientBase::getGPSDataBuffer(const std::string& vehicle_name) const
 {
-	return pimpl_->client.call("getGPSData", vehicle_name).as<RpcLibAdapatorsBase::GPSAPIData>().to();
+	return pimpl_->client.call("getGPSDataBuffer", vehicle_name).as<RpcLibAdapatorsBase::GPSDataBuffer>().to();
 }
 
-msr::airlib::IMUAPIData RpcLibClientBase::getIMUData(const std::string& vehicle_name) const
+msr::airlib::IMUDataBuffer RpcLibClientBase::getIMUDataBuffer(const std::string& vehicle_name) const
 {
-	return pimpl_->client.call("getIMUData", vehicle_name).as<RpcLibAdapatorsBase::IMUAPIData>().to();
+	return pimpl_->client.call("getIMUDataBuffer", vehicle_name).as<RpcLibAdapatorsBase::IMUDataBuffer>().to();
+}
+msr::airlib::LidarDataBuffer RpcLibClientBase::getLidarDataBuffer(const std::string& lidar_name, const std::string& vehicle_name) const
+{
+    return pimpl_->client.call("getLidarDataBufer", lidar_name, vehicle_name).as<RpcLibAdapatorsBase::LidarDataBuffer>().to();
 }
 
-
-msr::airlib::LidarAPIData RpcLibClientBase::getLidarData(const std::string& lidar_name, const std::string& vehicle_name) const
+msr::airlib::LidarData RpcLibClientBase::getLidarData(const std::string& lidar_name, const std::string& vehicle_name) const
 {
-    return pimpl_->client.call("getLidarData", lidar_name, vehicle_name).as<RpcLibAdapatorsBase::LidarAPIData>().to();
+	return pimpl_->client.call("getLidarData", lidar_name, vehicle_name).as<RpcLibAdapatorsBase::LidarData>().to();
 }
 
 bool RpcLibClientBase::simSetSegmentationObjectID(const std::string& mesh_name, int object_id, bool is_name_regex)
