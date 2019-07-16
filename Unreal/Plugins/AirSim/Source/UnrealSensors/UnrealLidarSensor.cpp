@@ -99,26 +99,51 @@ void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const
     {
 		int32 sector = endSector - numSectors + i;
 		sector = (sector < 0) ? (sector + scans_per_revolution_) : sector;
-		const float azimuth_angle = laser_azimuth_angles_[sector];
 
 		ts.emplace_back(update_time);
-		az.emplace_back(azimuth_angle);
+		az.emplace_back(laser_azimuth_angles_[sector]);
 
-        for (int32 j = 0; j < channels_per_scan_; ++j)
-        {
-			const float altitude_angle = laser_altitude_angles_[j];
+		for (int32 j = 0; j < channels_per_scan_; ++j)
+		{
+			const float azimuth_angle = laser_azimuth_angles_[sector] + gauss_dist_.next() * params_.azimuth_stddev;
+			const float altitude_angle = laser_altitude_angles_[j] + gauss_dist_.next() * params_.altitude_stddev;
 
-            Vector3r point;
-            // shoot laser and get the impact point, if any
-			if (shootLaser(lidar_pose, vehicle_pose, azimuth_angle, altitude_angle, params_, point)) {
-				point_cloud.emplace_back(point.x());
-				point_cloud.emplace_back(point.y());
-				point_cloud.emplace_back(point.z());
-				r.emplace_back(point.norm());
-			}
-			else
+			if (uniform_dist_.next() < params_.point_loss_likelihood)
+				// Delete random points
 				r.emplace_back(0);
-        }
+			else {
+				Vector3r point;
+				if (shootLaser(lidar_pose, vehicle_pose, azimuth_angle, altitude_angle, params_, point)) {
+					float range = point.norm();
+					float range_new = range;
+
+					// Add random early returns
+					if (uniform_dist_.next() < (params_.random_return_likelihood * range / params_.range))
+						range_new = uniform_dist_.next() * range;
+
+					// Add random noise
+					else
+						range_new = range + gauss_dist_.next() * params_.range_stddev;
+
+					// Scale & save the result (if it is valid)
+					if (range_new > 0) {
+						float scale = range_new / range;
+						point.x() = point.x() * scale;
+						point.y() = point.y() * scale;
+						point.z() = point.z() * scale;
+
+						point_cloud.emplace_back(point.x());
+						point_cloud.emplace_back(point.y());
+						point_cloud.emplace_back(point.z());
+						r.emplace_back(range_new);
+					}
+					else
+						r.emplace_back(0);
+				}
+				else
+					r.emplace_back(0);
+			}
+		}
     }
 
     return;

@@ -218,6 +218,12 @@ public: //types
 
         bool draw_debug_points = false;
         std::string data_frame = AirSimSettings::kVehicleInertialFrame;
+
+		float azimuth_stddev = 0;			// azimuth angle noise (degrees)
+		float altitude_stddev = 0;			// altitude angle noise (degrees)
+		float range_stddev = 0;				// range noise (m)
+		float point_loss_likelihood = 0;	// likelihood of no return (zero to one)
+		float random_return_likelihood = 0; // likelihood of a random return (zero to one)
     };
 
     struct VehicleSetting {
@@ -1143,6 +1149,12 @@ private:
         lidar_setting.vertical_FOV_lower = settings_json.getFloat("VerticalFOVLower", lidar_setting.vertical_FOV_lower);
         lidar_setting.horizontal_FOV_start = settings_json.getFloat("HorizontalFOVStart", lidar_setting.horizontal_FOV_start);
         lidar_setting.horizontal_FOV_end = settings_json.getFloat("HorizontalFOVEnd", lidar_setting.horizontal_FOV_end);
+
+		lidar_setting.altitude_stddev = settings_json.getFloat("AltitudeStdDev", lidar_setting.altitude_stddev);
+		lidar_setting.azimuth_stddev = settings_json.getFloat("AzimuthStdDev", lidar_setting.azimuth_stddev);
+		lidar_setting.range_stddev = settings_json.getFloat("RangeStdDev", lidar_setting.range_stddev);
+		lidar_setting.point_loss_likelihood = settings_json.getFloat("PointLossLikelihood", lidar_setting.point_loss_likelihood);
+		lidar_setting.random_return_likelihood = settings_json.getFloat("RandomReturnLikelihood", lidar_setting.random_return_likelihood);
 
         lidar_setting.position = createVectorSetting(settings_json, lidar_setting.position);
         lidar_setting.rotation = createRotationSetting(settings_json, lidar_setting.rotation);

@@ -50,6 +50,8 @@ public:
         freq_limiter_.reset();
 		start_time_ = clock()->nowNanos();
 		previous_sectors_since_start_ = 0;
+		gauss_dist_.reset();
+		uniform_dist_.reset();
 
         updateOutput();
     }
@@ -125,6 +127,8 @@ protected:
 	int32 scans_per_revolution_ = 0;
 	int32 previous_sectors_since_start_ = 0;
 	double rotation_rate_ = 0.0f;
+	RandomGeneratorGausianR gauss_dist_ = RandomGeneratorGausianR(0, 1);
+	RandomGeneratorR uniform_dist_ = RandomGeneratorR(0.0f, 1.0f);
 
 private:
 	FrequencyLimiter freq_limiter_;
