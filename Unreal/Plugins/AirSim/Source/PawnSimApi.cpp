@@ -197,6 +197,18 @@ std::vector<PawnSimApi::ImageCaptureBase::ImageResponse> PawnSimApi::getImages(
     return responses;
 }
 
+void PawnSimApi::saveVideoCameraImages(const std::vector<ImageCaptureBase::ImageResponse>& responses) 
+{
+	std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
+	video_camera_responses_ = responses;
+}
+
+void PawnSimApi::getVideoCameraImages(std::vector<PawnSimApi::ImageCaptureBase::ImageResponse>& responses)
+{
+	std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
+	responses = video_camera_responses_;
+}
+
 std::vector<uint8_t> PawnSimApi::getImage(const std::string& camera_name, ImageCaptureBase::ImageType image_type) const
 {
     std::vector<ImageCaptureBase::ImageRequest> request = { ImageCaptureBase::ImageRequest(camera_name, image_type) };

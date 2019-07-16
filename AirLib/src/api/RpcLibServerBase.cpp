@@ -114,6 +114,11 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
         }
         return result;
     });
+	pimpl_->server.bind("simGetVideoCameraImages", [&](const std::string& vehicle_name) -> vector<RpcLibAdapatorsBase::ImageResponse> {
+		std::vector<ImageCaptureBase::ImageResponse> responses;
+		getVehicleSimApi(vehicle_name)->getVideoCameraImages(responses);
+		return RpcLibAdapatorsBase::ImageResponse::from(responses);
+	});
 
     pimpl_->server.
         bind("simSetVehiclePose", [&](const RpcLibAdapatorsBase::Pose &pose, bool ignore_collision, const std::string& vehicle_name) -> void {
