@@ -94,7 +94,7 @@ void ASimModeBase::BeginPlay()
 	// Start the video camera thread to record images for the API
 	FVideoCameraThread::startRecording(getVehicleSimApi()->getImageCapture(),
 		getVehicleSimApi()->getGroundTruthKinematics(), 
-		getSettings().recording_setting,
+		getSettings().video_camera_setting,
 		getVehicleSimApi());
 }
 

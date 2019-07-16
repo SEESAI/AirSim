@@ -51,10 +51,22 @@ public: //types
         std::vector<msr::airlib::ImageCaptureBase::ImageRequest> requests;
 
         RecordingSetting(bool record_on_move_val = false, float record_interval_val = 0.05f)
-            : record_on_move(record_on_move_val), record_interval(record_interval_val)
+            : record_on_move(record_on_move_val)
+			, record_interval(record_interval_val)
         {
         }
     };
+
+	struct VideoCameraSetting {
+		float record_interval;
+
+		std::vector<msr::airlib::ImageCaptureBase::ImageRequest> requests;
+
+		VideoCameraSetting(float record_interval_val = 0.05f)
+			: record_interval(record_interval_val)
+		{
+		}
+	};
 
     struct PawnPath {
         std::string pawn_bp;
@@ -329,7 +341,8 @@ public: //fields
 
     std::vector<SubwindowSetting> subwindow_settings;
     RecordingSetting recording_setting;
-    SegmentationSetting segmentation_setting;
+	VideoCameraSetting video_camera_setting;
+	SegmentationSetting segmentation_setting;
     TimeOfDaySetting tod_setting;
 
     std::vector<std::string> warning_messages;
@@ -382,7 +395,8 @@ public: //methods
         loadSubWindowsSettings(settings_json, subwindow_settings);
         loadViewModeSettings(settings_json);
         loadRecordingSetting(settings_json, recording_setting);
-        loadSegmentationSetting(settings_json, segmentation_setting);
+		loadVideoCameraSetting(settings_json, video_camera_setting);
+		loadSegmentationSetting(settings_json, segmentation_setting);
         loadPawnPaths(settings_json, pawn_paths);
         loadOtherSettings(settings_json);
         loadDefaultSensorSettings(simmode_name, settings_json, sensor_defaults);
@@ -593,6 +607,35 @@ private:
             recording_setting.requests.push_back(msr::airlib::ImageCaptureBase::ImageRequest(
                 "", ImageType::Scene, false, true));
     }
+
+	static void loadVideoCameraSetting(const Settings& settings_json, VideoCameraSetting& video_camera_setting)
+	{
+		Settings video_camera_json;
+		if (settings_json.getChild("VideoCamera", video_camera_json)) {
+			video_camera_setting.record_interval = video_camera_json.getFloat("CameraInterval", video_camera_setting.record_interval);
+
+			Settings req_cameras_settings;
+			if (video_camera_json.getChild("Cameras", req_cameras_settings)) {
+				for (size_t child_index = 0; child_index < req_cameras_settings.size(); ++child_index) {
+					Settings req_camera_settings;
+					if (req_cameras_settings.getChild(child_index, req_camera_settings)) {
+						std::string camera_name = getCameraName(req_camera_settings);
+						ImageType image_type =
+							Utils::toEnum<ImageType>(
+								req_camera_settings.getInt("ImageType", 0));
+						bool compress = req_camera_settings.getBool("Compress", true);
+						bool pixels_as_float = req_camera_settings.getBool("PixelsAsFloat", false);
+
+						video_camera_setting.requests.push_back(msr::airlib::ImageCaptureBase::ImageRequest(
+							camera_name, image_type, pixels_as_float, compress));
+					}
+				}
+			}
+		}
+		if (video_camera_setting.requests.size() == 0)
+			video_camera_setting.requests.push_back(msr::airlib::ImageCaptureBase::ImageRequest(
+				"", ImageType::Scene, false, true));
+	}
 
     static void initializeCaptureSettings(std::map<int, CaptureSetting>& capture_settings)
     {

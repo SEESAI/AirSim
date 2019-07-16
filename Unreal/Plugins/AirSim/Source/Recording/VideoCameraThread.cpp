@@ -20,7 +20,7 @@ FVideoCameraThread::FVideoCameraThread()
 
 void FVideoCameraThread::startRecording(const msr::airlib::ImageCaptureBase* image_capture, 
 	const msr::airlib::Kinematics::State* kinematics,
-    const RecordingSetting& settings, 
+    const VideoCameraSetting& settings,
 	msr::airlib::VehicleSimApiBase* vehicle_sim_api)
 {
     stopRecording();

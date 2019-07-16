@@ -13,13 +13,13 @@
 class FVideoCameraThread : public FRunnable
 {
 public:
-    typedef msr::airlib::AirSimSettings::RecordingSetting RecordingSetting;
+    typedef msr::airlib::AirSimSettings::VideoCameraSetting VideoCameraSetting;
 
 public:
 	FVideoCameraThread();
     virtual ~FVideoCameraThread();
     static void startRecording(const msr::airlib::ImageCaptureBase* camera, const msr::airlib::Kinematics::State* kinematics, 
-        const RecordingSetting& settings, msr::airlib::VehicleSimApiBase* vehicle_sim_api);
+        const VideoCameraSetting& settings, msr::airlib::VehicleSimApiBase* vehicle_sim_api);
     static void stopRecording(); 
     static bool isRecording();
 
@@ -40,7 +40,7 @@ private:
 
     std::unique_ptr<FRunnableThread> thread_;
 
-    RecordingSetting settings_;
+	VideoCameraSetting settings_;
     const msr::airlib::ImageCaptureBase* image_capture_;
     const msr::airlib::Kinematics::State* kinematics_;
     msr::airlib::VehicleSimApiBase* vehicle_sim_api_;
