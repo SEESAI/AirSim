@@ -58,12 +58,14 @@ public: //types
     };
 
 	struct VideoCameraSetting {
+		bool enabled;
 		float record_interval;
 
 		std::vector<msr::airlib::ImageCaptureBase::ImageRequest> requests;
 
 		VideoCameraSetting(float record_interval_val = 0.05f)
 			: record_interval(record_interval_val)
+			, enabled(false)
 		{
 		}
 	};
@@ -612,7 +614,9 @@ private:
 	{
 		Settings video_camera_json;
 		if (settings_json.getChild("VideoCamera", video_camera_json)) {
+			video_camera_setting.enabled = video_camera_json.getFloat("Enabled", video_camera_setting.enabled);
 			video_camera_setting.record_interval = video_camera_json.getFloat("CameraInterval", video_camera_setting.record_interval);
+			video_camera_setting.requests.clear();
 
 			Settings req_cameras_settings;
 			if (video_camera_json.getChild("Cameras", req_cameras_settings)) {

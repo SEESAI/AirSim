@@ -114,10 +114,27 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
         }
         return result;
     });
-	pimpl_->server.bind("simGetVideoCameraImages", [&](const std::string& vehicle_name) -> vector<RpcLibAdapatorsBase::ImageResponse> {
+	pimpl_->server.bind("simGetVideoCameraImages", [&](const std::vector<std::string>& camera_names, const int num_images, const std::string& vehicle_name) -> vector<RpcLibAdapatorsBase::ImageResponse> {
 		std::vector<ImageCaptureBase::ImageResponse> responses;
 		getVehicleSimApi(vehicle_name)->getVideoCameraImages(responses);
-		return RpcLibAdapatorsBase::ImageResponse::from(responses);
+
+		// If user has asked for all images, then return everything
+		if (camera_names.empty() && (num_images == 0))
+			return RpcLibAdapatorsBase::ImageResponse::from(responses);
+
+		// Otherwise filter by camera name and image number (starting at most recent)
+		std::vector<ImageCaptureBase::ImageResponse> responsesToReturn;
+		for (auto i = responses.size() - 1; i >= 0; i--) {
+			// If you've got the required number of images, then break
+			if (responsesToReturn.size() >= num_images)
+				break;
+
+			// Otherwise compare camera names and add an image if matching
+			for (const std::string & name : camera_names)
+				if (name.compare(responses[i].camera_name) == 0)
+					responsesToReturn.push_back(responses[i]);
+		}
+		return RpcLibAdapatorsBase::ImageResponse::from(responsesToReturn);
 	});
 
     pimpl_->server.

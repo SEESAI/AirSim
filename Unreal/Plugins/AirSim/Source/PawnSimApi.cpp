@@ -199,8 +199,18 @@ std::vector<PawnSimApi::ImageCaptureBase::ImageResponse> PawnSimApi::getImages(
 
 void PawnSimApi::saveVideoCameraImages(const std::vector<ImageCaptureBase::ImageResponse>& responses) 
 {
+	/// Append new images to the storage vector
 	std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
-	video_camera_responses_ = responses;
+	video_camera_responses_.insert(video_camera_responses_.end(), responses.begin(), responses.end());
+
+	/// If the vector is too long then trim
+	int maxhistory = 10;
+	int numCameras = int(responses.size());
+	int maxlength = maxhistory * numCameras;
+	if (video_camera_responses_.size() > maxlength) {
+		int excesslength = video_camera_responses_.size() - maxlength;
+		video_camera_responses_.erase(video_camera_responses_.begin(), video_camera_responses_.begin() + excesslength);
+	}
 }
 
 void PawnSimApi::getVideoCameraImages(std::vector<PawnSimApi::ImageCaptureBase::ImageResponse>& responses)

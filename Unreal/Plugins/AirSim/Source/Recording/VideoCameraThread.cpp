@@ -25,16 +25,18 @@ void FVideoCameraThread::startRecording(const msr::airlib::ImageCaptureBase* ima
 {
     stopRecording();
 
-    instance_.reset(new FVideoCameraThread());
-    instance_->image_capture_ = image_capture;
-    instance_->kinematics_ = kinematics;
-    instance_->settings_ = settings;
-    instance_->vehicle_sim_api_ = vehicle_sim_api;
+	if (settings.enabled) {
+		instance_.reset(new FVideoCameraThread());
+		instance_->image_capture_ = image_capture;
+		instance_->kinematics_ = kinematics;
+		instance_->settings_ = settings;
+		instance_->vehicle_sim_api_ = vehicle_sim_api;
 
-    instance_->last_screenshot_on_ = 0;
-    instance_->last_pose_ = msr::airlib::Pose();
+		instance_->last_screenshot_on_ = 0;
+		instance_->last_pose_ = msr::airlib::Pose();
 
-    instance_->is_ready_ = true;
+		instance_->is_ready_ = true;
+	}
 
 }
 
