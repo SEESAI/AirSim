@@ -114,34 +114,11 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
         }
         return result;
     });
-	pimpl_->server.bind("simGetVideoCameraImages", [&](const std::vector<std::string>& camera_names, int num_images, const std::string& vehicle_name) -> vector<RpcLibAdapatorsBase::ImageResponse> {
+	pimpl_->server.bind("simGetVideoCameraImages", [&](const std::vector<RpcLibAdapatorsBase::ImageRequest>& requests, int num_images, const std::string& vehicle_name) -> vector<RpcLibAdapatorsBase::ImageResponse> {
 		std::vector<ImageCaptureBase::ImageResponse> responses;
-		getVehicleSimApi(vehicle_name)->getVideoCameraImages(responses);
+		int numCameras = getVehicleSimApi(vehicle_name)->getVideoCameraImages(RpcLibAdapatorsBase::ImageRequest::to(requests), num_images, responses);
 
-		// If user has asked for all images and not supplied names, then return everything
-		if (camera_names.empty() && (num_images == 0))
-			return RpcLibAdapatorsBase::ImageResponse::from(responses);
-
-		// If user has just supplied names then set image limit to max
-		if (num_images == 0)
-			num_images = responses.size();
-
-		// And filter by camera name and image number (starting at most recent)
-		std::vector<ImageCaptureBase::ImageResponse> responsesToReturn;
-		for (int i = responses.size() - 1; i >= 0; i--) {
-			// If you've got the required number of images, then break
-			if (responsesToReturn.size() >= num_images)
-				break;
-
-			// Otherwise compare camera names and add an image if matching (or if there are no names)
-			if (camera_names.empty())
-				responsesToReturn.insert(responsesToReturn.begin(), responses[i]);
-			else
-				for (const std::string & name : camera_names)
-					if (name.compare(responses[i].camera_name) == 0)
-						responsesToReturn.insert(responsesToReturn.begin(), responses[i]);
-		}
-		return RpcLibAdapatorsBase::ImageResponse::from(responsesToReturn);
+		return RpcLibAdapatorsBase::ImageResponse::from(responses);
 	});
 
     pimpl_->server.

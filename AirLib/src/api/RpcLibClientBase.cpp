@@ -246,9 +246,10 @@ vector<uint8_t> RpcLibClientBase::simGetImage(const std::string& camera_name, Im
     }
     return result;
 }
-vector<ImageCaptureBase::ImageResponse> RpcLibClientBase::simGetVideoCameraImages(const std::vector<std::string>& camera_names, const int num_images, const std::string& vehicle_name)
+vector<ImageCaptureBase::ImageResponse> RpcLibClientBase::simGetVideoCameraImages(const vector<ImageCaptureBase::ImageRequest>& requests, const int num_images, const std::string& vehicle_name)
 {
-	const auto& response_adaptor = pimpl_->client.call("simGetVideoCameraImages", camera_names, num_images, vehicle_name)
+	const auto& response_adaptor = pimpl_->client.call("simGetVideoCameraImages", 
+		RpcLibAdapatorsBase::ImageRequest::from(requests), num_images, vehicle_name)
 		.as<vector<RpcLibAdapatorsBase::ImageResponse>>();
 
 	return RpcLibAdapatorsBase::ImageResponse::to(response_adaptor);

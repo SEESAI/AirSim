@@ -75,7 +75,7 @@ public: //implementation of VehicleSimApiBase
     virtual std::vector<ImageCaptureBase::ImageResponse> getImages(const std::vector<ImageCaptureBase::ImageRequest>& request) const override;
     virtual std::vector<uint8_t> getImage(const std::string& camera_name, ImageCaptureBase::ImageType image_type) const override;
 	virtual void saveVideoCameraImages(const std::vector<ImageCaptureBase::ImageResponse>& responses) override;
-	virtual void getVideoCameraImages(std::vector<ImageCaptureBase::ImageResponse> & responses) override;
+	virtual int getVideoCameraImages(const std::vector<PawnSimApi::ImageCaptureBase::ImageRequest>& requests, int num_images, std::vector<ImageCaptureBase::ImageResponse> & responses) override;
 	virtual Pose getPose() const override;
     virtual void setPose(const Pose& pose, bool ignore_collision) override;
     virtual msr::airlib::CameraInfo getCameraInfo(const std::string& camera_name) const override;
@@ -166,6 +166,7 @@ private: //vars
     mutable SimJoyStick joystick_;
     mutable SimJoyStick::State joystick_state_;
 
+	int number_video_cameras_;
 	std::vector<msr::airlib::ImageCaptureBase::ImageResponse> video_camera_responses_;
 	std::mutex video_camera_API_mutex_;
 

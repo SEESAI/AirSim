@@ -85,7 +85,7 @@ public:
 
 	vector<ImageCaptureBase::ImageResponse> simGetImages(vector<ImageCaptureBase::ImageRequest> request, const std::string& vehicle_name = "");
 	vector<uint8_t> simGetImage(const std::string& camera_name, ImageCaptureBase::ImageType type, const std::string& vehicle_name = "");
-	vector<ImageCaptureBase::ImageResponse> simGetVideoCameraImages(const std::vector<std::string>& camera_names = {}, const int num_images = 0, const std::string& vehicle_name = "");
+	vector<ImageCaptureBase::ImageResponse> simGetVideoCameraImages(const vector<ImageCaptureBase::ImageRequest>& requests = {}, const int num_images = 0, const std::string& vehicle_name = "");
 
     CollisionInfo simGetCollisionInfo(const std::string& vehicle_name = "") const;
 
