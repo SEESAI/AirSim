@@ -32,8 +32,7 @@ void FVideoCameraThread::startRecording(const msr::airlib::ImageCaptureBase* ima
 		instance_->settings_ = settings;
 		instance_->vehicle_sim_api_ = vehicle_sim_api;
 
-		instance_->last_screenshot_on_ = 0;
-		instance_->last_pose_ = msr::airlib::Pose();
+		instance_->next_screenshot_due_ = 0;
 
 		instance_->is_ready_ = true;
 	}
@@ -72,22 +71,33 @@ bool FVideoCameraThread::Init()
 
 uint32 FVideoCameraThread::Run()
 {
-    while (stop_task_counter_.GetValue() == 0)
+	// Recording interval in nanoseconds
+	msr::airlib::TTimePoint record_interval_nanos = settings_.record_interval * 1e9;
+
+	// Set the first screenshot time to keep images regular
+	msr::airlib::TTimePoint current_airsim_time = msr::airlib::ClockFactory::get()->nowNanos();
+	next_screenshot_due_ = settings_.record_interval * (current_airsim_time / +1);
+
+	while (stop_task_counter_.GetValue() == 0)
     {
         //make sire all vars are set up
         if (is_ready_) {
-			std::vector<msr::airlib::ImageCaptureBase::ImageRequest> newRequests;
-            bool interval_elapsed = msr::airlib::ClockFactory::get()->elapsedSince(last_screenshot_on_) >= settings_.record_interval;
-            if (interval_elapsed)
+			// Wait until next screenshot due
+            bool picture_due = msr::airlib::ClockFactory::get()->nowNanos() >= next_screenshot_due_;
+            if (picture_due)
             {
-                last_screenshot_on_ = msr::airlib::ClockFactory::get()->nowNanos();
-                last_pose_ = kinematics_->pose;
+				//Get the images
 				std::vector<msr::airlib::ImageCaptureBase::ImageResponse> responses;
                 image_capture_->getImages(settings_.requests, responses);
-				newRequests = vehicle_sim_api_->saveVideoCameraImages(responses);
-				//update requests for the next loop (if it is not empty)
+
+				//Store them in the main vehicle API class (and get any updated image requests)
+				std::vector<msr::airlib::ImageCaptureBase::ImageRequest>  newRequests = vehicle_sim_api_->saveVideoCameraImages(responses);
 				if (!newRequests.empty())
 					settings_.requests = newRequests;
+
+				// Set the next screenshot time to keep images regular
+				current_airsim_time = msr::airlib::ClockFactory::get()->nowNanos();
+				next_screenshot_due_ = settings_.record_interval * (current_airsim_time / +1);
             }
         }
     }

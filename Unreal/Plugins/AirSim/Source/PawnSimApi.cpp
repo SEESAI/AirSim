@@ -271,6 +271,8 @@ int PawnSimApi::getVideoCameraImages(const std::vector<ImageCaptureBase::ImageRe
 				most_recent_image_time = std::max(most_recent_image_time, response.time_stamp);
 			}
 		}
+	// Move to responses as this is what is returned
+	responses = responsesToReturn;
 
 	// Remove any images older than the most recent return from storage (so they don't get returned again)
 	std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
@@ -279,7 +281,7 @@ int PawnSimApi::getVideoCameraImages(const std::vector<ImageCaptureBase::ImageRe
 			video_camera_responses_.erase(video_camera_responses_.begin(), video_camera_responses_.begin() + i);
 			break;
 		}
-		
+
 	return responsesToReturn.size();
 }
 

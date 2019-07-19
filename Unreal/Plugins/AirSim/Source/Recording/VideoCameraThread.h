@@ -45,8 +45,7 @@ private:
     const msr::airlib::Kinematics::State* kinematics_;
     msr::airlib::VehicleSimApiBase* vehicle_sim_api_;
 
-    msr::airlib::TTimePoint last_screenshot_on_;
-    msr::airlib::Pose last_pose_;
+    msr::airlib::TTimePoint next_screenshot_due_;
 
     bool is_ready_;
 };
