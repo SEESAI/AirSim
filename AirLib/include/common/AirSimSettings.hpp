@@ -637,9 +637,10 @@ private:
 				}
 			}
 		}
+		// Capture front-center by default (only
 		if (video_camera_setting.requests.size() == 0)
 			video_camera_setting.requests.push_back(msr::airlib::ImageCaptureBase::ImageRequest(
-				"", ImageType::Scene, false, true));
+				"front_center", ImageType::Scene, false, false));
 	}
 
     static void initializeCaptureSettings(std::map<int, CaptureSetting>& capture_settings)

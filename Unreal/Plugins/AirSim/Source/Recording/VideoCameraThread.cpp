@@ -76,7 +76,7 @@ uint32 FVideoCameraThread::Run()
 
 	// Set the first screenshot time to keep images regular
 	msr::airlib::TTimePoint current_airsim_time = msr::airlib::ClockFactory::get()->nowNanos();
-	next_screenshot_due_ = settings_.record_interval * (current_airsim_time / +1);
+	next_screenshot_due_ = record_interval_nanos * (current_airsim_time / record_interval_nanos + 1);
 
 	while (stop_task_counter_.GetValue() == 0)
     {
@@ -97,7 +97,7 @@ uint32 FVideoCameraThread::Run()
 
 				// Set the next screenshot time to keep images regular
 				current_airsim_time = msr::airlib::ClockFactory::get()->nowNanos();
-				next_screenshot_due_ = settings_.record_interval * (current_airsim_time / +1);
+				next_screenshot_due_ = record_interval_nanos * (current_airsim_time / record_interval_nanos + 1);
             }
         }
     }
