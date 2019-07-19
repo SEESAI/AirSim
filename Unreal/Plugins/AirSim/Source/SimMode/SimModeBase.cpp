@@ -1,5 +1,6 @@
 #include "SimModeBase.h"
 #include "Recording/RecordingThread.h"
+#include "Recording/VideoCameraThread.h"
 #include "Misc/MessageDialog.h"
 #include "Misc/EngineVersion.h"
 #include "Runtime/Launch/Resources/Version.h"
@@ -89,6 +90,12 @@ void ASimModeBase::BeginPlay()
         UWeatherLib::initWeather(World, spawned_actors_);
         //UWeatherLib::showWeatherMenu(World);
     }
+
+	// Start the video camera thread to record images for the API
+	FVideoCameraThread::startRecording(getVehicleSimApi()->getImageCapture(),
+		getVehicleSimApi()->getGroundTruthKinematics(), 
+		getSettings().video_camera_setting,
+		getVehicleSimApi());
 }
 
 const NedTransform& ASimModeBase::getGlobalNedTransform()
@@ -126,6 +133,7 @@ void ASimModeBase::setStencilIDs()
 void ASimModeBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
     FRecordingThread::stopRecording();
+	FVideoCameraThread::stopRecording();
     world_sim_api_.reset();
     api_provider_.reset();
     api_server_.reset();
