@@ -197,7 +197,8 @@ std::vector<PawnSimApi::ImageCaptureBase::ImageResponse> PawnSimApi::getImages(
     return responses;
 }
 
-void PawnSimApi::saveVideoCameraImages(const std::vector<ImageCaptureBase::ImageResponse>& responses) 
+std::vector<msr::airlib::ImageCaptureBase::ImageRequest> PawnSimApi::saveVideoCameraImages(
+										const std::vector<ImageCaptureBase::ImageResponse>& responses)
 {
 	/// Append new images to the storage vector
 	std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
@@ -214,18 +215,21 @@ void PawnSimApi::saveVideoCameraImages(const std::vector<ImageCaptureBase::Image
 
 	// Save the number of camera images
 	number_video_cameras_ = responses.size();
+
+	return video_camera_requests_;
 }
 
-int PawnSimApi::getVideoCameraImages(const std::vector<PawnSimApi::ImageCaptureBase::ImageRequest>& requests,
+int PawnSimApi::getVideoCameraImages(const std::vector<ImageCaptureBase::ImageRequest>& requests,
 									 int num_images, 
-									 std::vector<PawnSimApi::ImageCaptureBase::ImageResponse>& responses)
+									 std::vector<ImageCaptureBase::ImageResponse>& responses)
 {
 
-	// Copy responses (needs Mutex) so as not to hold up main thread too long
+	// Copy requests & responses (needs Mutex)
 	//ToDo if this is too much memory copying then we could consider transferring a vector of shared pointers instead
 	{
 		std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
 		responses = video_camera_responses_;
+		video_camera_requests_ = requests;
 
 		// If user has asked for all images and not supplied requests, then return everything
 		if (requests.empty() && (num_images == 0)) {
@@ -268,7 +272,7 @@ int PawnSimApi::getVideoCameraImages(const std::vector<PawnSimApi::ImageCaptureB
 			}
 		}
 
-	// Finally remove any images older than the most recent return from storage (so they don't get returned again)
+	// Remove any images older than the most recent return from storage (so they don't get returned again)
 	std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
 	for (int i = video_camera_responses_.size(); i >= 0 ; i--)
 		if (video_camera_responses_[i].time_stamp <= most_recent_image_time) {

@@ -67,6 +67,7 @@ public: //types
 			: record_interval(record_interval_val)
 			, enabled(false)
 		{
+			requests.clear();
 		}
 	};
 

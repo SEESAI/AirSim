@@ -52,7 +52,7 @@ public:
 
     virtual std::vector<ImageCaptureBase::ImageResponse> getImages(const std::vector<ImageCaptureBase::ImageRequest>& request) const = 0;
     virtual std::vector<uint8_t> getImage(const std::string& camera_name, ImageCaptureBase::ImageType image_type) const = 0;
-	virtual void saveVideoCameraImages(const std::vector<ImageCaptureBase::ImageResponse>& responses) = 0;
+	virtual std::vector<msr::airlib::ImageCaptureBase::ImageRequest> saveVideoCameraImages(const std::vector<ImageCaptureBase::ImageResponse>& responses) = 0;
 	virtual int getVideoCameraImages(const std::vector<ImageCaptureBase::ImageRequest>& requests, int num_images, std::vector<ImageCaptureBase::ImageResponse> & responses) = 0;
 
     virtual Pose getPose() const = 0;

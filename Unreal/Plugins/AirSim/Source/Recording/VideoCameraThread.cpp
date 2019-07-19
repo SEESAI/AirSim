@@ -76,6 +76,7 @@ uint32 FVideoCameraThread::Run()
     {
         //make sire all vars are set up
         if (is_ready_) {
+			std::vector<msr::airlib::ImageCaptureBase::ImageRequest> newRequests;
             bool interval_elapsed = msr::airlib::ClockFactory::get()->elapsedSince(last_screenshot_on_) >= settings_.record_interval;
             if (interval_elapsed)
             {
@@ -83,7 +84,10 @@ uint32 FVideoCameraThread::Run()
                 last_pose_ = kinematics_->pose;
 				std::vector<msr::airlib::ImageCaptureBase::ImageResponse> responses;
                 image_capture_->getImages(settings_.requests, responses);
-				vehicle_sim_api_->saveVideoCameraImages(responses);
+				newRequests = vehicle_sim_api_->saveVideoCameraImages(responses);
+				//update requests for the next loop (if it is not empty)
+				if (!newRequests.empty())
+					settings_.requests = newRequests;
             }
         }
     }
