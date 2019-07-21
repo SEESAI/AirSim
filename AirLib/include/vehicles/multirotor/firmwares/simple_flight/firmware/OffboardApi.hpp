@@ -40,6 +40,7 @@ public:
         IUpdatable::update();
 
         rc_.update();
+
         if (!has_api_control_)
             updateGoalFromRc();
         else {

@@ -269,7 +269,8 @@ struct RCData {
 
     unsigned int getSwitch(uint16_t index) const
     {
-        return switches && (1 << index) ? 1 : 0;
+		int switch_on = (switches & (1 << index)) ? 1 : 0;
+        return switch_on;
     }
 
     void add(const RCData& other)
