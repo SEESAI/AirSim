@@ -62,22 +62,23 @@ public:
         //state machine
         switch (vehicle_state_->getState()) {
         case VehicleStateType::Inactive:
-            //comm_link_->log(std::string("State:\t ").append("Inactive state"));
+			comm_link_->log(std::string("State:\t ").append("Inactive"));
 
             if (rc_action == RcRequestType::ArmRequest) {
-                comm_link_->log(std::string("State:\t ").append("Inactive state, Arm request received"));
-
+                comm_link_->log(std::string("State:\t ").append("Inactive, Arm request received"));
                 request_duration_ += dt;
 
                 if (request_duration_ > params_->rc.arm_duration) {
                     vehicle_state_->setState(VehicleStateType::BeingArmed);
                     request_duration_ = 0;
                 }
-            }
-            //else ignore
+            } else
+				request_duration_ = 0;
+
             break;
+
         case VehicleStateType::BeingArmed:
-            comm_link_->log(std::string("State:\t ").append("Being armed"));
+            comm_link_->log(std::string("State:\t ").append("Being armed, Awaiting neutral sticks"));
 
             //start the motors
             goal_ = Axis4r::zero(); //neural activation while still being armed
@@ -90,16 +91,19 @@ public:
                 if (request_duration_ > params_->rc.neutral_duration) {
                     //TODO: this code should be reused in OffboardApi
                     vehicle_state_->setState(VehicleStateType::Armed, state_estimator_->getHomeGeoPoint());
-                    comm_link_->log(std::string("State:\t ").append("Armed"));
                     request_duration_ = 0;
                 }
-            }
-            //else ignore
+            } else
+				request_duration_ = 0;
+
             break;
+
         case VehicleStateType::Armed:
-            //unless disarm is being requested, set goal from stick position
+			comm_link_->log(std::string("State:\t ").append("Armed"));
+			
+			//unless disarm is being requested, set goal from stick position
             if (rc_action == RcRequestType::DisarmRequest) {
-                comm_link_->log(std::string("State:\t ").append("Armed state, disarm request received"));
+                comm_link_->log(std::string("State:\t ").append("Armed, disarm request received"));
                 request_duration_ += dt;
 
                 if (request_duration_ > params_->rc.disarm_duration) {
@@ -111,7 +115,9 @@ public:
                 request_duration_ = 0; //if there was spurious disarm request
                 updateGoal(channels);
             }
+
             break;
+
         case VehicleStateType::BeingDisarmed:
             comm_link_->log(std::string("State:\t ").append("Being Disarmed"));
 
@@ -121,6 +127,7 @@ public:
             request_duration_ = 0;
 
             break;
+
         case VehicleStateType::Disarmed:
             comm_link_->log(std::string("State:\t ").append("Disarmed"));
 
@@ -129,6 +136,7 @@ public:
             request_duration_ = 0;
 
             break;
+
         default:
             throw std::runtime_error("VehicleStateType has unknown value for RemoteControl::update()");
         }

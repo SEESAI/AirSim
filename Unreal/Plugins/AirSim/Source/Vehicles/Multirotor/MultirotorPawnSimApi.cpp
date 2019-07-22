@@ -116,7 +116,16 @@ void MultirotorPawnSimApi::updateRendering(float dt)
         FString::FromInt(collision_response.collision_count_non_resting), LogDebugLevel::Informational);
 
     for (auto i = 0; i < vehicle_api_messages_.size(); ++i) {
-        UAirBlueprintLib::LogMessage(FString(vehicle_api_messages_[i].c_str()), TEXT(""), LogDebugLevel::Success, 30);
+		std::string text = vehicle_api_messages_[i].c_str();
+		std::string title = "LogMessage";
+		std::size_t found = text.find(":");
+		if (found == std::string::npos)
+			found = 0;
+		else {
+			title = text.substr(0, found);
+			text = text.substr(found + 1);
+		}
+		UAirBlueprintLib::LogMessage(FString(title.c_str()), FString(text.c_str()), LogDebugLevel::Informational, 30);
     }
 
     try {
