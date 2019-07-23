@@ -102,14 +102,17 @@ bool MultirotorApiBase::moveByAngleThrottle(float pitch, float roll, float throt
 
 bool MultirotorApiBase::moveByVelocity(float vx, float vy, float vz, float duration, DrivetrainType drivetrain, const YawMode& yaw_mode)
 {
+	// For the drone to point forwards in the direction of travel then set yaw_mode to (false, 0.0), and drivetrain to ForwardOnly.
     SingleTaskCall lock(this);
 
     if (duration <= 0)
         return true;
 
+	// Work out the target yaw
     YawMode adj_yaw_mode(yaw_mode.is_rate, yaw_mode.yaw_or_rate);
     adjustYaw(vx, vy, drivetrain, adj_yaw_mode);
 
+	// Call internal function to execute manoeuvre
     return waitForFunction([&]() {
         moveByVelocityInternal(vx, vy, vz, adj_yaw_mode);
         return false; //keep moving until timeout
