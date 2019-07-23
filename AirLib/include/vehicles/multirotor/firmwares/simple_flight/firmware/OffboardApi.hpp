@@ -102,18 +102,18 @@ public:
             //initial value from RC for smooth transition
             updateGoalFromRc();
 
-            comm_link_->log("requestApiControl was successful", ICommLink::kLogLevelInfo);
+            comm_link_->log("API Control: Acquired", ICommLink::kLogLevelInfo);
 
             return true;
         } else {
-            comm_link_->log("requestApiControl failed", ICommLink::kLogLevelError);
+            comm_link_->log("API Control: Failed", ICommLink::kLogLevelError);
             return false;
         }
     }
     virtual void releaseApiControl() override
     {
         has_api_control_ = false;
-        comm_link_->log("releaseApiControl was successful", ICommLink::kLogLevelInfo);
+        comm_link_->log("API Control: Released", ICommLink::kLogLevelInfo);
     }
     virtual bool setGoalAndMode(const Axis4r* goal, const GoalMode* goal_mode, std::string& message) override
     {

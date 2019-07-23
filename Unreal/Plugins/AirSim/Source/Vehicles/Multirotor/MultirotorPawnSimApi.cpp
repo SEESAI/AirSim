@@ -117,7 +117,7 @@ void MultirotorPawnSimApi::updateRendering(float dt)
 
     for (auto i = 0; i < vehicle_api_messages_.size(); ++i) {
 		std::string text = vehicle_api_messages_[i].c_str();
-		std::string title = "LogMessage";
+		std::string title = "LogMessage: ";
 		std::size_t found = text.find(":");
 		if (found == std::string::npos)
 			found = 0;
