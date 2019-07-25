@@ -70,7 +70,7 @@ void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const
 {
 
 	// work out the current sector based on time since start
-	double revsSinceStart = static_cast<double>(update_time - start_time_) * rotation_rate_ / 1000000000;
+	double revsSinceStart = static_cast<double>(update_time - start_time_) * rotation_rate_ / 1e9;
 	int32 sectorsSinceStart = static_cast<int32>(FMath::RoundHalfFromZero((revsSinceStart * static_cast<double>(scans_per_revolution_))));
 
 	// if we're not at a new sector then give up

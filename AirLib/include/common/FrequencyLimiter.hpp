@@ -31,50 +31,44 @@ public:
         clearResetUpdateAsserts();  
         UpdatableObject::reset();
 
-        last_time_ = clock()->nowNanos();
-        first_time_ = last_time_;
+		first_time_ns_ = clock()->nowNanos();
+		latest_time_ns_ = 0; // latest is time since reset
+		last_time_ns_ = latest_time_ns_;
+		previous_time_ns_ = last_time_ns_;
 
         if (Utils::isApproximatelyZero(frequency_))
-            interval_size_sec_ = 1E10;  //some high number
+            interval_size_ns_ = std::numeric_limits<uint64_t>::max();  //some high number
         else
-            interval_size_sec_ = 1.0f / frequency_;
+			interval_size_ns_ = 1e9 * (1.0f / frequency_);
 
-        elapsed_total_sec_ = 0;
-        elapsed_interval_sec_ = 0;
-        last_elapsed_interval_sec_ = 0;
+		if (Utils::isDefinitelyGreaterThan(startup_delay_, 0.0f)) {
+			startup_complete_ = false;
+			next_time_ns_ = latest_time_ns_ + startup_delay_ * 1e9;
+		}
+		else {
+			startup_complete_ = true;
+			next_time_ns_ = ((latest_time_ns_ / interval_size_ns_) + 1) * interval_size_ns_;
+		}
+
         update_count_ = 0;
         interval_complete_ = false;
-        startup_complete_ = false;
     }
 
     virtual void update() override
     {
         UpdatableObject::update();
 
-        elapsed_total_sec_ = clock()->elapsedSince(first_time_);
-        elapsed_interval_sec_ = clock()->elapsedSince(last_time_);
+		latest_time_ns_ = clock()->nowNanos() - first_time_ns_;
         ++update_count_;
 
-        //if startup_delay_ > 0 then we consider startup_delay_ as the first interval
-        //that needs to be complete
-        if (!startup_complete_) {
-            if (Utils::isDefinitelyGreaterThan(startup_delay_, 0.0f)) {
-                //see if we have spent startup_delay_ time yet
-                interval_complete_ = elapsed_interval_sec_ >= startup_delay_;
-            }
-            else //no special startup delay is needed
-                startup_complete_ = true;
-        }
-        
-        //if startup is complete, we will do regular intervals from now one
-        if (startup_complete_)
-            interval_complete_ = elapsed_interval_sec_ >= interval_size_sec_;
-        
+		interval_complete_ = latest_time_ns_ >= next_time_ns_;
+
         //when any interval is done, reset the state and repeat
         if (interval_complete_) {
-            last_elapsed_interval_sec_ = elapsed_interval_sec_;
-            last_time_ = clock()->nowNanos();
-            elapsed_interval_sec_ = 0;
+			startup_complete_ = true;
+			previous_time_ns_ = last_time_ns_;
+			last_time_ns_ = latest_time_ns_;
+			next_time_ns_ = ((latest_time_ns_ / interval_size_ns_) + 1) * interval_size_ns_;
             startup_complete_ = true;
         }
     }
@@ -83,18 +77,18 @@ public:
 
     TTimeDelta getElapsedTotalSec() const
     {
-        return elapsed_total_sec_;
+        return clock()->elapsedBetween(latest_time_ns_, first_time_ns_);
     }
 
     TTimeDelta getElapsedIntervalSec() const
     {
-        return elapsed_interval_sec_;
+        return clock()->elapsedBetween(latest_time_ns_, last_time_ns_);
     }
 
     TTimeDelta getLastElapsedIntervalSec() const
     {
-        return last_elapsed_interval_sec_;
-    }
+		return clock()->elapsedBetween(last_time_ns_, previous_time_ns_);
+	}
 
     bool isWaitComplete() const
     {
@@ -112,16 +106,14 @@ public:
     }
 
 private:
-    real_T interval_size_sec_;
-    TTimeDelta elapsed_total_sec_;
-    TTimeDelta elapsed_interval_sec_;
-    TTimeDelta last_elapsed_interval_sec_;
     uint update_count_;
     real_T frequency_;
     real_T startup_delay_;
     bool interval_complete_;
     bool startup_complete_;
-    TTimePoint last_time_, first_time_;
+	TTimePoint interval_size_ns_;
+	TTimePoint latest_time_ns_, last_time_ns_, previous_time_ns_;
+	TTimePoint first_time_ns_, next_time_ns_;
 
 };
 

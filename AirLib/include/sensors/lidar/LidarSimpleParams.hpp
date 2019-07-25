@@ -102,6 +102,8 @@ struct LidarSimpleParams {
            
         draw_debug_points = settings.draw_debug_points;
         data_frame = settings.data_frame;
+
+		update_frequency = settings.update_frequency;
     }
 };
 

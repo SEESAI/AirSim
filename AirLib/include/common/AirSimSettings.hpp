@@ -236,6 +236,8 @@ public: //types
         bool draw_debug_points = false;
         std::string data_frame = AirSimSettings::kVehicleInertialFrame;
 
+		real_T update_frequency = 10; //Hz - polling rate for LIDAR function
+
 		float azimuth_stddev = 0;			// azimuth angle noise (degrees)
 		float altitude_stddev = 0;			// altitude angle noise (degrees)
 		float range_stddev = 0;				// range noise (m)
@@ -1209,6 +1211,8 @@ private:
 
         lidar_setting.position = createVectorSetting(settings_json, lidar_setting.position);
         lidar_setting.rotation = createRotationSetting(settings_json, lidar_setting.rotation);
+
+		lidar_setting.update_frequency = settings_json.getFloat("SensorUpdateFrequency", lidar_setting.update_frequency);
     }
 
     static std::unique_ptr<SensorSetting> createSensorSetting(
