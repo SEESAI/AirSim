@@ -22,8 +22,8 @@ void UnrealLidarSensor::createLasers()
 	float azimuth_start = params_.horizontal_FOV_start;
 	float azimuth_end = params_.horizontal_FOV_end;
 	// Conversion of "FOV upper" & "lower" to polar angles (angle away from the positive z axis)
-	float polar_start = 90.0f-params_.vertical_FOV_upper;
-	float polar_end = 90.0f-params_.vertical_FOV_lower; 
+	float polar_start = 90.0f+params_.vertical_FOV_lower;
+	float polar_end = 90.0f+params_.vertical_FOV_upper; 
 
 	// Make sure angle data sensible
 	azimuth_start = std::fmod(360.0f + azimuth_start, 360.0f);
@@ -161,7 +161,7 @@ bool UnrealLidarSensor::shootLaser(const msr::airlib::Pose& lidar_pose, const ms
     Vector3r start = lidar_pose.position + vehicle_pose.position;
 
 	// Convert Polar and Azimuth angles to Ray Pitch and Yaw 
-	float ray_pitch_angle = 90.0-polar_angle;
+	float ray_pitch_angle = polar_angle-90.0f;
 	float ray_yaw_angle = azimuth_angle;
 
     // We need to compose rotations here rather than rotate a vector by a quaternion
