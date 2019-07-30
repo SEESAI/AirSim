@@ -18,11 +18,14 @@ UnrealLidarSensor::UnrealLidarSensor(const AirSimSettings::LidarSetting& setting
 // initializes information based on lidar configuration
 void UnrealLidarSensor::createLasers()
 {
-	// Make sure angle data sensible
+	// Extract params
 	float azimuth_start = params_.horizontal_FOV_start;
 	float azimuth_end = params_.horizontal_FOV_end;
-	float altitude_lower = params_.vertical_FOV_lower;
-	float altitude_upper = params_.vertical_FOV_upper;
+	// Conversion of "FOV upper" & "lower" to polar angles (angle away from the positive z axis)
+	float polar_start = 90.0f-params_.vertical_FOV_upper;
+	float polar_end = 90.0f-params_.vertical_FOV_lower; 
+
+	// Make sure angle data sensible
 	azimuth_start = std::fmod(360.0f + azimuth_start, 360.0f);
 	azimuth_end = std::fmod(360.0f + azimuth_end, 360.0f);
 	azimuth_end = (azimuth_end <= azimuth_start) ? azimuth_end + 360.0f : azimuth_end;
@@ -30,21 +33,20 @@ void UnrealLidarSensor::createLasers()
 		azimuth_start -= 360.0f;
 		azimuth_end -= 360.0f;
 	}
-
-	altitude_upper = (altitude_upper <= altitude_lower) ? altitude_lower : altitude_upper;
+	polar_end = (polar_end <= polar_start) ? polar_start : polar_end;
 
     // calculate verticle angle distance between each laser
     float delta_angle = 0;
     if (channels_per_scan_ > 1)
-        delta_angle = (altitude_upper - altitude_lower) /
+        delta_angle = (polar_end - polar_start) /
             static_cast<float>(channels_per_scan_ - 1);
 
     // store vertical angles for each laser
-    laser_altitude_angles_.clear();
+    laser_polar_angles_.clear();
     for (int32 i = 0; i < channels_per_scan_; ++i)
     {
-        const float angle = altitude_lower + static_cast<float>(i) * delta_angle;
-		laser_altitude_angles_.emplace_back(angle);
+        const float angle = polar_start + static_cast<float>(i) * delta_angle;
+		laser_polar_angles_.emplace_back(angle);
     }
 
 	// calculate horizontal angle distance between each laser
@@ -101,19 +103,19 @@ void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const
 		sector = (sector < 0) ? (sector + scans_per_revolution_) : sector;
 
 		ts.emplace_back(update_time);
-		az.emplace_back(laser_azimuth_angles_[sector]);
+		az.emplace_back(laser_azimuth_angles_[sector] * M_PIf / 180.0);
 
 		for (int32 j = 0; j < channels_per_scan_; ++j)
 		{
 			const float azimuth_angle = laser_azimuth_angles_[sector] + gauss_dist_.next() * params_.azimuth_stddev;
-			const float altitude_angle = laser_altitude_angles_[j] + gauss_dist_.next() * params_.altitude_stddev;
+			const float polar_angle = laser_polar_angles_[j] + gauss_dist_.next() * params_.polar_stddev;
 
 			if (uniform_dist_.next() < params_.point_loss_likelihood)
 				// Delete random points
 				r.emplace_back(0);
 			else {
 				Vector3r point;
-				if (shootLaser(lidar_pose, vehicle_pose, azimuth_angle, altitude_angle, params_, point)) {
+				if (shootLaser(lidar_pose, vehicle_pose, azimuth_angle, polar_angle, params_, point)) {
 					float range = point.norm();
 					float range_new = range;
 
@@ -151,20 +153,25 @@ void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const
 
 // simulate shooting a laser via Unreal ray-tracing.
 bool UnrealLidarSensor::shootLaser(const msr::airlib::Pose& lidar_pose, const msr::airlib::Pose& vehicle_pose,
-    const float horizontal_angle, const float vertical_angle, 
+    const float azimuth_angle, const float polar_angle,
     const msr::airlib::LidarSimpleParams params, Vector3r &point)
 {
     // start position
+	// ToDo - check this as I don't see a coordiante system conversion
     Vector3r start = lidar_pose.position + vehicle_pose.position;
+
+	// Convert Polar and Azimuth angles to Ray Pitch and Yaw 
+	float ray_pitch_angle = 90.0-polar_angle;
+	float ray_yaw_angle = azimuth_angle;
 
     // We need to compose rotations here rather than rotate a vector by a quaternion
     // Hence using coordOrientationAdd(..) rather than rotateQuaternion(..)
 
     // get ray quaternion in lidar frame (angles must be in radians)
     msr::airlib::Quaternionr ray_q_l = msr::airlib::VectorMath::toQuaternion(
-        msr::airlib::Utils::degreesToRadians(vertical_angle),   //pitch - rotation around Y axis
+        msr::airlib::Utils::degreesToRadians(ray_pitch_angle),  //pitch - rotation around Y axis
         0,                                                      //roll  - rotation around X axis
-        msr::airlib::Utils::degreesToRadians(horizontal_angle));//yaw   - rotation around Z axis
+        msr::airlib::Utils::degreesToRadians(ray_yaw_angle));	//yaw   - rotation around Z axis
 
     // get ray quaternion in body frame
     msr::airlib::Quaternionr ray_q_b = VectorMath::coordOrientationAdd(ray_q_l, lidar_pose.orientation);

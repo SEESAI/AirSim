@@ -37,6 +37,6 @@ private:
     AActor* actor_;
     const NedTransform* ned_transform_;
 
-	msr::airlib::vector<msr::airlib::real_T> laser_altitude_angles_;
+	msr::airlib::vector<msr::airlib::real_T> laser_polar_angles_;
 	msr::airlib::vector<msr::airlib::real_T> laser_azimuth_angles_;
 };

@@ -239,7 +239,7 @@ public: //types
 		real_T update_frequency = 10; //Hz - polling rate for LIDAR function
 
 		float azimuth_stddev = 0;			// azimuth angle noise (degrees)
-		float altitude_stddev = 0;			// altitude angle noise (degrees)
+		float polar_stddev = 0;				// polar angle noise (degrees)
 		float range_stddev = 0;				// range noise (m)
 		float point_loss_likelihood = 0;	// likelihood of no return (zero to one)
 		float random_return_likelihood = 0; // likelihood of a random return (zero to one)
@@ -1203,7 +1203,7 @@ private:
         lidar_setting.horizontal_FOV_start = settings_json.getFloat("HorizontalFOVStart", lidar_setting.horizontal_FOV_start);
         lidar_setting.horizontal_FOV_end = settings_json.getFloat("HorizontalFOVEnd", lidar_setting.horizontal_FOV_end);
 
-		lidar_setting.altitude_stddev = settings_json.getFloat("AltitudeStdDev", lidar_setting.altitude_stddev);
+		lidar_setting.polar_stddev = settings_json.getFloat("PolarStdDev", lidar_setting.polar_stddev);
 		lidar_setting.azimuth_stddev = settings_json.getFloat("AzimuthStdDev", lidar_setting.azimuth_stddev);
 		lidar_setting.range_stddev = settings_json.getFloat("RangeStdDev", lidar_setting.range_stddev);
 		lidar_setting.point_loss_likelihood = settings_json.getFloat("PointLossLikelihood", lidar_setting.point_loss_likelihood);

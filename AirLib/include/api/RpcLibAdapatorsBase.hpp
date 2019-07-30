@@ -504,26 +504,26 @@ public:
 
 	struct GPSDataBuffer {
 
-		std::vector<uint64_t> time_stamps;
+		std::vector<uint64_t> timestamps_ns;
 		std::vector<double> latitude;  
 		std::vector<double> longitude; 
 		std::vector<float>  altitude;
 
-		MSGPACK_DEFINE_MAP(time_stamps, latitude, longitude, altitude);
+		MSGPACK_DEFINE_MAP(timestamps_ns, latitude, longitude, altitude);
 
 		GPSDataBuffer()
 		{}
 
 		GPSDataBuffer(const msr::airlib::GPSDataBuffer& s)
 		{
-			time_stamps = s.time_stamps;
+			timestamps_ns = s.timestamps_ns;
 			latitude = s.latitude;
 			longitude = s.longitude;
 			altitude = s.altitude;
 
 			//TODO: remove bug workaround for https://github.com/rpclib/rpclib/issues/152
-			if (time_stamps.size() == 0) {
-				time_stamps.push_back(0);
+			if (timestamps_ns.size() == 0) {
+				timestamps_ns.push_back(0);
 				latitude.push_back(0);
 				longitude.push_back(0);
 				altitude.push_back(0);
@@ -534,7 +534,7 @@ public:
 		{
 			msr::airlib::GPSDataBuffer d;
 
-			d.time_stamps = time_stamps;
+			d.timestamps_ns = timestamps_ns;
 			d.latitude = latitude;
 			d.longitude = longitude;
 			d.altitude = altitude;
@@ -545,26 +545,26 @@ public:
 
 	struct IMUDataBuffer {
 
-		std::vector<uint64_t> time_stamps;
+		std::vector<uint64_t> timestamps_ns;
 		std::vector<float> orientation;
 		std::vector<float> angular_velocity;
 		std::vector<float> linear_acceleration;
 
-		MSGPACK_DEFINE_MAP(time_stamps, orientation, angular_velocity, linear_acceleration);
+		MSGPACK_DEFINE_MAP(timestamps_ns, orientation, angular_velocity, linear_acceleration);
 
 		IMUDataBuffer()
 		{}
 
 		IMUDataBuffer(const msr::airlib::IMUDataBuffer& s)
 		{
-			time_stamps = s.time_stamps;
+			timestamps_ns = s.timestamps_ns;
 			orientation = s.orientation;
 			angular_velocity = s.angular_velocity;
 			linear_acceleration = s.linear_acceleration;
 
 			//TODO: remove bug workaround for https://github.com/rpclib/rpclib/issues/152
-			if (time_stamps.size() == 0) {
-				time_stamps.push_back(0);
+			if (timestamps_ns.size() == 0) {
+				timestamps_ns.push_back(0);
 				orientation.push_back(0);
 				angular_velocity.push_back(0);
 				linear_acceleration.push_back(0);
@@ -575,7 +575,7 @@ public:
 		{
 			msr::airlib::IMUDataBuffer d;
 
-			d.time_stamps = time_stamps;
+			d.timestamps_ns = timestamps_ns;
 			d.orientation = orientation;
 			d.angular_velocity = angular_velocity;
 			d.linear_acceleration = linear_acceleration;
@@ -586,12 +586,12 @@ public:
 
     struct LidarDataBuffer {
 
-        std::vector<uint64_t> time_stamps;    // timestamps
+		Pose sensor_pose_in_world_frame;
+		std::vector<uint64_t> timestamps_ns;    // timestamps
 		std::vector<float> azimuth_angles;  // azimuth_angles
         std::vector<float> ranges;          // ranges
-        Pose pose;
 
-        MSGPACK_DEFINE_MAP(pose, time_stamps, azimuth_angles, ranges);
+        MSGPACK_DEFINE_MAP(sensor_pose_in_world_frame, timestamps_ns, azimuth_angles, ranges);
 
         LidarDataBuffer()
         {}
@@ -599,18 +599,16 @@ public:
         LidarDataBuffer(const msr::airlib::LidarDataBuffer& s)
         {
 			azimuth_angles = s.azimuth_angles;
-			time_stamps = s.time_stamps;
+			timestamps_ns = s.timestamps_ns;
 			ranges = s.ranges;
-			pose = s.pose;
+			sensor_pose_in_world_frame = s.sensor_pose_in_world_frame;
 
             //TODO: remove bug workaround for https://github.com/rpclib/rpclib/issues/152
 			if (azimuth_angles.size() == 0) {
-				time_stamps.push_back(0);
+				timestamps_ns.push_back(0);
 				ranges.push_back(0);
 				azimuth_angles.push_back(0);
 			}
-
-            pose = s.pose;
         }
 
         msr::airlib::LidarDataBuffer to() const
@@ -618,9 +616,9 @@ public:
             msr::airlib::LidarDataBuffer d;
 
 			d.azimuth_angles = azimuth_angles;
-			d.time_stamps = time_stamps;
+			d.timestamps_ns = timestamps_ns;
 			d.ranges = ranges;
-			d.pose = pose.to();
+			d.sensor_pose_in_world_frame = sensor_pose_in_world_frame.to();
 
             return d;
         }

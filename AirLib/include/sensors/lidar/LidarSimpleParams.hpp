@@ -27,7 +27,7 @@ struct LidarSimpleParams {
     real_T vertical_FOV_lower = -45;             // drones -45, car -10
 
 	real_T azimuth_stddev = 0;			// azimuth angle noise (degrees)
-	real_T altitude_stddev = 0;			// altitude angle noise (degrees)
+	real_T polar_stddev = 0;			// polar angle noise (degrees)
 	real_T range_stddev = 0;				// range noise (m)
 	real_T point_loss_likelihood = 0;	// likelihood of no return (zero to one)
 	real_T random_return_likelihood = 0; // likelihood of a random return (zero to one)
@@ -86,7 +86,7 @@ struct LidarSimpleParams {
         }
 
 		azimuth_stddev = settings.azimuth_stddev;
-		altitude_stddev = settings.altitude_stddev;
+		polar_stddev = settings.polar_stddev;
 		range_stddev = settings.range_stddev;
 		point_loss_likelihood = settings.point_loss_likelihood;
 		random_return_likelihood = settings.random_return_likelihood;
