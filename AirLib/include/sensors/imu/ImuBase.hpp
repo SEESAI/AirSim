@@ -47,13 +47,13 @@ public:
 		std::lock_guard<std::mutex> output_lock(APIoutput_mutex_);
 
 		// Copy the buffer into the output (which is passed by reference - hence we need a copy)
-		output_buffer_.time_stamps = output_buffer_internal_.time_stamps;
+		output_buffer_.timestamps_ns = output_buffer_internal_.timestamps_ns;
 		output_buffer_.orientation = output_buffer_internal_.orientation;
 		output_buffer_.angular_velocity = output_buffer_internal_.angular_velocity;
 		output_buffer_.linear_acceleration = output_buffer_internal_.linear_acceleration;
 
 		// Clear the buffer
-		output_buffer_internal_.time_stamps.clear();
+		output_buffer_internal_.timestamps_ns.clear();
 		output_buffer_internal_.orientation.clear();
 		output_buffer_internal_.angular_velocity.clear();
 		output_buffer_internal_.linear_acceleration.clear();
@@ -69,7 +69,7 @@ protected:
 		// Lock the mutex to prevent buffer update during call
 		std::lock_guard<std::mutex> output_lock(APIoutput_mutex_);
 
-		output_buffer_internal_.time_stamps.push_back(output.time_stamp);
+		output_buffer_internal_.timestamps_ns.push_back(output.time_stamp);
 		output_buffer_internal_.orientation.push_back(output.orientation.w());
 		output_buffer_internal_.orientation.push_back(output.orientation.x());
 		output_buffer_internal_.orientation.push_back(output.orientation.y());
@@ -83,9 +83,9 @@ protected:
 
 		// Trim to be a sensible size
 		unsigned max_buffer_length = 1000; // Hard coded for now - may wish to make this 1s of data
-		if (output_buffer_internal_.time_stamps.size() > max_buffer_length) {
-			output_buffer_internal_.time_stamps.erase(output_buffer_internal_.time_stamps.begin(), 
-				output_buffer_internal_.time_stamps.end() - max_buffer_length);
+		if (output_buffer_internal_.timestamps_ns.size() > max_buffer_length) {
+			output_buffer_internal_.timestamps_ns.erase(output_buffer_internal_.timestamps_ns.begin(),
+				output_buffer_internal_.timestamps_ns.end() - max_buffer_length);
 			output_buffer_internal_.orientation.erase(output_buffer_internal_.orientation.begin(),
 				output_buffer_internal_.orientation.end() - max_buffer_length *4);
 			output_buffer_internal_.angular_velocity.erase(output_buffer_internal_.angular_velocity.begin(),

@@ -84,7 +84,7 @@ public:
         Axis4r p = Axis4r(0.2f, 0.2f, 0, 2.0f);
 
         Axis4r i = Axis4r(0, 0, 0, 2.0f);
-        Axis4r iterm_discount = Axis4r(1, 1, 1, 0.9999f);
+        Axis4r iterm_discount = Axis4r(1, 1, 1, 1); // throttle was 0.9999f
         Axis4r output_bias = Axis4r(0, 0, 0, 0);
                 
         //we keep min throttle higher so that if we are angling a lot, its still supported

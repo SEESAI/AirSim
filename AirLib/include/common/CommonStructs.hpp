@@ -269,7 +269,8 @@ struct RCData {
 
     unsigned int getSwitch(uint16_t index) const
     {
-        return switches && (1 << index) ? 1 : 0;
+		int switch_on = (switches & (1 << index)) ? 1 : 0;
+        return switch_on;
     }
 
     void add(const RCData& other)
@@ -297,7 +298,7 @@ struct RCData {
 
 struct GPSDataBuffer {
 
-	vector<uint64_t> time_stamps;
+	vector<uint64_t> timestamps_ns;
 	vector<double> latitude;
 	vector<double> longitude;
 	vector<float> altitude;
@@ -308,7 +309,7 @@ struct GPSDataBuffer {
 
 struct IMUDataBuffer {
 
-	vector<uint64_t> time_stamps;
+	vector<uint64_t> timestamps_ns;
 	vector<float> orientation;
 	vector<float> angular_velocity;
 	vector<float> linear_acceleration;
@@ -319,10 +320,10 @@ struct IMUDataBuffer {
 
 struct LidarDataBuffer {
 
+	Pose sensor_pose_in_world_frame;
+	vector<uint64_t> timestamps_ns;
 	vector<real_T> azimuth_angles;
-	vector<uint64_t> time_stamps;
 	vector<real_T> ranges;
-	Pose pose;
 
 	LidarDataBuffer()
 	{}

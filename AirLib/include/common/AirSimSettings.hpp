@@ -87,6 +87,8 @@ public: //types
     struct RCSettings {
         int remote_control_id = -1;
         bool allow_api_when_disconnected = false;
+		float max_velocity = 5.0f;
+		float max_angle_rate = 3.0f;
     };
 
     struct Rotation {
@@ -234,8 +236,10 @@ public: //types
         bool draw_debug_points = false;
         std::string data_frame = AirSimSettings::kVehicleInertialFrame;
 
+		real_T update_frequency = 10; //Hz - polling rate for LIDAR function
+
 		float azimuth_stddev = 0;			// azimuth angle noise (degrees)
-		float altitude_stddev = 0;			// altitude angle noise (degrees)
+		float polar_stddev = 0;				// polar angle noise (degrees)
 		float range_stddev = 0;				// range noise (m)
 		float point_loss_likelihood = 0;	// likelihood of no return (zero to one)
 		float random_return_likelihood = 0; // likelihood of a random return (zero to one)
@@ -571,6 +575,9 @@ private:
                 simmode_name == "Multirotor" ? 0 : -1);
             rc_setting.allow_api_when_disconnected = rc_json.getBool("AllowAPIWhenDisconnected",
                 rc_setting.allow_api_when_disconnected);
+			rc_setting.max_velocity   = rc_json.getFloat("MaxLinearVelocity", rc_setting.max_velocity);
+			rc_setting.max_angle_rate = rc_json.getFloat("MaxAngleRate", rc_setting.max_angle_rate);
+
         }
     }
 
@@ -763,11 +770,8 @@ private:
         vehicle_setting->is_fpv_vehicle = settings_json.getBool("IsFpvVehicle",
             vehicle_setting->is_fpv_vehicle);
 
-        Settings rc_json;
-        if (settings_json.getChild("RC", rc_json)) {
-            loadRCSetting(simmode_name, rc_json, vehicle_setting->rc);
-        }
-
+		loadRCSetting(simmode_name, settings_json, vehicle_setting->rc);
+        
         vehicle_setting->position = createVectorSetting(settings_json, vehicle_setting->position);
         vehicle_setting->rotation = createRotationSetting(settings_json, vehicle_setting->rotation);
 
@@ -1199,7 +1203,7 @@ private:
         lidar_setting.horizontal_FOV_start = settings_json.getFloat("HorizontalFOVStart", lidar_setting.horizontal_FOV_start);
         lidar_setting.horizontal_FOV_end = settings_json.getFloat("HorizontalFOVEnd", lidar_setting.horizontal_FOV_end);
 
-		lidar_setting.altitude_stddev = settings_json.getFloat("AltitudeStdDev", lidar_setting.altitude_stddev);
+		lidar_setting.polar_stddev = settings_json.getFloat("PolarStdDev", lidar_setting.polar_stddev);
 		lidar_setting.azimuth_stddev = settings_json.getFloat("AzimuthStdDev", lidar_setting.azimuth_stddev);
 		lidar_setting.range_stddev = settings_json.getFloat("RangeStdDev", lidar_setting.range_stddev);
 		lidar_setting.point_loss_likelihood = settings_json.getFloat("PointLossLikelihood", lidar_setting.point_loss_likelihood);
@@ -1207,6 +1211,8 @@ private:
 
         lidar_setting.position = createVectorSetting(settings_json, lidar_setting.position);
         lidar_setting.rotation = createRotationSetting(settings_json, lidar_setting.rotation);
+
+		lidar_setting.update_frequency = settings_json.getFloat("SensorUpdateFrequency", lidar_setting.update_frequency);
     }
 
     static std::unique_ptr<SensorSetting> createSensorSetting(

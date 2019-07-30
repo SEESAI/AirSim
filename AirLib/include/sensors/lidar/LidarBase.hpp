@@ -48,18 +48,16 @@ public:
 		// or a full scan, whichever is smaller
 		// whereas output_ is cleared every LIDAR update even if the API hasn't called
 
-		// ToDo - mutex with writing the buffer
-
 		// copy the buffer into the output
 		std::lock_guard<std::mutex> APIoutput_lock(APIoutput_mutex_);
 
-		output_buffer_.pose = output_buffer_internal_.pose;
-		output_buffer_.time_stamps = output_buffer_internal_.time_stamps;
+		output_buffer_.sensor_pose_in_world_frame = output_buffer_internal_.sensor_pose_in_world_frame;
+		output_buffer_.timestamps_ns = output_buffer_internal_.timestamps_ns;
 		output_buffer_.azimuth_angles = output_buffer_internal_.azimuth_angles;
 		output_buffer_.ranges = output_buffer_internal_.ranges;
 		
 		// and clear the buffer
-		output_buffer_internal_.time_stamps.clear();
+		output_buffer_internal_.timestamps_ns.clear();
 		output_buffer_internal_.azimuth_angles.clear();
 		output_buffer_internal_.ranges.clear();
 
@@ -85,7 +83,7 @@ protected:
 		std::vector<msr::airlib::real_T> & r, int scans_per_revolution, int channels_per_scan)
 	{
 		// Append latest data to the buffer
-		ts.insert(ts.begin(), output_buffer_internal_.time_stamps.begin(), output_buffer_internal_.time_stamps.end());
+		ts.insert(ts.begin(), output_buffer_internal_.timestamps_ns.begin(), output_buffer_internal_.timestamps_ns.end());
 		az.insert(az.begin(), output_buffer_internal_.azimuth_angles.begin(), output_buffer_internal_.azimuth_angles.end());
 		r.insert(r.begin(), output_buffer_internal_.ranges.begin(), output_buffer_internal_.ranges.end());
 
@@ -100,8 +98,8 @@ protected:
 
 		// Update the buffer
 		std::lock_guard<std::mutex> APIoutput_lock(APIoutput_mutex_);
-		output_buffer_internal_.pose = pose;
-		output_buffer_internal_.time_stamps = ts;
+		output_buffer_internal_.sensor_pose_in_world_frame = pose;
+		output_buffer_internal_.timestamps_ns = ts;
 		output_buffer_internal_.azimuth_angles = az;
 		output_buffer_internal_.ranges = r;
 
