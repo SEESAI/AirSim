@@ -61,10 +61,6 @@ public:
         //else leave the goal set by IOffboardApi API
 
         detectLanding();
-		if (landed_)
-			comm_link_->log("LandingState: Landed", ICommLink::kLogLevelInfo);
-		else
-			comm_link_->log("LandingState: Flying", ICommLink::kLogLevelInfo);
 
     }
 
@@ -234,6 +230,7 @@ private:
 					isAlmostZero(velocity.x()) && isAlmostZero(velocity.y()) && isAlmostZero(velocity.z())) {
 					if (clock_->millis() > (last_moving_time_ + landing_timeout))
 						landed_ = true;
+						comm_link_->log("LandingState: Landed", ICommLink::kLogLevelInfo);
 				}
 				else
 					last_moving_time_ = clock_->millis();
@@ -246,6 +243,7 @@ private:
 			if ((goal_.throttle() < -0.1) &&
 				(std::abs(state_estimator_->getLinearVelocity().z()) < 0.01f)) {
 				landed_ = false;
+				comm_link_->log("LandingState: Flying", ICommLink::kLogLevelInfo);
 				last_moving_time_ = clock_->millis();
 			}
 

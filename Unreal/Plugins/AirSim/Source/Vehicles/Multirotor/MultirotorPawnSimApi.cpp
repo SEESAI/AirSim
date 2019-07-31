@@ -119,14 +119,13 @@ void MultirotorPawnSimApi::updateRendering(float dt)
 		std::string text = vehicle_api_messages_[i].c_str();
 		std::string title = "LogMessage: ";
 		std::size_t found = text.find(":");
-		if (found == std::string::npos)
-			found = 0;
-		else {
-			title = text.substr(0, found);
+		if (!(found == std::string::npos)) {
+			title = text.substr(0, found + 1);
 			text = text.substr(found + 1);
 		}
 		UAirBlueprintLib::LogMessage(FString(title.c_str()), FString(text.c_str()), LogDebugLevel::Informational, 30);
     }
+	vehicle_api_messages_.clear();
 
     try {
         vehicle_api_->sendTelemetry(dt);
