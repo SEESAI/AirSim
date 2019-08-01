@@ -115,6 +115,7 @@ void MultirotorPawnSimApi::updateRendering(float dt)
     UAirBlueprintLib::LogMessage(TEXT("Collision Count:"), 
         FString::FromInt(collision_response.collision_count_non_resting), LogDebugLevel::Informational);
 
+	// Separate out the topic of the log message, so you only display each topic once
     for (auto i = 0; i < vehicle_api_messages_.size(); ++i) {
 		std::string text = vehicle_api_messages_[i].c_str();
 		std::string title = "LogMessage: ";
@@ -125,6 +126,7 @@ void MultirotorPawnSimApi::updateRendering(float dt)
 		}
 		UAirBlueprintLib::LogMessage(FString(title.c_str()), FString(text.c_str()), LogDebugLevel::Informational, 30);
     }
+	// Clear the message vectory now that they are displayed (it is refilled above)
 	vehicle_api_messages_.clear();
 
     try {
