@@ -339,6 +339,15 @@ RpcLibClientBase* RpcLibClientBase::waitOnLastTask(bool* task_result, float time
 
     return this;
 }
+bool RpcLibClientBase::checkLastTask(bool* task_result, float timeout_sec)
+{
+	//should be implemented by derived class if it supports async task,
+	//for example using futures
+	unused(timeout_sec);
+	unused(task_result);
+
+	return false;
+}
 
 void* RpcLibClientBase::getClient()
 {
