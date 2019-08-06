@@ -334,17 +334,18 @@ RpcLibClientBase* RpcLibClientBase::waitOnLastTask(bool* task_result, float time
 {
     //should be implemented by derived class if it supports async task,
     //for example using futures
-    unused(timeout_sec);
+	unused(timeout_sec);
     unused(task_result);
 
     return this;
 }
-bool RpcLibClientBase::checkLastTask(bool* task_result, float timeout_sec)
+bool RpcLibClientBase::checkLastTask(bool* task_result, bool* task_complete, float timeout_sec)
 {
 	//should be implemented by derived class if it supports async task,
 	//for example using futures
 	unused(timeout_sec);
 	unused(task_result);
+	unused(task_complete);
 
 	return false;
 }
