@@ -83,6 +83,7 @@ protected:
 		std::vector<msr::airlib::real_T> & r, int scans_per_revolution, int channels_per_scan)
 	{
 		// Append latest data to the buffer
+		std::lock_guard<std::mutex> APIoutput_lock(APIoutput_mutex_);
 		ts.insert(ts.begin(), output_buffer_internal_.timestamps_ns.begin(), output_buffer_internal_.timestamps_ns.end());
 		az.insert(az.begin(), output_buffer_internal_.azimuth_angles.begin(), output_buffer_internal_.azimuth_angles.end());
 		r.insert(r.begin(), output_buffer_internal_.ranges.begin(), output_buffer_internal_.ranges.end());
@@ -97,7 +98,6 @@ protected:
 		}
 
 		// Update the buffer
-		std::lock_guard<std::mutex> APIoutput_lock(APIoutput_mutex_);
 		output_buffer_internal_.sensor_pose_in_world_frame = pose;
 		output_buffer_internal_.timestamps_ns = ts;
 		output_buffer_internal_.azimuth_angles = az;
