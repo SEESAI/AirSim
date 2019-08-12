@@ -88,8 +88,8 @@ protected:
 		az.insert(az.begin(), output_buffer_internal_.azimuth_angles.begin(), output_buffer_internal_.azimuth_angles.end());
 		r.insert(r.begin(), output_buffer_internal_.ranges.begin(), output_buffer_internal_.ranges.end());
 
-		// Trim to be one revolution
-		unsigned max_buffer_length = scans_per_revolution;
+		// Trim to be two revolutions max
+		unsigned max_buffer_length = 2 * scans_per_revolution;
 		if (ts.size() > max_buffer_length) {
 			int excess_length = ts.size() - max_buffer_length;
 			ts.erase(ts.begin(), ts.begin() + excess_length);
