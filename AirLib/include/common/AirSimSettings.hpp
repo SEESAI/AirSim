@@ -622,7 +622,7 @@ private:
 	{
 		Settings video_camera_json;
 		if (settings_json.getChild("VideoCamera", video_camera_json)) {
-			video_camera_setting.enabled = video_camera_json.getFloat("Enabled", video_camera_setting.enabled);
+			video_camera_setting.enabled = video_camera_json.getBool("Enabled", video_camera_setting.enabled);
 			video_camera_setting.record_interval = video_camera_json.getFloat("CameraInterval", video_camera_setting.record_interval);
 			video_camera_setting.requests.clear();
 
