@@ -587,7 +587,9 @@ void PawnSimApi::updateKinematics(float dt)
     auto next_kinematics = kinematics_->getState();
 
     next_kinematics.pose = getPose();
+	// Note - this linear velocity is in Map coordinates (all that toLocalNed does is change convetnion from NEU to NED)
     next_kinematics.twist.linear = getNedTransform().toLocalNed(getPawn()->GetVelocity());
+	// But - this angular velocity is in Body coordinates
     next_kinematics.twist.angular = msr::airlib::VectorMath::toAngularVelocity(
         kinematics_->getPose().orientation, next_kinematics.pose.orientation, dt);
 
