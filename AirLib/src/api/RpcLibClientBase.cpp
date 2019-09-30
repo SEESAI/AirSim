@@ -313,6 +313,10 @@ void RpcLibClientBase::simSetCameraOrientation(const std::string& camera_name, c
 {
     pimpl_->client.call("simSetCameraOrientation", camera_name, RpcLibAdapatorsBase::Quaternionr(orientation), vehicle_name);
 }
+void RpcLibClientBase::simSetCameraFOV(const std::string& camera_name, float fov_degrees, const std::string& vehicle_name)
+{
+	pimpl_->client.call("simSetCameraFOV", camera_name, fov_degrees, vehicle_name);
+}
 
 msr::airlib::Kinematics::State RpcLibClientBase::simGetGroundTruthKinematics(const std::string& vehicle_name) const
 {
