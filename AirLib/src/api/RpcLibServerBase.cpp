@@ -209,7 +209,12 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
     pimpl_->server.bind("simSetCameraOrientation", [&](const std::string& camera_name, const RpcLibAdapatorsBase::Quaternionr& orientation, 
         const std::string& vehicle_name) -> void {
         getVehicleSimApi(vehicle_name)->setCameraOrientation(camera_name, orientation.to());
-    });
+	});    
+	
+	pimpl_->server.bind("simSetCameraFOV", [&](const std::string& camera_name, float fov_degrees,
+		const std::string& vehicle_name) -> void {
+		getVehicleSimApi(vehicle_name)->setCameraFOV(camera_name, fov_degrees);
+	});
 
     pimpl_->server.bind("simGetCollisionInfo", [&](const std::string& vehicle_name) -> RpcLibAdapatorsBase::CollisionInfo {
         const auto& collision_info = getVehicleSimApi(vehicle_name)->getCollisionInfo(); 
