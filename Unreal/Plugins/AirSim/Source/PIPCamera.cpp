@@ -255,7 +255,11 @@ void APIPCamera::setCameraOrientation(const FRotator& rotator)
 }
 
 void APIPCamera::setCameraFovDegrees(float fov_degree) {
-	camera_->SetFieldOfView(fov_degrees);
+	int image_count = static_cast<int>(Utils::toNumeric(ImageType::Count));
+	for (int image_type = 0; image_type < image_count; ++image_type) {
+		captures_[image_type]->FOVAngle = fov_degree;
+	}
+	camera_->SetFieldOfView(fov_degree);
 }
 
 void APIPCamera::setupCameraFromSettings(const APIPCamera::CameraSetting& camera_setting, const NedTransform& ned_transform)
