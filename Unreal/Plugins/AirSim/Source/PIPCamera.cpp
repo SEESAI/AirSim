@@ -250,8 +250,8 @@ void APIPCamera::setCameraOrientation(const FRotator& rotator)
         gimbald_rotator_.Pitch = rotator.Pitch;
         gimbald_rotator_.Roll = rotator.Roll;
         gimbald_rotator_.Yaw = rotator.Yaw;
-    }
-    this->SetActorRelativeRotation(rotator);
+    } else
+		this->SetActorRelativeRotation(rotator);
 }
 
 void APIPCamera::setCameraFovDegrees(float fov_degree) {
