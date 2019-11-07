@@ -156,9 +156,8 @@ bool UnrealLidarSensor::shootLaser(const msr::airlib::Pose& lidar_pose, const ms
     const float azimuth_angle, const float polar_angle,
     const msr::airlib::LidarSimpleParams params, Vector3r &point)
 {
-    // start position
-	// ToDo - check this as I don't see a coordiante system conversion
-    Vector3r start = lidar_pose.position + vehicle_pose.position;
+    // start position of Lidar in World Frame
+    Vector3r start = (lidar_pose + vehicle_pose).position;
 
 	// Convert Polar and Azimuth angles to Ray Pitch and Yaw 
 	float ray_pitch_angle = polar_angle-90.0f;
