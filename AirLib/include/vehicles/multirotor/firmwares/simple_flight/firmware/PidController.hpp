@@ -16,12 +16,15 @@ public:
     PidController(const IBoardClock* clock = nullptr, const PidConfig<T>& config = PidConfig<T>())
         : clock_(clock), config_(config)
     {
+		PidConfig<T> integrator_config = config;
+		integrator_config.min_output -= config.output_bias;
+		integrator_config.max_output -= config.output_bias;
         switch (config.integrator_type) {
         case PidConfig<T>::IntegratorType::Standard:
-            integrator = std::unique_ptr<StdPidIntegrator<T>>(new StdPidIntegrator<T>(config_));
+            integrator = std::unique_ptr<StdPidIntegrator<T>>(new StdPidIntegrator<T>(integrator_config));
             break;
         case PidConfig<T>::IntegratorType::RungKutta:
-            integrator = std::unique_ptr<RungKuttaPidIntegrator<T>>(new RungKuttaPidIntegrator<T>(config_));
+            integrator = std::unique_ptr<RungKuttaPidIntegrator<T>>(new RungKuttaPidIntegrator<T>(integrator_config));
             break;
         default:
             throw std::invalid_argument("PID integrator type is not recognized");
@@ -52,7 +55,7 @@ public:
         return config_;
     }
 
-    //allow changing config at runtime
+    //allow changing config at runtime (note this doesn't adjust integrator)
     void setConfig(const PidConfig<T>& config)
     {
         bool renabled = !config_.enabled && config.enabled;

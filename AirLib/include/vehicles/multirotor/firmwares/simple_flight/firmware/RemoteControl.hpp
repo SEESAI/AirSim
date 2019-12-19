@@ -217,10 +217,10 @@ private:
 			
 			//get the control inputs and convert to velocity demands
             //goal_ = channels.colWiseMultiply4(params_->angle_level_pid.max_limit);
-			TReal vx = channels.roll() * params_->velocity_pid.max_limit.roll();    // vx = roll?: this is odd but it works...
-			TReal vy = -channels.pitch() * params_->velocity_pid.max_limit.pitch();
-			TReal vyaw = channels.yaw() * params_->angle_rate_pid.max_limit.yaw();
-			TReal vz = -channels.throttle() * params_->velocity_pid.max_limit.throttle();
+			TReal vx = channels.roll() * params_->velocity_pid.max_limit[0]; 
+			TReal vy = -channels.pitch() * params_->velocity_pid.max_limit[1];
+			TReal vyaw = channels.yaw() * params_->angle_rate_pid.max_limit[2];
+			TReal vz = -channels.throttle() * params_->velocity_pid.max_limit[3];
 
 			//rotate x & y velocity demands to align with the drone heading and save
 			TReal yaw = state_estimator_->getAngles().yaw();
@@ -231,7 +231,9 @@ private:
 			goal_ = Axis4r(vx, vy, vyaw, vz);
         }
         else { //we are in control-by-angle mode
-            goal_ = channels.colWiseMultiply4(params_->angle_level_pid.max_limit);
+			/// Adjust the angle requests to match the max rates (but not the throttle)
+            goal_ = channels.colWiseMultiply3(params_->angle_level_pid.max_limit);
+			goal_.throttle() = (channels.throttle() + 1) / 2;
 
 			//if throttle is too low then set all motors to same value as throttle because
 			//otherwise values in pitch/roll/yaw would get clipped randomly and can produce random results
