@@ -69,6 +69,7 @@ public:
     msr::airlib::GeoPoint getHomeGeoPoint(const std::string& vehicle_name = "") const;
 
 	// sensor APIs for getting sensor info
+	msr::airlib::IMUInfo getIMUInfo(const std::string& vehicle_name = "") const;
 	msr::airlib::LidarInfo getLidarInfo(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
 
 	// sensor APIs for getting all data since last API call

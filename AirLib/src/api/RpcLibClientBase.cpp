@@ -159,6 +159,11 @@ msr::airlib::GeoPoint RpcLibClientBase::getHomeGeoPoint(const std::string& vehic
     return pimpl_->client.call("getHomeGeoPoint", vehicle_name).as<RpcLibAdapatorsBase::GeoPoint>().to();
 }
 
+msr::airlib::IMUInfo RpcLibClientBase::getIMUInfo(const std::string& vehicle_name) const
+{
+	return pimpl_->client.call("getIMUInfo", vehicle_name).as<RpcLibAdapatorsBase::IMUInfo>().to();
+}
+
 msr::airlib::LidarInfo RpcLibClientBase::getLidarInfo(const std::string& lidar_name, const std::string& vehicle_name) const
 {
 	return pimpl_->client.call("getLidarInfo", lidar_name, vehicle_name).as<RpcLibAdapatorsBase::LidarInfo>().to();

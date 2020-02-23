@@ -120,6 +120,19 @@ public:
 		return gps->getOutputBuffer();
 	}
 
+	virtual IMUInfo getIMUInfo() const
+	{
+		// just take the first imu - assuming there is one
+		uint count_imu_sensors = getSensors().size(SensorBase::SensorType::Imu);
+		if (count_imu_sensors == 0) {
+			IMUInfo i;
+			return i;
+		}
+
+		ImuBase* imu = static_cast<ImuBase*>(getSensors().getByType(SensorBase::SensorType::Imu, 0));
+		return imu->getInfo();
+	}
+
 	virtual IMUDataBuffer getIMUDataBuffer() const
 	{
 		// just take the first imu - assuming there is one

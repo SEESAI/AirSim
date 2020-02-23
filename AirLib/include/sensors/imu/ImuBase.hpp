@@ -41,6 +41,13 @@ public:
         return output_;
     }
 
+	const IMUInfo & getInfo()
+	{
+		// return the lidar general info
+
+		return imu_info_;
+	}
+
 	const IMUDataBuffer& getOutputBuffer() 
 	{
 		// Lock the mutex to prevent buffer update during call
@@ -96,6 +103,8 @@ protected:
 		}
 	}
 
+protected:
+	IMUInfo imu_info_;
 
 private: 
     Output output_;

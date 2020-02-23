@@ -511,6 +511,42 @@ public:
 		}
 	};
 
+	struct IMUInfo {
+
+		Pose pose;
+		float angle_random_walk;
+		float gyro_bias_stability;
+		float velocity_random_walk;
+		float accelerometer_bias_stability;
+
+		MSGPACK_DEFINE_MAP(pose, angle_random_walk, gyro_bias_stability, velocity_random_walk, accelerometer_bias_stability);
+
+		IMUInfo()
+		{}
+
+		IMUInfo(const msr::airlib::IMUInfo& s)
+		{
+			pose = s.pose;
+			angle_random_walk = s.angle_random_walk;
+			gyro_bias_stability = s.gyro_bias_stability;
+			velocity_random_walk = s.velocity_random_walk;
+			accelerometer_bias_stability = s.accelerometer_bias_stability;
+		}
+
+		msr::airlib::IMUInfo to() const
+		{
+			msr::airlib::IMUInfo d;
+
+			d.pose = pose.to();
+			d.angle_random_walk = angle_random_walk;
+			d.gyro_bias_stability = gyro_bias_stability;
+			d.velocity_random_walk = velocity_random_walk;
+			d.accelerometer_bias_stability = accelerometer_bias_stability;
+
+			return d;
+		}
+	};
+
 	struct LidarData {
 
 		msr::airlib::TTimePoint time_stamp;    // timestamp

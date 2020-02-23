@@ -244,6 +244,7 @@ struct CameraInfo {
     }
 };
 
+
 struct LidarInfo {
 	Pose pose;
 	float vertical_fov_lower;
@@ -255,6 +256,19 @@ struct LidarInfo {
 	float revolutions_per_second;
 
 	LidarInfo()
+	{}
+
+};
+
+
+struct IMUInfo {
+	Pose pose;
+	float angle_random_walk;
+	float gyro_bias_stability;
+	float velocity_random_walk;
+	float accelerometer_bias_stability;
+
+	IMUInfo()
 	{}
 
 };
