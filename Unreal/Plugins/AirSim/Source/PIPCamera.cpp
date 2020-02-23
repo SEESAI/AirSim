@@ -269,7 +269,15 @@ void APIPCamera::setupCameraFromSettings(const APIPCamera::CameraSetting& camera
     //TODO: can we eliminate storing NedTransform?
     ned_transform_ = &ned_transform;
 
-    gimbal_stabilization_ = Utils::clip(camera_setting.gimbal.stabilization, 0.0f, 1.0f);
+	// Save position and rotation for camera info (base pose, prior to any gimbal offset)
+	// ToDo - check for scale
+	camera_pose_in_parent_frame_.position = camera_setting.position;
+	camera_pose_in_parent_frame_.orientation = msr::airlib::VectorMath::toQuaternion(
+		Utils::degreesToRadians(camera_setting.rotation.pitch),   //pitch - rotation around Y axis
+		Utils::degreesToRadians(camera_setting.rotation.roll),    //roll  - rotation around X axis
+		Utils::degreesToRadians(camera_setting.rotation.yaw));    //yaw   - rotation around Z axis
+
+	gimbal_stabilization_ = Utils::clip(camera_setting.gimbal.stabilization, 0.0f, 1.0f);
     if (gimbal_stabilization_ > 0) {
         this->SetActorTickEnabled(true);
         gimbald_rotator_.Pitch = camera_setting.gimbal.rotation.pitch;

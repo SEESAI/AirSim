@@ -64,6 +64,13 @@ public:
 		return output_buffer_;
 	}
 
+	const LidarInfo & getInfo()
+	{
+		// return the lidar general info
+		
+		return lidar_info_;
+	}
+
 	const LidarData & getOutput()
 	{
 		// this call is used for pretty green dots on the screen
@@ -114,6 +121,7 @@ protected:
     }
 
 protected:
+	LidarInfo lidar_info_;
 
 private:
 	LidarDataBuffer output_buffer_internal_;
@@ -123,6 +131,7 @@ private:
 	LidarData output_internal_;
 	LidarData output_;
 	std::mutex output_mutex_;
+
 };
 
 }} //namespace

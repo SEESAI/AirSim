@@ -40,6 +40,16 @@ public:
 		scans_per_revolution_ = static_cast<int32>(FMath::RoundHalfFromZero(static_cast<double>(points_per_second) /
 			(rotation_rate_ * static_cast<double>(channels_per_scan_))));
 		scans_per_revolution_ = (scans_per_revolution_ > 0) ? scans_per_revolution_ : 1;
+
+		// Save the info in case asked for it
+		lidar_info_.vertical_fov_lower = params_.vertical_FOV_lower;
+		lidar_info_.vertical_fov_upper = params_.vertical_FOV_upper;
+		lidar_info_.horizontal_fov_lower = params_.horizontal_FOV_start;
+		lidar_info_.horizontal_fov_upper = params_.horizontal_FOV_end;
+		lidar_info_.channels_per_scan = channels_per_scan_;
+		lidar_info_.revolutions_per_second = rotation_rate_;
+		lidar_info_.scans_per_revolution = scans_per_revolution_;
+		lidar_info_.pose = params_.relative_pose;
     }
 
     //*** Start: UpdatableState implementation ***//

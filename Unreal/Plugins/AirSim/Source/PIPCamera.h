@@ -51,6 +51,7 @@ public:
     UTextureRenderTarget2D* getRenderTarget(const ImageType type, bool if_active);
 
     msr::airlib::Pose getPose() const;
+	msr::airlib::Pose getPoseInParentFrame() const { return camera_pose_in_parent_frame_; };
     
 private: //members
     UPROPERTY() TArray<USceneCaptureComponent2D*> captures_;
@@ -67,6 +68,7 @@ private: //members
     float gimbal_stabilization_;
     const NedTransform* ned_transform_;
     TMap<int, EPixelFormat> image_type_to_pixel_format_map_;
+	msr::airlib::Pose camera_pose_in_parent_frame_;
 
 private: //methods
     typedef common_utils::Utils Utils;

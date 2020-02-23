@@ -159,7 +159,11 @@ msr::airlib::GeoPoint RpcLibClientBase::getHomeGeoPoint(const std::string& vehic
     return pimpl_->client.call("getHomeGeoPoint", vehicle_name).as<RpcLibAdapatorsBase::GeoPoint>().to();
 }
 
-// New methods added by Richard 13/05/19
+msr::airlib::LidarInfo RpcLibClientBase::getLidarInfo(const std::string& lidar_name, const std::string& vehicle_name) const
+{
+	return pimpl_->client.call("getLidarInfo", lidar_name, vehicle_name).as<RpcLibAdapatorsBase::LidarInfo>().to();
+}
+
 msr::airlib::GPSDataBuffer RpcLibClientBase::getGPSDataBuffer(const std::string& vehicle_name) const
 {
 	return pimpl_->client.call("getGPSDataBuffer", vehicle_name).as<RpcLibAdapatorsBase::GPSDataBuffer>().to();

@@ -466,6 +466,48 @@ public:
         }
     };
 
+	struct LidarInfo {
+
+		Pose pose;
+		float vertical_fov_lower;
+		float vertical_fov_upper;
+		float horizontal_fov_lower;
+		float horizontal_fov_upper;
+		int channels_per_scan;
+		int scans_per_revolution;
+		float revolutions_per_second;
+
+		MSGPACK_DEFINE_MAP(pose, vertical_fov_lower, vertical_fov_upper, horizontal_fov_lower, horizontal_fov_upper, channels_per_scan, scans_per_revolution, revolutions_per_second);
+
+		LidarInfo()
+		{}
+
+		LidarInfo(const msr::airlib::LidarInfo& s)
+		{
+			pose = s.pose;
+			vertical_fov_lower = s.vertical_fov_lower;
+			vertical_fov_upper = s.vertical_fov_upper;
+			horizontal_fov_lower = s.horizontal_fov_lower;
+			horizontal_fov_upper = s.horizontal_fov_upper;
+			scans_per_revolution = s.scans_per_revolution;
+			revolutions_per_second = s.revolutions_per_second;
+		}
+
+		msr::airlib::LidarInfo to() const
+		{
+			msr::airlib::LidarInfo d;
+
+			d.pose = pose.to();
+			d.vertical_fov_lower = vertical_fov_lower;
+			d.vertical_fov_upper = vertical_fov_upper;
+			d.horizontal_fov_lower = horizontal_fov_lower;
+			d.horizontal_fov_upper = horizontal_fov_upper;
+			d.scans_per_revolution = scans_per_revolution;
+			d.revolutions_per_second = revolutions_per_second;
+
+			return d;
+		}
+	};
 
 	struct LidarData {
 

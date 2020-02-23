@@ -244,6 +244,21 @@ struct CameraInfo {
     }
 };
 
+struct LidarInfo {
+	Pose pose;
+	float vertical_fov_lower;
+	float vertical_fov_upper;
+	float horizontal_fov_lower;
+	float horizontal_fov_upper;
+	float channels_per_scan;
+	float scans_per_revolution;
+	float revolutions_per_second;
+
+	LidarInfo()
+	{}
+
+};
+
 struct CollisionResponse {
     unsigned int collision_count_raw = 0;
     unsigned int collision_count_non_resting = 0;

@@ -133,6 +133,28 @@ public:
 		return imu->getOutputBuffer();
 	}
 
+	virtual LidarInfo getLidarInfo(const std::string& lidar_name) const
+	{
+		LidarBase* lidar = nullptr;
+
+		// Find lidar with the given name (for empty input name, return the first one found)
+		// Not efficient but should suffice given small number of lidars
+		uint count_lidars = getSensors().size(SensorBase::SensorType::Lidar);
+		for (uint i = 0; i < count_lidars; i++)
+		{
+			LidarBase* current_lidar = static_cast<LidarBase*>(getSensors().getByType(SensorBase::SensorType::Lidar, i));
+			if (current_lidar != nullptr && (current_lidar->getName() == lidar_name || lidar_name == ""))
+			{
+				lidar = current_lidar;
+				break;
+			}
+		}
+		if (lidar == nullptr)
+			throw VehicleControllerException(Utils::stringf("No lidar with name %s exist on vehicle", lidar_name.c_str()));
+
+		return lidar->getInfo();
+	}
+
 	// Lidar APIs
     virtual LidarDataBuffer getLidarDataBuffer(const std::string& lidar_name) const
     {
