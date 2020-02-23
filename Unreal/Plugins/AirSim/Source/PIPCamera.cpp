@@ -269,14 +269,6 @@ void APIPCamera::setupCameraFromSettings(const APIPCamera::CameraSetting& camera
     //TODO: can we eliminate storing NedTransform?
     ned_transform_ = &ned_transform;
 
-	// Save position and rotation for camera info (base pose, prior to any gimbal offset)
-	// ToDo - check for scale
-	camera_pose_in_parent_frame_.position = camera_setting.position;
-	camera_pose_in_parent_frame_.orientation = msr::airlib::VectorMath::toQuaternion(
-		Utils::degreesToRadians(camera_setting.rotation.pitch),   //pitch - rotation around Y axis
-		Utils::degreesToRadians(camera_setting.rotation.roll),    //roll  - rotation around X axis
-		Utils::degreesToRadians(camera_setting.rotation.yaw));    //yaw   - rotation around Z axis
-
 	gimbal_stabilization_ = Utils::clip(camera_setting.gimbal.stabilization, 0.0f, 1.0f);
     if (gimbal_stabilization_ > 0) {
         this->SetActorTickEnabled(true);
@@ -353,6 +345,24 @@ void APIPCamera::updateCameraSetting(UCameraComponent* camera, const CaptureSett
 msr::airlib::Pose APIPCamera::getPose() const
 {
     return ned_transform_->toLocalNed(this->GetActorTransform());
+}
+
+msr::airlib::Pose APIPCamera::getPoseInParentFrame() const
+{
+	/// Works out the camera pose in parent frame.
+	/// Note - not totally robust (would have to execute on game thread to ensure same timestamp).
+
+	msr::airlib::Pose cameraPose = ned_transform_->toLocalNed(this->GetActorTransform());
+
+	msr::airlib::Pose bodyPose;
+	if (this->GetParentActor())
+		bodyPose = ned_transform_->toLocalNed(this->GetParentActor()->GetActorTransform());
+	else if (this->GetAttachParentActor())
+		bodyPose = ned_transform_->toLocalNed(this->GetAttachParentActor()->GetActorTransform());
+	else
+		return msr::airlib::Pose::zero();
+
+	return cameraPose - bodyPose;
 }
 
 void APIPCamera::updateCameraPostProcessingSetting(FPostProcessSettings& obj, const CaptureSetting& setting)

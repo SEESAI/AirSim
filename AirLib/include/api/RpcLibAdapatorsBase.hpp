@@ -489,6 +489,7 @@ public:
 			vertical_fov_upper = s.vertical_fov_upper;
 			horizontal_fov_lower = s.horizontal_fov_lower;
 			horizontal_fov_upper = s.horizontal_fov_upper;
+			channels_per_scan = s.channels_per_scan;
 			scans_per_revolution = s.scans_per_revolution;
 			revolutions_per_second = s.revolutions_per_second;
 		}
@@ -502,6 +503,7 @@ public:
 			d.vertical_fov_upper = vertical_fov_upper;
 			d.horizontal_fov_lower = horizontal_fov_lower;
 			d.horizontal_fov_upper = horizontal_fov_upper;
+			d.channels_per_scan = channels_per_scan;
 			d.scans_per_revolution = scans_per_revolution;
 			d.revolutions_per_second = revolutions_per_second;
 
