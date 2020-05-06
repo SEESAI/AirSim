@@ -491,7 +491,7 @@ msr::airlib::CameraInfo PawnSimApi::getCameraInfo(const std::string& camera_name
 	// camera_info.pose.orientation = ned_transform_.toNed(camera->GetActorRotation().Quaternion());
 	camera_info.pose = camera->getPoseInParentFrame();
 	
-	camera_info.fov = camera->GetCameraComponent()->FieldOfView;
+	camera_info.fov = camera->getFOV(APIPCamera::ImageType::Scene);
     camera_info.proj_mat = camera->getProjectionMatrix(APIPCamera::ImageType::Scene);
     return camera_info;
 }

@@ -84,6 +84,17 @@ void APIPCamera::BeginPlay()
     this->SetActorTickEnabled(false);
 }
 
+float APIPCamera::getFOV(const APIPCamera::ImageType image_type) const
+{
+	const_cast<APIPCamera*>(this)->setCameraTypeEnabled(image_type, true);
+	const USceneCaptureComponent2D* capture = const_cast<APIPCamera*>(this)->getCaptureComponent(image_type, false);
+	float FOVangle = 0.0f;
+	if (capture)
+		FOVangle = capture->FOVAngle;
+
+	return FOVangle;
+}
+
 msr::airlib::ProjectionMatrix APIPCamera::getProjectionMatrix(const APIPCamera::ImageType image_type) const
 {
     //TODO: avoid the need to override const cast here
