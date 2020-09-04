@@ -16,3 +16,6 @@ Plugins/
 
 # avoid checking uproject because this is usually just version change
 *.uproject
+
+# Block ContentTemp (so we can temporarily rename our content folder)
+/ContentTemp
