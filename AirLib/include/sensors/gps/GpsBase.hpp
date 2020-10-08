@@ -124,12 +124,16 @@ public:
 		output_buffer_.latitude = output_buffer_internal_.latitude;
 		output_buffer_.longitude = output_buffer_internal_.longitude;
 		output_buffer_.altitude = output_buffer_internal_.altitude;
+		output_buffer_.eph = output_buffer_internal_.eph;
+		output_buffer_.epv = output_buffer_internal_.epv;
 
 		// Clear the buffer
 		output_buffer_internal_.timestamps_ns.clear();
 		output_buffer_internal_.latitude.clear();
 		output_buffer_internal_.longitude.clear();
 		output_buffer_internal_.altitude.clear();
+		output_buffer_internal_.eph.clear();
+		output_buffer_internal_.epv.clear();
 
 		return output_buffer_;
 	}
@@ -146,6 +150,8 @@ protected:
 		output_buffer_internal_.latitude.push_back(output.gnss.geo_point.latitude);
 		output_buffer_internal_.longitude.push_back(output.gnss.geo_point.longitude);
 		output_buffer_internal_.altitude.push_back(output.gnss.geo_point.altitude);
+		output_buffer_internal_.eph.push_back(output.gnss.eph);
+		output_buffer_internal_.epv.push_back(output.gnss.epv);
 
 		// Trim to be a sensible size
 		unsigned max_buffer_length = 100; // Hard coded for now - may wish to make this 1s of data
@@ -158,6 +164,8 @@ protected:
 				output_buffer_internal_.longitude.end() - max_buffer_length);
 			output_buffer_internal_.altitude.erase(output_buffer_internal_.altitude.begin(),
 				output_buffer_internal_.altitude.end() - max_buffer_length);
+			output_buffer_internal_.eph.erase(output_buffer_internal_.eph.begin(),
+				output_buffer_internal_.eph.end() - max_buffer_length);
 
 		}
     }

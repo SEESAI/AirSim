@@ -331,6 +331,8 @@ struct GPSDataBuffer {
 	vector<double> latitude;
 	vector<double> longitude;
 	vector<float> altitude;
+	vector<float> eph;
+	vector<float> epv;
 
 	GPSDataBuffer()
 	{}

@@ -588,8 +588,10 @@ public:
 		std::vector<double> latitude;  
 		std::vector<double> longitude; 
 		std::vector<float>  altitude;
+		std::vector<float> eph;
+		std::vector<float> epv;
 
-		MSGPACK_DEFINE_MAP(timestamps_ns, latitude, longitude, altitude);
+		MSGPACK_DEFINE_MAP(timestamps_ns, latitude, longitude, altitude, eph, epv);
 
 		GPSDataBuffer()
 		{}
@@ -600,6 +602,8 @@ public:
 			latitude = s.latitude;
 			longitude = s.longitude;
 			altitude = s.altitude;
+			eph = s.eph;
+			epv = s.epv;
 
 			//TODO: remove bug workaround for https://github.com/rpclib/rpclib/issues/152
 			if (timestamps_ns.size() == 0) {
@@ -607,6 +611,8 @@ public:
 				latitude.push_back(0);
 				longitude.push_back(0);
 				altitude.push_back(0);
+				eph.push_back(0);
+				epv.push_back(0);
 			}
 		}
 
@@ -618,6 +624,8 @@ public:
 			d.latitude = latitude;
 			d.longitude = longitude;
 			d.altitude = altitude;
+			d.eph = eph;
+			d.epv = epv;
 
 			return d;
 		}
