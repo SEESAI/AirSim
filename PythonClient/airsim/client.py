@@ -162,6 +162,12 @@ class VehicleClient:
     def getLidarData(self, lidar_name = '', vehicle_name = ''):
         return LidarData.from_msgpack(self.client.call('getLidarData', lidar_name, vehicle_name))
 
+    def getLidarDataBuffer(self, lidar_name = '', vehicle_name = ''):
+        return LidarDataBuffer.from_msgpack(self.client.call('getLidarDataBuffer', lidar_name, vehicle_name))
+
+    def getLidarInfo(self, lidar_name = '', vehicle_name = ''):
+        return LidarInfo.from_msgpack(self.client.call('getLidarInfo', lidar_name, vehicle_name))
+
     #----------- APIs to control ACharacter in scene ----------/
     def simCharSetFaceExpression(self, expression_name, value, character_name = ""):
         self.client.call('simCharSetFaceExpression', expression_name, value, character_name)

@@ -357,6 +357,22 @@ class LidarData(MsgpackMixin):
     time_stamp = np.uint64(0)
     pose = Pose()
 
+class LidarDataBuffer(MsgpackMixin):
+    sensor_pose_in_world_frame = Pose()
+    timestamps_ns = np.uint64(0)
+    azimuth_angles = Vector3r()
+    ranges = Vector3r()
+
+class LidarInfo(MsgpackMixin):
+    pose = Pose()
+    vertical_fov_lower = 0.0
+    vertical_fov_upper = 0.0
+    horizontal_fov_lower = 0.0
+    horizontal_fov_upper = 0.0
+    channels_per_scan = 0.0
+    scans_per_revolution = 0.0
+    revolutions_per_second = 0.0
+
 class ImuData(MsgpackMixin):
     time_stamp = np.uint64(0)
     orientation = Quaternionr()
