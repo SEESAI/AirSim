@@ -78,6 +78,8 @@ public: //types
     struct RCSettings {
         int remote_control_id = -1;
         bool allow_api_when_disconnected = false;
+        float max_velocity = 5.0f;
+		float max_angle_rate = 3.0f;
     };
 
     struct Rotation {
@@ -92,6 +94,11 @@ public: //types
         Rotation(float yaw_val, float pitch_val, float roll_val)
             : yaw(yaw_val), pitch(pitch_val), roll(roll_val)
         {
+        }
+
+        bool hasNan()
+        {
+            return std::isnan(yaw) || std::isnan(pitch) || std::isnan(roll);
         }
 
         static Rotation nanRotation()
@@ -225,6 +232,13 @@ public: //types
 
         bool draw_debug_points = false;
         std::string data_frame = AirSimSettings::kVehicleInertialFrame;
+
+        real_T update_frequency = 10;       //Hz - polling rate for LIDAR function
+		float azimuth_stddev = 0;			// azimuth angle noise (degrees)
+		float polar_stddev = 0;				// polar angle noise (degrees)
+		float range_stddev = 0;				// range noise (m)
+		float point_loss_likelihood = 0;	// likelihood of no return (zero to one)
+		float random_return_likelihood = 0; // likelihood of a random return (zero to one)
     };
 
     struct VehicleSetting {
@@ -396,6 +410,7 @@ public: //methods
         loadSubWindowsSettings(settings_json, subwindow_settings);
         loadViewModeSettings(settings_json);
         loadRecordingSetting(settings_json, recording_setting);
+        loadVideoCameraSetting(settings_json, video_camera_setting);
         loadSegmentationSetting(settings_json, segmentation_setting);
         loadPawnPaths(settings_json, pawn_paths);
         loadOtherSettings(settings_json);
@@ -572,6 +587,8 @@ private:
                 simmode_name == "Multirotor" ? 0 : -1);
             rc_setting.allow_api_when_disconnected = rc_json.getBool("AllowAPIWhenDisconnected",
                 rc_setting.allow_api_when_disconnected);
+            rc_setting.max_velocity   = rc_json.getFloat("MaxLinearVelocity", rc_setting.max_velocity);
+			rc_setting.max_angle_rate = rc_json.getFloat("MaxAngleRate", rc_setting.max_angle_rate);
         }
     }
 
@@ -637,6 +654,38 @@ private:
             }
         }
     }
+
+	static void loadVideoCameraSetting(const Settings& settings_json, VideoCameraSetting& video_camera_setting)
+	{
+		Settings video_camera_json;
+		if (settings_json.getChild("VideoCamera", video_camera_json)) {
+			video_camera_setting.enabled = video_camera_json.getBool("Enabled", video_camera_setting.enabled);
+			video_camera_setting.record_interval = video_camera_json.getFloat("CameraInterval", video_camera_setting.record_interval);
+			video_camera_setting.requests.clear();
+
+			Settings req_cameras_settings;
+			if (video_camera_json.getChild("Cameras", req_cameras_settings)) {
+				for (size_t child_index = 0; child_index < req_cameras_settings.size(); ++child_index) {
+					Settings req_camera_settings;
+					if (req_cameras_settings.getChild(child_index, req_camera_settings)) {
+						std::string camera_name = getCameraName(req_camera_settings);
+						ImageType image_type =
+							Utils::toEnum<ImageType>(
+								req_camera_settings.getInt("ImageType", 0));
+						bool compress = req_camera_settings.getBool("Compress", true);
+						bool pixels_as_float = req_camera_settings.getBool("PixelsAsFloat", false);
+
+						video_camera_setting.requests.push_back(msr::airlib::ImageCaptureBase::ImageRequest(
+							camera_name, image_type, pixels_as_float, compress));
+					}
+				}
+			}
+		}
+		// Capture front-center by default (only
+		if (video_camera_setting.requests.size() == 0)
+			video_camera_setting.requests.push_back(msr::airlib::ImageCaptureBase::ImageRequest(
+				"front_center", ImageType::Scene, false, false));
+	}
 
     static std::unique_ptr<VehicleSetting> createMavLinkVehicleSetting(const Settings& settings_json)
     {

@@ -88,6 +88,11 @@ public:
     msr::airlib::GpsBase::Output getGpsData(const std::string& gps_name = "", const std::string& vehicle_name = "") const;
     msr::airlib::DistanceSensorData getDistanceSensorData(const std::string& distance_sensor_name = "", const std::string& vehicle_name = "") const;
 
+	// getting Buffered Data
+	msr::airlib::GPSDataBuffer getGPSDataBuffer(const std::string& vehicle_name = "") const;
+	msr::airlib::IMUDataBuffer getIMUDataBuffer(const std::string& vehicle_name = "") const;
+	msr::airlib::LidarDataBuffer getLidarDataBuffer(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
+
     // sensor omniscient APIs
     vector<int> simGetLidarSegmentation(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
 
