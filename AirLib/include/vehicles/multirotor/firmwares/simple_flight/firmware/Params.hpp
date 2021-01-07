@@ -50,7 +50,8 @@ public:
 
     struct AngleRatePid {
         //max_xxx_rate > 5 would introduce wobble/oscillations
-        const float kMaxLimit = 2.5f;
+        // const float kMaxLimit = 2.5f;
+        const float kMaxLimit = 200.0f * 3.1416f / 180.f; // Airsim Default = 2.5f, but then changed way limits work
         const float kP = 0.25f;
         const float kI = 0.0f;
         const float kD = 0.0f;

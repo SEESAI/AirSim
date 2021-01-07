@@ -16,6 +16,8 @@ public:
     PidController(const IBoardClock* clock = nullptr, const PidConfig<T>& config = PidConfig<T>())
         : clock_(clock), config_(config)
     {
+
+        // TODO (Damien) check if that requires merging
         switch (config.integrator_type) {
         case PidConfig<T>::IntegratorType::Standard:
             integrator = std::unique_ptr<StdPidIntegrator<T>>(new StdPidIntegrator<T>(config_));

@@ -36,12 +36,19 @@ public:
         state_estimator_ = state_estimator;
 
         //initialize level PID
+        // pid_.reset(new PidController<float>(clock_,
+        //     PidConfig<float>(params_->angle_level_pid.p[axis], params_->angle_level_pid.i[axis], params_->angle_level_pid.d[axis])));
+        // TODO (Damien): modfied, check with Rich
         pid_.reset(new PidController<float>(clock_,
-            PidConfig<float>(params_->angle_level_pid.p[axis], params_->angle_level_pid.i[axis], params_->angle_level_pid.d[axis])));
+            PidConfig<float>(params_->angle_level_pid.p[axis], 
+                             0,
+                             0,
+                             -params_->angle_level_pid.i[axis], 
+                             params_->angle_level_pid.d[axis])));
 
         //initialize rate controller
-        rate_controller_.reset(new AngleRateController(params_, clock_));
-        rate_controller_->initialize(axis, this, state_estimator_);
+        body_rate_controller_.reset(new AngleRateController(params_, clock_));
+        body_rate_controller_->initialize(axis, this, state_estimator_);
 
         //we will be setting goal for rate controller so we need these two things
         rate_mode_  = GoalMode::getUnknown();
@@ -53,8 +60,8 @@ public:
         IAxisController::reset();
 
         pid_->reset();
-        rate_controller_->reset();
-        rate_goal_ = Axis4r();
+        body_rate_controller_->reset();
+        euler_rate_goal_ = Axis4r();
         output_ = TReal();
     }
 
@@ -65,21 +72,28 @@ public:
         //get response of level PID
         const auto& level_goal = goal_->getGoalValue();
 
-        TReal goal_angle = level_goal[axis_];
-        TReal measured_angle = state_estimator_->getAngles()[axis_];
+        TReal goal_euler_angle = level_goal[axis_];
+        TReal measured_euler_angle = state_estimator_->getAngles()[axis_];
 
-        adjustToMinDistanceAngles(measured_angle, goal_angle);
+        adjustToMinDistanceAngles(measured_euler_angle, goal_euler_angle);
             
-        pid_->setGoal(goal_angle);
-        pid_->setMeasured(measured_angle);
+        pid_->setGoal(goal_euler_angle);
+        pid_->setMeasured(measured_euler_angle);
         pid_->update();
 
-        //use this to drive rate controller
-        rate_goal_[axis_] = pid_->getOutput() * params_->angle_rate_pid.max_limit[axis_];
-        rate_controller_->update();
+        // //use this to drive rate controller
+        // rate_goal_[axis_] = pid_->getOutput() * params_->angle_rate_pid.max_limit[axis_];
+        // rate_goal_[axis_] = pid_->getOutput() * params_->angle_rate_pid.max_limit[axis_];
+        // rate_controller_->update();
+
+		//get the required euler rates as output
+		euler_rate_goal_[axis_] = pid_->getOutput();
+
+		// update the body rate controller
+        body_rate_controller_->update();
 
         //rate controller's output is final output
-        output_ = rate_controller_->getOutput();
+        output_ = body_rate_controller_->getOutput();
     }
 
     
@@ -91,7 +105,7 @@ public:
     /********************  IGoal ********************/
     virtual const Axis4r& getGoalValue() const override
     {
-        return rate_goal_;
+        return euler_rate_goal_;
     }
 
     virtual const GoalMode& getGoalMode() const  override
@@ -131,14 +145,14 @@ private:
     const IStateEstimator* state_estimator_;
 
     GoalMode rate_mode_;
-    Axis4r rate_goal_;
+    Axis4r euler_rate_goal_;
 
     TReal output_;
 
     Params* params_;
     const IBoardClock* clock_;
     std::unique_ptr<PidController<float>> pid_;
-    std::unique_ptr<AngleRateController> rate_controller_;
+    std::unique_ptr<AngleRateController> body_rate_controller_;
 
 };
 

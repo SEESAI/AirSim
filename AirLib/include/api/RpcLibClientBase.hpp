@@ -58,6 +58,7 @@ public:
     //task management APIs
     void cancelLastTask(const std::string& vehicle_name = "");
     virtual RpcLibClientBase* waitOnLastTask(bool* task_result = nullptr, float timeout_sec = Utils::nan<float>());
+    virtual bool checkLastTask(bool* task_result = nullptr, bool* task_complete = nullptr, float timeout_sec = Utils::nan<float>());
 
     bool simSetSegmentationObjectID(const std::string& mesh_name, int object_id, bool is_name_regex = false);
     int simGetSegmentationObjectID(const std::string& mesh_name) const;
@@ -81,12 +82,22 @@ public:
     bool simRunConsoleCommand(const std::string& command);
 
     // sensor APIs
+	// sensor info
+	msr::airlib::IMUInfo getIMUInfo(const std::string& vehicle_name = "") const;
+	msr::airlib::LidarInfo getLidarInfo(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
+
+    // sensod data
     msr::airlib::LidarData getLidarData(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
     msr::airlib::ImuBase::Output getImuData(const std::string& imu_name = "", const std::string& vehicle_name = "") const;
     msr::airlib::BarometerBase::Output getBarometerData(const std::string& barometer_name = "", const std::string& vehicle_name = "") const;
     msr::airlib::MagnetometerBase::Output getMagnetometerData(const std::string& magnetometer_name = "", const std::string& vehicle_name = "") const;
     msr::airlib::GpsBase::Output getGpsData(const std::string& gps_name = "", const std::string& vehicle_name = "") const;
     msr::airlib::DistanceSensorData getDistanceSensorData(const std::string& distance_sensor_name = "", const std::string& vehicle_name = "") const;
+
+    // sensor buffer
+	msr::airlib::GPSDataBuffer getGPSDataBuffer(const std::string& vehicle_name = "") const;
+	msr::airlib::IMUDataBuffer getIMUDataBuffer(const std::string& vehicle_name = "") const;
+	msr::airlib::LidarDataBuffer getLidarDataBuffer(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
 
     // sensor omniscient APIs
     vector<int> simGetLidarSegmentation(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
@@ -97,6 +108,7 @@ public:
 
     vector<ImageCaptureBase::ImageResponse> simGetImages(vector<ImageCaptureBase::ImageRequest> request, const std::string& vehicle_name = "");
     vector<uint8_t> simGetImage(const std::string& camera_name, ImageCaptureBase::ImageType type, const std::string& vehicle_name = "");
+	vector<ImageCaptureBase::ImageResponse> simGetVideoCameraImages(const vector<ImageCaptureBase::ImageRequest>& requests = {}, const int num_images = 0, const std::string& vehicle_name = "");
 
     vector<MeshPositionVertexBuffersResponse> simGetMeshPositionVertexBuffers();
 

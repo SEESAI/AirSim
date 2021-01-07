@@ -32,6 +32,7 @@ public:
         landed_ = true;
         takenoff_ = false;
         goal_timestamp_ = clock_->millis();
+        last_moving_time_ = clock_->millis();
         updateGoalFromRc();
     }
 
@@ -214,26 +215,61 @@ private:
         goal_mode_ = rc_.getGoalMode();
     }
 
-    void detectLanding() {
+    // void detectLanding() {
 
-        // if we are not trying to move by setting motor outputs
-        if (takenoff_)
+    //     // if we are not trying to move by setting motor outputs
+    //     if (takenoff_)
+    //     {
+    //         //if (!isGreaterThanArmedThrottle(goal_.throttle())) {
+    //         float checkThrottle = rc_.getMotorOutput();
+    //         if (!isGreaterThanArmedThrottle(checkThrottle)) {
+    //             // and we are not currently moving (based on current velocities)
+    //             auto angular = state_estimator_->getAngularVelocity();
+    //             auto velocity = state_estimator_->getLinearVelocity();
+    //             if (isAlmostZero(angular.roll()) && isAlmostZero(angular.pitch()) && isAlmostZero(angular.yaw()) &&
+    //                 isAlmostZero(velocity.x()) && isAlmostZero(velocity.y()) && isAlmostZero(velocity.z())) {
+    //                 // then we must be landed...
+    //                 landed_ = true;
+    //                 takenoff_ = false;
+    //             }
+    //         }
+    //     }
+    // }
+
+	//TODO: better handling of landed & takenoff states - this currently assumes "Throttle" is "Z velocity demand"
+    void detectLanding() {
+		
+		// if we are not trying to move by setting motor outputs
+        if (!landed_)
         {
-            //if (!isGreaterThanArmedThrottle(goal_.throttle())) {
-            float checkThrottle = rc_.getMotorOutput();
-            if (!isGreaterThanArmedThrottle(checkThrottle)) {
-                // and we are not currently moving (based on current velocities)
-                auto angular = state_estimator_->getAngularVelocity();
-                auto velocity = state_estimator_->getLinearVelocity();
-                if (isAlmostZero(angular.roll()) && isAlmostZero(angular.pitch()) && isAlmostZero(angular.yaw()) &&
-                    isAlmostZero(velocity.x()) && isAlmostZero(velocity.y()) && isAlmostZero(velocity.z())) {
-                    // then we must be landed...
-                    landed_ = true;
-                    takenoff_ = false;
-                }
-            }
-        }
+			// if we are targeting downward velocity but are not currently moving (based on current velocities) for a given time
+			if (goal_.throttle() > 0.1) {
+				auto angular = state_estimator_->getAngularVelocity();
+				auto velocity = state_estimator_->getLinearVelocity();
+				if (isAlmostZero(angular.roll()) && isAlmostZero(angular.pitch()) && isAlmostZero(angular.yaw()) &&
+					isAlmostZero(velocity.x()) && isAlmostZero(velocity.y()) && isAlmostZero(velocity.z())) {
+					if (clock_->millis() > (last_moving_time_ + landing_timeout))
+						landed_ = true;
+						comm_link_->log("LandingState: Landed", ICommLink::kLogLevelInfo);
+				}
+				else
+					last_moving_time_ = clock_->millis();
+			}
+			else
+				last_moving_time_ = clock_->millis();
+
+		} else {
+			// if we are moving and throttling up
+			if ((goal_.throttle() < -0.1) &&
+				(std::abs(state_estimator_->getLinearVelocity().z()) < 0.01f)) {
+				landed_ = false;
+				comm_link_->log("LandingState: Flying", ICommLink::kLogLevelInfo);
+				last_moving_time_ = clock_->millis();
+			}
+
+		}
     }
+
 
     void detectTakingOff()
     {
@@ -275,6 +311,9 @@ private:
     bool has_api_control_;
     bool is_api_timedout_;
     bool landed_, takenoff_;
+
+    const uint64_t landing_timeout = 500;
+	uint64_t last_moving_time_ = 0;
 };
 
 
