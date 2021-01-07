@@ -413,6 +413,12 @@ private:
         remote_control_id_ = vehicle_setting.rc.remote_control_id;
         params_.rc.allow_api_when_disconnected = vehicle_setting.rc.allow_api_when_disconnected;
         params_.rc.allow_api_always = vehicle_setting.allow_api_always;
+
+        // allow update of PID from json
+		params_.velocity_pid.max_limit[0] = vehicle_setting.rc.max_velocity;
+		params_.velocity_pid.max_limit[1] = vehicle_setting.rc.max_velocity;
+		params_.velocity_pid.max_limit[3] = vehicle_setting.rc.max_velocity;
+		params_.angle_rate_pid.max_limit.yaw() = vehicle_setting.rc.max_angle_rate;
     }
 
 private:

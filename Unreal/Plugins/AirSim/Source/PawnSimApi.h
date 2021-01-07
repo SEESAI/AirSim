@@ -74,10 +74,14 @@ public: //implementation of VehicleSimApiBase
     virtual const UnrealImageCapture* getImageCapture() const override;
     virtual std::vector<ImageCaptureBase::ImageResponse> getImages(const std::vector<ImageCaptureBase::ImageRequest>& request) const override;
     virtual std::vector<uint8_t> getImage(const std::string& camera_name, ImageCaptureBase::ImageType image_type) const override;
+    virtual std::vector<msr::airlib::ImageCaptureBase::ImageRequest> saveVideoCameraImages(const std::vector<ImageCaptureBase::ImageResponse>& responses) override;
+	virtual int getVideoCameraImages(const std::vector<PawnSimApi::ImageCaptureBase::ImageRequest>& requests, int num_images, 
+                                     std::vector<ImageCaptureBase::ImageResponse> & responses) override;
     virtual Pose getPose() const override;
     virtual void setPose(const Pose& pose, bool ignore_collision) override;
     virtual msr::airlib::CameraInfo getCameraInfo(const std::string& camera_name) const override;
     virtual void setCameraPose(const std::string& camera_name, const Pose& pose) override;
+    virtual void setCameraOrientation(const std::string& camera_name, const Quaternionr& orientation) override;
     virtual void setCameraFoV(const std::string& camera_name, float fov_degrees) override;
     virtual void setDistortionParam(const std::string& camera_name, const std::string& param_name, float value) override;
     virtual std::vector<float> getDistortionParams(const std::string& camera_name) override;
@@ -168,6 +172,11 @@ private: //vars
     mutable msr::airlib::RCData rc_data_;
     mutable SimJoyStick joystick_;
     mutable SimJoyStick::State joystick_state_;
+
+	std::mutex video_camera_API_mutex_;
+	int number_video_cameras_;
+	std::vector<ImageCaptureBase::ImageResponse> video_camera_responses_;
+	std::vector<ImageCaptureBase::ImageRequest> video_camera_requests_;
 
     struct State {
         FVector start_location;

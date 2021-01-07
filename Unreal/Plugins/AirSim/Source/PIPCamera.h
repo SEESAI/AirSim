@@ -45,15 +45,17 @@ public:
     bool getCameraTypeEnabled(ImageType type) const;
     void setupCameraFromSettings(const APIPCamera::CameraSetting& camera_setting, const NedTransform& ned_transform);
     void setCameraPose(const FTransform& pose);
-    void setCameraFoV(float fov_degrees);
+    void setCameraOrientation(const FRotator& rotator);
+    void setCameraFoVDegrees(float fov_degrees);
 
     msr::airlib::ProjectionMatrix getProjectionMatrix(const APIPCamera::ImageType image_type) const;
-
+    float getFOV(const APIPCamera::ImageType image_type) const;
 
     USceneCaptureComponent2D* getCaptureComponent(const ImageType type, bool if_active);
     UTextureRenderTarget2D* getRenderTarget(const ImageType type, bool if_active);
 
     msr::airlib::Pose getPose() const;
+    msr::airlib::Pose getPoseInParentFrame() const;
 
     UPROPERTY() UMaterialParameterCollection* distortion_param_collection_;
     UPROPERTY() UMaterialParameterCollectionInstance* distortion_param_instance_;
