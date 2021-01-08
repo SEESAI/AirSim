@@ -83,6 +83,7 @@ void UnrealImageCapture::getSceneCaptureImage(const std::vector<msr::airlib::Ima
             APIPCamera* camera = cameras_->at(request.camera_name);
             ImageResponse& response = responses.at(i);
             auto camera_pose = camera->getPose();
+            response.time_stamp = msr::airlib::ClockFactory::get()->nowNanos();
             response.camera_position = camera_pose.position;
             response.camera_orientation = camera_pose.orientation;
         }
@@ -96,7 +97,7 @@ void UnrealImageCapture::getSceneCaptureImage(const std::vector<msr::airlib::Ima
         ImageResponse& response = responses.at(i);
               
         response.camera_name = request.camera_name;
-        response.time_stamp = render_results[i]->time_stamp;
+        //response.time_stamp = render_results[i]->time_stamp;
         response.image_data_uint8 = std::vector<uint8_t>(render_results[i]->image_data_uint8.GetData(), render_results[i]->image_data_uint8.GetData() + render_results[i]->image_data_uint8.Num());
         response.image_data_float = std::vector<float>(render_results[i]->image_data_float.GetData(), render_results[i]->image_data_float.GetData() + render_results[i]->image_data_float.Num());
 

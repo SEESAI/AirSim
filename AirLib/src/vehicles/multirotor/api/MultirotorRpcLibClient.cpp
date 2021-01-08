@@ -118,6 +118,16 @@ MultirotorRpcLibClient* MultirotorRpcLibClient::moveByAngleRatesZAsync(float rol
     pimpl_->last_future = static_cast<rpc::client*>(getClient())->async_call("moveByAngleRatesZ", roll_rate, pitch_rate, yaw_rate, z, duration, vehicle_name);
     return this;
 }
+MultirotorRpcLibClient* MultirotorRpcLibClient::moveByAngleZAsync(float pitch, float roll, float z, float yaw, float duration, const std::string& vehicle_name)
+{
+    pimpl_->last_future = static_cast<rpc::client*>(getClient())->async_call("moveByAngleZ", pitch, roll, z, yaw, duration, vehicle_name);
+    return this;
+}
+MultirotorRpcLibClient* MultirotorRpcLibClient::moveByAngleThrottleAsync(float pitch, float roll, float throttle, float yaw_rate, float duration, const std::string& vehicle_name)
+{
+    pimpl_->last_future = static_cast<rpc::client*>(getClient())->async_call("moveByAngleThrottle", pitch, roll, throttle, yaw_rate, duration, vehicle_name);
+    return this;
+}
 
 MultirotorRpcLibClient* MultirotorRpcLibClient::moveByAngleRatesThrottleAsync(float roll_rate, float pitch_rate, float yaw_rate, float throttle, float duration, const std::string& vehicle_name)
 {
@@ -251,6 +261,40 @@ MultirotorRpcLibClient* MultirotorRpcLibClient::waitOnLastTask(bool* task_result
         *task_result = result;
 
     return this;
+}
+// As above but returns true if future still valid, false otherwise
+bool MultirotorRpcLibClient::checkLastTask(bool* task_result, bool* task_complete, float timeout_sec)
+{
+	bool valid = false;
+	bool complete = false;
+	bool result = false;
+	// Check whether future is valid
+	// ToDo need to return something if result is not complete
+	if (pimpl_->last_future.valid()) {
+		if (std::isnan(timeout_sec) || timeout_sec == Utils::max<float>()) {
+			result = pimpl_->last_future.get().as<bool>();
+			valid = true;
+			complete = true;
+		}
+		else {
+			auto future_status = pimpl_->last_future.wait_for(std::chrono::duration<double>(timeout_sec));
+			if (future_status == std::future_status::ready) {
+				result = pimpl_->last_future.get().as<bool>();
+				valid = true;
+				complete = true;
+			}
+		}
+	}
+	else {
+		complete = true;
+		valid = false;
+	}
+	if (valid)
+		if (task_result)
+			*task_result = result;
+	if (task_complete)
+		* task_complete = complete;
+	return valid;
 }
 
 }} //namespace

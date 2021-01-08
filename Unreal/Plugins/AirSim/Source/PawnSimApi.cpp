@@ -208,6 +208,94 @@ std::vector<uint8_t> PawnSimApi::getImage(const std::string& camera_name, ImageC
         return std::vector<uint8_t>();
 }
 
+std::vector<msr::airlib::ImageCaptureBase::ImageRequest> PawnSimApi::saveVideoCameraImages(
+										const std::vector<ImageCaptureBase::ImageResponse>& responses)
+{
+	/// Append new images to the storage vector
+	std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
+	video_camera_responses_.insert(video_camera_responses_.end(), responses.begin(), responses.end());
+
+	/// If the vector is too long then trim
+	int maxhistory = 10;
+	int numCameras = int(responses.size());
+	int maxlength = maxhistory * numCameras;
+	if (video_camera_responses_.size() > maxlength) {
+		int excesslength = video_camera_responses_.size() - maxlength;
+		video_camera_responses_.erase(video_camera_responses_.begin(), video_camera_responses_.begin() + excesslength);
+	}
+
+	// Save the number of camera images
+	number_video_cameras_ = responses.size();
+
+	return video_camera_requests_;
+}
+
+int PawnSimApi::getVideoCameraImages(const std::vector<ImageCaptureBase::ImageRequest>& requests,
+									 int num_images, 
+									 std::vector<ImageCaptureBase::ImageResponse>& responses)
+{
+
+	// Copy requests & responses (needs Mutex)
+	//ToDo if this is too much memory copying then we could consider transferring a vector of shared pointers instead
+	{
+		std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
+		responses = video_camera_responses_;
+		video_camera_requests_ = requests;
+
+		// If user has asked for all images and not supplied requests, then return everything
+		if (requests.empty() && (num_images == 0)) {
+			video_camera_responses_.clear();
+			return responses.size();
+		}
+	}
+
+	// If user has just supplied names then set image limit to max
+	if (num_images == 0)
+		num_images = responses.size() / number_video_cameras_;
+
+	// And filter by camera name and image number 
+	std::vector<ImageCaptureBase::ImageResponse> responsesToReturn;
+	uint64_t most_recent_image_time = 0;
+	for (int image = 0; image < num_images; image++)
+		for (int camera = 0; camera < number_video_cameras_; camera++) {
+			// Work out the current reponse index
+			int index = responses.size() - image * number_video_cameras_ - camera - 1;
+			if (index < 0)
+				break;
+
+			// Compare camera names and keep an image if matching the request (or if there are no names)
+			auto & response = responses[index];
+			bool keepThisResponse = false;
+			if (requests.empty())
+				keepThisResponse = true;
+			else
+				for (const ImageCaptureBase::ImageRequest & request : requests)
+					if ( (request.camera_name == response.camera_name) &&
+						(request.image_type == response.image_type) &&
+						(request.compress == response.compress) &&
+						(request.pixels_as_float == response.pixels_as_float) )
+						keepThisResponse = true;
+
+			// Keep the response and update the time vector
+			if (keepThisResponse) {
+				responsesToReturn.insert(responsesToReturn.begin(), response);
+				most_recent_image_time = std::max(most_recent_image_time, response.time_stamp);
+			}
+		}
+	// Move to responses as this is what is returned
+	responses = responsesToReturn;
+
+	// Remove any images older than the most recent return from storage (so they don't get returned again)
+	std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
+	for (int i = video_camera_responses_.size(); i >= 0 ; i--)
+		if (video_camera_responses_[i].time_stamp <= most_recent_image_time) {
+			video_camera_responses_.erase(video_camera_responses_.begin(), video_camera_responses_.begin() + i);
+			break;
+		}
+
+	return responsesToReturn.size();
+}
+
 void PawnSimApi::setRCForceFeedback(float rumble_strength, float auto_center)
 {
     if (joystick_state_.is_initialized) {
@@ -418,6 +506,15 @@ void PawnSimApi::setCameraPose(const std::string& camera_name, const msr::airlib
         camera->setCameraPose(pose_unreal);
     }, true);
 }
+void PawnSimApi::setCameraOrientation(const std::string& camera_name, const msr::airlib::Quaternionr& orientation)
+{
+    UAirBlueprintLib::RunCommandOnGameThread([this, camera_name, orientation]() {
+        APIPCamera* camera = getCamera(camera_name);
+        FQuat quat = ned_transform_.fromNed(orientation);
+        camera->setCameraOrientation(quat.Rotator());
+    }, true);
+}
+
 
 void PawnSimApi::setCameraFoV(const std::string& camera_name, float fov_degrees)
 {

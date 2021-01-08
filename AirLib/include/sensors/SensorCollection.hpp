@@ -29,7 +29,7 @@ public:
         }
     }
 
-    const SensorBase* getByType(SensorBase::SensorType type, uint index = 0) const
+    SensorBase* getByType(SensorBase::SensorType type, uint index = 0) const
     {
         auto type_int = static_cast<uint>(type);
         const auto& it = sensors_.find(type_int);

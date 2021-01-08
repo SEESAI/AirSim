@@ -158,7 +158,15 @@ msr::airlib::GeoPoint RpcLibClientBase::getHomeGeoPoint(const std::string& vehic
 {
     return pimpl_->client.call("getHomeGeoPoint", vehicle_name).as<RpcLibAdapatorsBase::GeoPoint>().to();
 }
+msr::airlib::IMUInfo RpcLibClientBase::getIMUInfo(const std::string& vehicle_name) const
+{
+	return pimpl_->client.call("getIMUInfo", vehicle_name).as<RpcLibAdapatorsBase::IMUInfo>().to();
+}
 
+msr::airlib::LidarInfo RpcLibClientBase::getLidarInfo(const std::string& lidar_name, const std::string& vehicle_name) const
+{
+	return pimpl_->client.call("getLidarInfo", lidar_name, vehicle_name).as<RpcLibAdapatorsBase::LidarInfo>().to();
+}
 msr::airlib::LidarData RpcLibClientBase::getLidarData(const std::string& lidar_name, const std::string& vehicle_name) const
 {
     return pimpl_->client.call("getLidarData", lidar_name, vehicle_name).as<RpcLibAdapatorsBase::LidarData>().to();
@@ -187,6 +195,18 @@ msr::airlib::GpsBase::Output RpcLibClientBase::getGpsData(const std::string& gps
 msr::airlib::DistanceSensorData RpcLibClientBase::getDistanceSensorData(const std::string& distance_sensor_name, const std::string& vehicle_name) const
 {
     return pimpl_->client.call("getDistanceSensorData", distance_sensor_name, vehicle_name).as<RpcLibAdapatorsBase::DistanceSensorData>().to();
+}
+msr::airlib::GPSDataBuffer RpcLibClientBase::getGPSDataBuffer(const std::string& vehicle_name) const
+{
+	return pimpl_->client.call("getGPSDataBuffer", vehicle_name).as<RpcLibAdapatorsBase::GPSDataBuffer>().to();
+}
+msr::airlib::IMUDataBuffer RpcLibClientBase::getIMUDataBuffer(const std::string& vehicle_name) const
+{
+	return pimpl_->client.call("getIMUDataBuffer", vehicle_name).as<RpcLibAdapatorsBase::IMUDataBuffer>().to();
+}
+msr::airlib::LidarDataBuffer RpcLibClientBase::getLidarDataBuffer(const std::string& lidar_name, const std::string& vehicle_name) const
+{
+    return pimpl_->client.call("getLidarDataBuffer", lidar_name, vehicle_name).as<RpcLibAdapatorsBase::LidarDataBuffer>().to();
 }
 
 vector<int> RpcLibClientBase::simGetLidarSegmentation(const std::string& lidar_name, const std::string& vehicle_name) const
@@ -240,6 +260,14 @@ vector<uint8_t> RpcLibClientBase::simGetImage(const std::string& camera_name, Im
         result.clear();
     }
     return result;
+}
+vector<ImageCaptureBase::ImageResponse> RpcLibClientBase::simGetVideoCameraImages(const vector<ImageCaptureBase::ImageRequest>& requests, const int num_images, const std::string& vehicle_name)
+{
+	const auto& response_adaptor = pimpl_->client.call("simGetVideoCameraImages", 
+		RpcLibAdapatorsBase::ImageRequest::from(requests), num_images, vehicle_name)
+		.as<vector<RpcLibAdapatorsBase::ImageResponse>>();
+
+	return RpcLibAdapatorsBase::ImageResponse::to(response_adaptor);
 }
 
 vector<MeshPositionVertexBuffersResponse> RpcLibClientBase::simGetMeshPositionVertexBuffers()

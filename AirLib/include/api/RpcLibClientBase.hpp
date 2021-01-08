@@ -81,12 +81,22 @@ public:
     bool simRunConsoleCommand(const std::string& command);
 
     // sensor APIs
+	// sensor info
+	msr::airlib::IMUInfo getIMUInfo(const std::string& vehicle_name = "") const;
+	msr::airlib::LidarInfo getLidarInfo(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
+
+    // sensor data
     msr::airlib::LidarData getLidarData(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
     msr::airlib::ImuBase::Output getImuData(const std::string& imu_name = "", const std::string& vehicle_name = "") const;
     msr::airlib::BarometerBase::Output getBarometerData(const std::string& barometer_name = "", const std::string& vehicle_name = "") const;
     msr::airlib::MagnetometerBase::Output getMagnetometerData(const std::string& magnetometer_name = "", const std::string& vehicle_name = "") const;
     msr::airlib::GpsBase::Output getGpsData(const std::string& gps_name = "", const std::string& vehicle_name = "") const;
     msr::airlib::DistanceSensorData getDistanceSensorData(const std::string& distance_sensor_name = "", const std::string& vehicle_name = "") const;
+
+    // sensor buffer
+	msr::airlib::GPSDataBuffer getGPSDataBuffer(const std::string& vehicle_name = "") const;
+	msr::airlib::IMUDataBuffer getIMUDataBuffer(const std::string& vehicle_name = "") const;
+	msr::airlib::LidarDataBuffer getLidarDataBuffer(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
 
     // sensor omniscient APIs
     vector<int> simGetLidarSegmentation(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;

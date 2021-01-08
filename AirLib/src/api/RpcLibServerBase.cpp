@@ -143,6 +143,12 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
     pimpl_->server.bind("simGetImage", [&](const std::string& camera_name, ImageCaptureBase::ImageType type, const std::string& vehicle_name) -> vector<uint8_t> {
         return getVehicleSimApi(vehicle_name)->getImage(camera_name, type);
     });
+    pimpl_->server.bind("simGetVideoCameraImages", [&](const std::vector<RpcLibAdapatorsBase::ImageRequest>& requests, int num_images, const std::string& vehicle_name) -> vector<RpcLibAdapatorsBase::ImageResponse> {
+		std::vector<ImageCaptureBase::ImageResponse> responses;
+		getVehicleSimApi(vehicle_name)->getVideoCameraImages(RpcLibAdapatorsBase::ImageRequest::to(requests), num_images, responses);
+
+		return RpcLibAdapatorsBase::ImageResponse::from(responses);
+	});
 
     pimpl_->server.bind("simGetMeshPositionVertexBuffers", [&]() ->vector<RpcLibAdapatorsBase::MeshPositionVertexBuffersResponse> {
         const auto& response = getWorldSimApi()->getMeshPositionVertexBuffers();
