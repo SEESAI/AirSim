@@ -158,9 +158,9 @@ msr::airlib::GeoPoint RpcLibClientBase::getHomeGeoPoint(const std::string& vehic
 {
     return pimpl_->client.call("getHomeGeoPoint", vehicle_name).as<RpcLibAdapatorsBase::GeoPoint>().to();
 }
-msr::airlib::IMUInfo RpcLibClientBase::getIMUInfo(const std::string& vehicle_name) const
+msr::airlib::ImuInfo RpcLibClientBase::getImuInfo(const std::string& vehicle_name) const
 {
-	return pimpl_->client.call("getIMUInfo", vehicle_name).as<RpcLibAdapatorsBase::IMUInfo>().to();
+	return pimpl_->client.call("getImuInfo", vehicle_name).as<RpcLibAdapatorsBase::ImuInfo>().to();
 }
 
 msr::airlib::LidarInfo RpcLibClientBase::getLidarInfo(const std::string& lidar_name, const std::string& vehicle_name) const
@@ -200,9 +200,9 @@ msr::airlib::GPSDataBuffer RpcLibClientBase::getGPSDataBuffer(const std::string&
 {
 	return pimpl_->client.call("getGPSDataBuffer", vehicle_name).as<RpcLibAdapatorsBase::GPSDataBuffer>().to();
 }
-msr::airlib::IMUDataBuffer RpcLibClientBase::getIMUDataBuffer(const std::string& vehicle_name) const
+msr::airlib::ImuDataBuffer RpcLibClientBase::getImuDataBuffer(const std::string& vehicle_name) const
 {
-	return pimpl_->client.call("getIMUDataBuffer", vehicle_name).as<RpcLibAdapatorsBase::IMUDataBuffer>().to();
+	return pimpl_->client.call("getImuDataBuffer", vehicle_name).as<RpcLibAdapatorsBase::ImuDataBuffer>().to();
 }
 msr::airlib::LidarDataBuffer RpcLibClientBase::getLidarDataBuffer(const std::string& lidar_name, const std::string& vehicle_name) const
 {

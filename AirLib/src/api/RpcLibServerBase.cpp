@@ -214,6 +214,26 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
         return RpcLibAdapatorsBase::LidarData(lidar_data);
     });
 
+    pimpl_->server.bind("getImuInfo", [&](const std::string& vehicle_name) -> RpcLibAdapatorsBase::ImuInfo {
+        const auto& imu_info = getVehicleApi(vehicle_name)->getImuInfo();
+        return RpcLibAdapatorsBase::ImuInfo(imu_info);
+        });
+
+    pimpl_->server.bind("getLidarInfo", [&](const std::string& lidar_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::LidarInfo {
+        const auto& lidar_info = getVehicleApi(vehicle_name)->getLidarInfo(lidar_name);
+        return RpcLibAdapatorsBase::LidarInfo(lidar_info);
+        });
+
+    pimpl_->server.bind("getImuDataBuffer", [&](const std::string& vehicle_name) -> RpcLibAdapatorsBase::ImuDataBuffer {
+        const auto& imu_data_buffer = getVehicleApi(vehicle_name)->getImuDataBuffer();
+        return RpcLibAdapatorsBase::ImuDataBuffer(imu_data_buffer);
+        });
+
+    pimpl_->server.bind("getLidarDataBuffer", [&](const std::string& lidar_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::LidarDataBuffer {
+        const auto& lidar_data_buffer = getVehicleApi(vehicle_name)->getLidarDataBuffer(lidar_name);
+        return RpcLibAdapatorsBase::LidarDataBuffer(lidar_data_buffer);
+        });
+
     pimpl_->server.bind("getImuData", [&](const std::string& imu_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::ImuData {
         const auto& imu_data = getVehicleApi(vehicle_name)->getImuData(imu_name);
         return RpcLibAdapatorsBase::ImuData(imu_data);

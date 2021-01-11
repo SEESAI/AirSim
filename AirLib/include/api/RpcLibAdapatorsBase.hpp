@@ -584,7 +584,7 @@ public:
         }
     };
 
-	struct IMUInfo {
+	struct ImuInfo {
 
 		Pose pose;
 		float angle_random_walk;
@@ -594,10 +594,10 @@ public:
 
 		MSGPACK_DEFINE_MAP(pose, angle_random_walk, gyro_bias_stability, velocity_random_walk, accelerometer_bias_stability);
 
-		IMUInfo()
+        ImuInfo()
 		{}
 
-		IMUInfo(const msr::airlib::IMUInfo& s)
+        ImuInfo(const msr::airlib::ImuInfo& s)
 		{
 			pose = s.pose;
 			angle_random_walk = s.angle_random_walk;
@@ -606,9 +606,9 @@ public:
 			accelerometer_bias_stability = s.accelerometer_bias_stability;
 		}
 
-		msr::airlib::IMUInfo to() const
+		msr::airlib::ImuInfo to() const
 		{
-			msr::airlib::IMUInfo d;
+			msr::airlib::ImuInfo d;
 
 			d.pose = pose.to();
 			d.angle_random_walk = angle_random_walk;
@@ -652,7 +652,7 @@ public:
         }
     };
 
-	struct IMUDataBuffer {
+	struct ImuDataBuffer {
 
 		std::vector<uint64_t> timestamps_ns;
 		std::vector<float> orientation;
@@ -661,10 +661,10 @@ public:
 
 		MSGPACK_DEFINE_MAP(timestamps_ns, orientation, angular_velocity, linear_acceleration);
 
-		IMUDataBuffer()
+        ImuDataBuffer()
 		{}
 
-		IMUDataBuffer(const msr::airlib::IMUDataBuffer& s)
+        ImuDataBuffer(const msr::airlib::ImuDataBuffer& s)
 		{
 			timestamps_ns = s.timestamps_ns;
 			orientation = s.orientation;
@@ -680,9 +680,9 @@ public:
 			}
 		}
 
-		msr::airlib::IMUDataBuffer to() const
+		msr::airlib::ImuDataBuffer to() const
 		{
-			msr::airlib::IMUDataBuffer d;
+			msr::airlib::ImuDataBuffer d;
 
 			d.timestamps_ns = timestamps_ns;
 			d.orientation = orientation;

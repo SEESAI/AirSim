@@ -173,12 +173,12 @@ public:
     }
 
     // IMU API
-	virtual IMUInfo getIMUInfo() const
+	virtual ImuInfo getImuInfo() const
 	{
 		// just take the first imu - assuming there is one
 		uint count_imu_sensors = getSensors().size(SensorBase::SensorType::Imu);
 		if (count_imu_sensors == 0) {
-			IMUInfo i;
+            ImuInfo i;
 			return i;
 		}
 
@@ -208,12 +208,12 @@ public:
         return imu->getOutput();
     }
 
-	virtual IMUDataBuffer getIMUDataBuffer() const
+	virtual ImuDataBuffer getImuDataBuffer() const
 	{
 		// just take the first imu - assuming there is one
 		uint count_imu_sensors = getSensors().size(SensorBase::SensorType::Imu);
 		if (count_imu_sensors == 0) {
-			IMUDataBuffer i;
+			ImuDataBuffer i;
 			return i;
 		}
 		

@@ -83,7 +83,7 @@ public:
 
     // sensor APIs
 	// sensor info
-	msr::airlib::IMUInfo getIMUInfo(const std::string& vehicle_name = "") const;
+	msr::airlib::ImuInfo getImuInfo(const std::string& vehicle_name = "") const;
 	msr::airlib::LidarInfo getLidarInfo(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
 
     // sensor data
@@ -96,7 +96,7 @@ public:
 
     // sensor buffer
 	msr::airlib::GPSDataBuffer getGPSDataBuffer(const std::string& vehicle_name = "") const;
-	msr::airlib::IMUDataBuffer getIMUDataBuffer(const std::string& vehicle_name = "") const;
+	msr::airlib::ImuDataBuffer getImuDataBuffer(const std::string& vehicle_name = "") const;
 	msr::airlib::LidarDataBuffer getLidarDataBuffer(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
 
     // sensor omniscient APIs

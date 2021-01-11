@@ -41,7 +41,7 @@ public:
         return output_;
     }
 
-    const IMUDataBuffer& getOutputBuffer()  
+    const ImuDataBuffer& getOutputBuffer()
 	{ 
 		// Lock the mutex to prevent buffer update during call 
 		std::lock_guard<std::mutex> output_lock(APIoutput_mutex_); 
@@ -62,7 +62,7 @@ public:
 	} 
  
 	// return the lidar general info 
-	const IMUInfo & getInfo() 
+	const ImuInfo & getInfo()
 	{ 
 		return imu_info_; 
 	} 
@@ -102,12 +102,12 @@ protected:
     }
 
 protected: 
-	IMUInfo imu_info_; 
+	ImuInfo imu_info_;
 
 private: 
     Output output_;
-    IMUDataBuffer output_buffer_; 
-	IMUDataBuffer output_buffer_internal_; 
+    ImuDataBuffer output_buffer_; 
+	ImuDataBuffer output_buffer_internal_;
 	std::mutex APIoutput_mutex_; 
 };
 

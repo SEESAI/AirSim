@@ -259,14 +259,14 @@ struct LidarInfo {
  
 }; 
  
-struct IMUInfo { 
+struct ImuInfo { 
 	Pose pose; 
 	float angle_random_walk; 
 	float gyro_bias_stability; 
 	float velocity_random_walk; 
 	float accelerometer_bias_stability; 
  
-	IMUInfo() 
+    ImuInfo()
 	{} 
  
 }; 
@@ -364,14 +364,14 @@ struct GPSDataBuffer {
 	{} 
 }; 
  
-struct IMUDataBuffer { 
+struct ImuDataBuffer { 
  
 	vector<uint64_t> timestamps_ns; 
 	vector<float> orientation; 
 	vector<float> angular_velocity; 
 	vector<float> linear_acceleration; 
  
-	IMUDataBuffer() 
+    ImuDataBuffer()
 	{} 
 }; 
  
