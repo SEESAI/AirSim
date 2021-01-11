@@ -58,6 +58,7 @@ public:
     //task management APIs
     void cancelLastTask(const std::string& vehicle_name = "");
     virtual RpcLibClientBase* waitOnLastTask(bool* task_result = nullptr, float timeout_sec = Utils::nan<float>());
+    virtual bool checkLastTask(bool* task_result = nullptr, bool* task_complete = nullptr, float timeout_sec = Utils::nan<float>());
 
     bool simSetSegmentationObjectID(const std::string& mesh_name, int object_id, bool is_name_regex = false);
     int simGetSegmentationObjectID(const std::string& mesh_name) const;
@@ -107,6 +108,7 @@ public:
 
     vector<ImageCaptureBase::ImageResponse> simGetImages(vector<ImageCaptureBase::ImageRequest> request, const std::string& vehicle_name = "");
     vector<uint8_t> simGetImage(const std::string& camera_name, ImageCaptureBase::ImageType type, const std::string& vehicle_name = "");
+	vector<ImageCaptureBase::ImageResponse> simGetVideoCameraImages(const vector<ImageCaptureBase::ImageRequest>& requests = {}, const int num_images = 0, const std::string& vehicle_name = "");
 
     vector<MeshPositionVertexBuffersResponse> simGetMeshPositionVertexBuffers();
 

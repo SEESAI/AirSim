@@ -97,9 +97,9 @@ protected:
 		r.insert(r.begin(), output_buffer_internal_.ranges.begin(), output_buffer_internal_.ranges.end());
 
 		// Trim to be two revolutions max
-		unsigned max_buffer_length = 2 * scans_per_revolution;
+		size_t max_buffer_length = 2 * scans_per_revolution;
 		if (ts.size() > max_buffer_length) {
-			int excess_length = ts.size() - max_buffer_length;
+			int excess_length = (int)ts.size() - (int)max_buffer_length;
 			ts.erase(ts.begin(), ts.begin() + excess_length);
 			az.erase(az.begin(), az.begin() + excess_length);
 			r.erase(r.begin(), r.begin() + (excess_length * channels_per_scan));

@@ -64,6 +64,7 @@ public:
         float obs_avoidance_vel, const Vector3r& origin, float xy_length, float max_z, float min_z, const std::string& vehicle_name = "");
 
     virtual MultirotorRpcLibClient* waitOnLastTask(bool* task_result = nullptr, float timeout_sec = Utils::nan<float>()) override;
+	virtual bool checkLastTask(bool* task_result = nullptr, bool* task_complete = nullptr, float timeout_sec = Utils::nan<float>()) override;
 
     virtual ~MultirotorRpcLibClient();    //required for pimpl
 
