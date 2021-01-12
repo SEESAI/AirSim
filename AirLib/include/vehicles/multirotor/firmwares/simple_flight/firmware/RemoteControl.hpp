@@ -166,7 +166,9 @@ private:
             //    goal_mode_ = GoalMode::getUnknown();
 
             //For angle as well as rate mode, keep only throttle
-            goal_.setAxis3(Axis3r());
+            //goal_.setAxis3(Axis3r());
+			goal_mode_ = GoalMode::getVelocityMode();//GoalMode::getStandardAngleMode();
+			goal_ = Axis4r(0, 0, 0, 0);
 
             return;
         }
@@ -176,9 +178,9 @@ private:
         if (last_angle_mode_ != angle_mode_) {
             //for 3 way switch, 1/3 value for each position
             if (angle_mode_ < params_->rc.max_angle_level_switch)
-                goal_mode_ = GoalMode::getStandardAngleMode();
+                goal_mode_ = GoalMode::getVelocityMode(); //GoalMode::getStandardAngleMode();
             else
-                goal_mode_ = GoalMode::getAllRateMode();
+                goal_mode_ = GoalMode::getStandardAngleMode(); //GoalMode::getAllRateMode();
 
             last_angle_mode_ = angle_mode_;
         }

@@ -30,16 +30,20 @@ private:
     using VectorMath = msr::airlib::VectorMath;
 
     void createLasers();
+    //bool shootLaser(const msr::airlib::Pose& lidar_pose, const msr::airlib::Pose& vehicle_pose,
+    //    const uint32 channel, const float horizontal_angle, const float vertical_angle, 
+    //    const msr::airlib::LidarSimpleParams params, Vector3r &point, int &segmentationID);
+
     bool shootLaser(const msr::airlib::Pose& lidar_pose, const msr::airlib::Pose& vehicle_pose,
-        const uint32 channel, const float horizontal_angle, const float vertical_angle, 
-        const msr::airlib::LidarSimpleParams params, Vector3r &point, int &segmentationID);
+        const float horizontal_angle, const float vertical_angle, 
+        const msr::airlib::LidarSimpleParams params, Vector3r &point);
 
 private:
     AActor* actor_;
     const NedTransform* ned_transform_;
 
-    msr::airlib::vector<msr::airlib::real_T> laser_angles_;
+    // msr::airlib::vector<msr::airlib::real_T> laser_angles_;
     msr::airlib::vector<msr::airlib::real_T> laser_polar_angles_;
 	msr::airlib::vector<msr::airlib::real_T> laser_azimuth_angles_;
-    float current_horizontal_angle_ = 0.0f;
+    // float current_horizontal_angle_ = 0.0f;
 };

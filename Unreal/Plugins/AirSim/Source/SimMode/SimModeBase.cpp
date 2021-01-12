@@ -193,9 +193,9 @@ void ASimModeBase::setStencilIDs()
 
 void ASimModeBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    FVideoCameraThread::stopRecording();
     FRecordingThread::stopRecording();
     FRecordingThread::killRecording();
-    FVideoCameraThread::stopRecording();
     world_sim_api_.reset();
     api_provider_.reset();
     api_server_.reset();
