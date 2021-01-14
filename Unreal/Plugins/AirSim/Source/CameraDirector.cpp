@@ -37,6 +37,10 @@ void ACameraDirector::Tick(float DeltaTime)
     else if (mode_ == ECameraDirectorMode::CAMERA_DIRECTOR_MODE_NODISPLAY) {
         //do nothing, we have camera turned off
     }
+    else if (mode_ == ECameraDirectorMode::CAMERA_DIRECTOR_MODE_GROUND_OBSERVER) {
+        //fixed location of observer
+        UAirBlueprintLib::FollowActor(ExternalCamera, follow_actor_, FVector(0, 0, 0), false, 0, false);
+    }
     else { //make camera move in desired way
         UAirBlueprintLib::FollowActor(ExternalCamera, follow_actor_, initial_ground_obs_offset_, ext_obs_fixed_z_);
     }
@@ -157,6 +161,10 @@ void ACameraDirector::setMode(ECameraDirectorMode mode)
             attachSpringArm(true); break;
         case ECameraDirectorMode::CAMERA_DIRECTOR_MODE_NODISPLAY:
             UAirBlueprintLib::enableViewportRendering(this, false); break;
+        case ECameraDirectorMode::CAMERA_DIRECTOR_MODE_GROUND_OBSERVER:
+            ExternalCamera->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+            ExternalCamera->SetActorLocation(camera_start_location_);
+            break;
         default:
             //other modes don't need special setup
             break;
