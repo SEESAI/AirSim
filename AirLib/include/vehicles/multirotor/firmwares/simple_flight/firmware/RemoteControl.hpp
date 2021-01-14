@@ -203,18 +203,33 @@ private:
     {
         //for 3 way switch, 1/3 value for each position
         if (angle_mode_ < params_->rc.max_angle_level_switch) { 
-            //we are in control-by-level mode
-            goal_ = channels.colWiseMultiply4(params_->angle_level_pid.max_limit); 
-        }
-        else { //we are in control-by-rate mode
-            goal_ = channels.colWiseMultiply4(params_->angle_level_pid.max_limit);
-        }
+            //we are in control-by-velocity mode
 
-        //if throttle is too low then set all motors to same value as throttle because
-        //otherwise values in pitch/roll/yaw would get clipped randomly and can produce random results
-        //in other words: we can't do angling if throttle is too low
-        if (channels.throttle() < params_->rc.min_angling_throttle)
-            goal_.throttle() = params_->rc.min_angling_throttle;
+			//get the control inputs and convert to velocity demands
+			//goal_ = channels.colWiseMultiply4(params_->angle_level_pid.max_limit);
+			TReal vx = channels.roll() * params_->velocity_pid.max_limit[0];
+			TReal vy = -channels.pitch() * params_->velocity_pid.max_limit[1];
+			TReal vyaw = channels.yaw() * params_->angle_rate_pid.max_limit[2];
+			TReal vz = (-2.0f * channels.throttle() + 1.0f) * params_->velocity_pid.max_limit[3];
+
+			//rotate x & y velocity demands to align with the drone heading and save
+			TReal yaw = state_estimator_->getAngles().yaw();
+			TReal vxtemp = vx * cos(yaw) + vy * sin(yaw);
+			vy = -vx * sin(yaw) + vy * cos(yaw);
+			vx = vxtemp;
+
+			goal_ = Axis4r(vx, vy, vyaw, vz);
+		}
+		else { //we are in control-by-angle mode
+			/// Adjust the angle requests to match the max rates (but not the throttle)
+			goal_ = channels.colWiseMultiply4(params_->angle_level_pid.max_limit);
+
+			//if throttle is too low then set all motors to same value as throttle because
+			//otherwise values in pitch/roll/yaw would get clipped randomly and can produce random results
+			//in other words: we can't do angling if throttle is too low
+			if (channels.throttle() < params_->rc.min_angling_throttle)
+				goal_.throttle() = params_->rc.min_angling_throttle;
+		}
     }
 
     static bool isInTolerance(TReal val, TReal tolerance, TReal center = TReal())
