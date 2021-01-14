@@ -47,8 +47,10 @@ public:
         IAxisController::update();
 
         // The rate controller works in body rates, but goals are provided in euler rates not body rates
-        // So we need to turn euler rates into body rates here using T matrix
-        // in order to give the rate controller the correct target
+        // So we need to turn euler rates into body rates using the T matrix in order to give the rate controller the correct target
+        // See section 1.3 of this Mech Eng course from MIT - equation 17
+        // https://ocw.mit.edu/courses/mechanical-engineering/2-154-maneuvering-and-control-of-surface-and-underwater-vehicles-13-49-fall-2004/lecture-notes/lec1.pdf
+
         Axis3r euler_angles_ = state_estimator_->getAngles();
         TReal phi = euler_angles_[0];
         TReal sPhi = sin(phi);
@@ -63,8 +65,6 @@ public:
         TReal thetaDotGoal = params_->angle_rate_pid.euler_rate_goal_[1];
         TReal psiDotGoal = params_->angle_rate_pid.euler_rate_goal_[2];
 
-        /// See section 1.3 of this Mech Eng course from MIT - equation 17
-        /// https://ocw.mit.edu/courses/mechanical-engineering/2-154-maneuvering-and-control-of-surface-and-underwater-vehicles-13-49-fall-2004/lecture-notes/lec1.pdf
         TReal body_rate_goal = 0.f;
         switch (axis_) {
         case 0: // roll
@@ -82,7 +82,7 @@ public:
 
         pid_->setGoal(body_rate_goal);
 
-        /// Previous code - replaced by the above
+        // Previous code - replaced by the above
         // pid_->setGoal(goal_->getGoalValue()[axis_]); 
 
         pid_->setMeasured(state_estimator_->getAngularVelocity()[axis_]);
