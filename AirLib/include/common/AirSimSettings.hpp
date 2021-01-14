@@ -1265,7 +1265,7 @@ private:
         lidar_setting.vertical_FOV_lower = settings_json.getFloat("VerticalFOVLower", lidar_setting.vertical_FOV_lower);
         lidar_setting.horizontal_FOV_start = settings_json.getFloat("HorizontalFOVStart", lidar_setting.horizontal_FOV_start);
         lidar_setting.horizontal_FOV_end = settings_json.getFloat("HorizontalFOVEnd", lidar_setting.horizontal_FOV_end);
-        lidar_setting.update_frequency = settings_json.getInt("SensorUpdateFrequency", lidar_setting.update_frequency);
+        lidar_setting.update_frequency = settings_json.getFloat("SensorUpdateFrequency", lidar_setting.update_frequency);
 
         lidar_setting.position = createVectorSetting(settings_json, lidar_setting.position);
         lidar_setting.rotation = createRotationSetting(settings_json, lidar_setting.rotation);
