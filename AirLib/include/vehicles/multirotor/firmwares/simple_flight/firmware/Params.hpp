@@ -50,11 +50,11 @@ public:
 
     struct AngleRatePid {
         //max_xxx_rate > 5 would introduce wobble/oscillations
-        const float kMaxLimit = 2.5f; /// (rad/s - 2.5 ~= 143 deg/s, 3.5 ~= 200deg/s)
+        const float kMaxLimit = 3.5f; // (rad/s - 2.5 ~= 143 deg/s, 3.5 ~= 200deg/s)
         const float kP_RollPitch = 0.25f;
 		const float kP_Yaw = 0.2f;
         const float kI = 0.0f;
-        const float kD_RollPitch = 0.003f;
+        const float kD_RollPitch = 0.f;
 		const float kD_Yaw = 0.f;
 
         Axis3r max_limit = Axis3r(kMaxLimit, kMaxLimit, kMaxLimit); //roll, pitch, yaw - in radians/sec
@@ -64,6 +64,10 @@ public:
         Axis4r p = Axis4r(kP_RollPitch, kP_RollPitch, kP_Yaw, 1.0f);
         Axis4r i = Axis4r(kI, kI, kI, 0.0f);
         Axis4r d = Axis4r(kD_RollPitch, kD_RollPitch, kD_Yaw, 0.0f);
+
+        // Store of the euler_rate_goal - used to allow different axis to share the goal
+        Axis4r euler_rate_goal_ = Axis4r(0,0,0,0);
+
     } angle_rate_pid;
 
     struct AngleLevelPid {
@@ -99,8 +103,8 @@ public:
         const float kMaxLimit = 6.0f; // m/s
 		const float kP_XY = 0.2f;
 		const float kD_XY = 0.0f; // 0.02
-		const float kP_Z = 0.5f; // 0.5
-        const float kI_Z = 0.5f; // 0.5
+		const float kP_Z = 2.0f; // 0.5
+        const float kI_Z = 2.0f; // 0.5
 
         Axis4r max_limit = Axis4r(kMaxLimit, kMaxLimit, 0, kMaxLimit); //x, y, yaw, z in meters
 
@@ -108,11 +112,12 @@ public:
         Axis4r i = Axis4r(0.0f, 0.0f, 0.0f, kI_Z);
         Axis4r d = Axis4r(kD_XY, kD_XY, 0.0f, 0.0f);
 
-        Axis4r iterm_discount = Axis4r(1, 1, 1, 0.9999f);
+        Axis4r iterm_discount = Axis4r(1, 1, 1, 1);
         Axis4r output_bias = Axis4r(0, 0, 0, 0);
                 
         //we keep min throttle higher so that if we are angling a lot, its still supported
         float min_throttle = kMinThrottle ;
+        float max_throttle = 0.9;
     } velocity_pid;
 
     struct Takeoff {

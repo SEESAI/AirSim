@@ -122,6 +122,7 @@ public:
         case 3: //+vz is -ve throttle (NED coordinates)
             output_ = (-pid_->getOutput() + 1) / 2; //-1 to 1 --> 0 to 1
             output_ = std::max(output_, params_->velocity_pid.min_throttle);
+            output_ = std::min(output_, params_->velocity_pid.max_throttle);
             break;
         default:
             throw std::invalid_argument("axis must be 0, 1 or 3 for VelocityController");
