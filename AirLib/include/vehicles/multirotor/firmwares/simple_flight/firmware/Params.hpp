@@ -117,7 +117,7 @@ public:
                 
         //we keep min throttle higher so that if we are angling a lot, its still supported
         float min_throttle = kMinThrottle ;
-        float max_throttle = 0.9;
+        float max_throttle = 0.9f;
     } velocity_pid;
 
     struct Takeoff {
