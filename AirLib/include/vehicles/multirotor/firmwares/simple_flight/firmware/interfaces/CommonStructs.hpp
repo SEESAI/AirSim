@@ -344,7 +344,7 @@ struct PidConfig {
     PidConfig(float kp_val = 0.01f, float ki_val = 0.0f, float kd_val = 0.0f,
         T min_output_val = -1, T max_output_val = 1,
         float time_scale_val = 1.0f / 1000,
-        bool enabled_val = true, T output_bias_val = T(), float iterm_discount_val = 1, T iterm_initial_val = 0)
+        bool enabled_val = true, T output_bias_val = T(), float iterm_discount_val = 1, T iterm_initial_val = 0.0f)
         : kp(kp_val), ki(ki_val), kd(kd_val),
         time_scale(time_scale_val),
         min_output(min_output_val), max_output(max_output_val),
@@ -358,7 +358,7 @@ struct PidConfig {
     bool enabled;
     T output_bias;
     float iterm_discount;
-    T iterm_initial;
+    float iterm_initial;
 
     enum class IntegratorType {
         Standard,
