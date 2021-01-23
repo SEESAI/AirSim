@@ -113,6 +113,7 @@ public:
         Axis4r d = Axis4r(kD_XY, kD_XY, 0.0f, 0.0f);
 
         Axis4r iterm_discount = Axis4r(1, 1, 1, 1);
+        Axis4r iterm_initial = Axis4r(0, 0, 0, 0.6);
         Axis4r output_bias = Axis4r(0, 0, 0, 0);
                 
         //we keep min throttle higher so that if we are angling a lot, its still supported
