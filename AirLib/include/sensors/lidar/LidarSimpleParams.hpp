@@ -26,6 +26,12 @@ struct LidarSimpleParams {
     real_T vertical_FOV_upper = -15;             // drones -15, car +10
     real_T vertical_FOV_lower = -45;             // drones -45, car -10
 
+	real_T azimuth_stddev = 0;			// azimuth angle noise (degrees)
+	real_T polar_stddev = 0;			// polar angle noise (degrees)
+	real_T range_stddev = 0;				// range noise (m)
+	real_T point_loss_likelihood = 0;	// likelihood of no return (zero to one)
+	real_T random_return_likelihood = 0; // likelihood of a random return (zero to one)
+
     Pose relative_pose {
         Vector3r(0,0,-1),                     // position - a little above vehicle (especially for cars) or Vector3r::Zero()
         Quaternionr::Identity()               // orientation - by default Quaternionr(1, 0, 0, 0) 
@@ -78,6 +84,13 @@ struct LidarSimpleParams {
             else
                 relative_pose.position.z() = -1;  // a little bit above for cars
         }
+
+    	azimuth_stddev = settings.azimuth_stddev;
+		polar_stddev = settings.polar_stddev;
+		range_stddev = settings.range_stddev;
+		point_loss_likelihood = settings.point_loss_likelihood;
+		random_return_likelihood = settings.random_return_likelihood;   
+        update_frequency = settings.update_frequency;
 
         float pitch, roll, yaw;
         pitch = !std::isnan(settings.rotation.pitch) ? settings.rotation.pitch : 0;

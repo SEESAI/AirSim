@@ -143,6 +143,12 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
     pimpl_->server.bind("simGetImage", [&](const std::string& camera_name, ImageCaptureBase::ImageType type, const std::string& vehicle_name) -> vector<uint8_t> {
         return getVehicleSimApi(vehicle_name)->getImage(camera_name, type);
     });
+    pimpl_->server.bind("simGetVideoCameraImages", [&](const std::vector<RpcLibAdapatorsBase::ImageRequest>& requests, int num_images, const std::string& vehicle_name) -> vector<RpcLibAdapatorsBase::ImageResponse> {
+		std::vector<ImageCaptureBase::ImageResponse> responses;
+		getVehicleSimApi(vehicle_name)->getVideoCameraImages(RpcLibAdapatorsBase::ImageRequest::to(requests), num_images, responses);
+
+		return RpcLibAdapatorsBase::ImageResponse::from(responses);
+	});
 
     pimpl_->server.bind("simGetMeshPositionVertexBuffers", [&]() ->vector<RpcLibAdapatorsBase::MeshPositionVertexBuffersResponse> {
         const auto& response = getWorldSimApi()->getMeshPositionVertexBuffers();
@@ -203,10 +209,31 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
         return RpcLibAdapatorsBase::GeoPoint(geo_point);
     });
 
+
+    pimpl_->server.bind("getLidarInfo", [&](const std::string& lidar_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::LidarInfo {
+        const auto& lidar_info = getVehicleApi(vehicle_name)->getLidarInfo(lidar_name);
+        return RpcLibAdapatorsBase::LidarInfo(lidar_info);
+        });
+
+    pimpl_->server.bind("getLidarDataBuffer", [&](const std::string& lidar_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::LidarDataBuffer {
+        const auto& lidar_data_buffer = getVehicleApi(vehicle_name)->getLidarDataBuffer(lidar_name);
+        return RpcLibAdapatorsBase::LidarDataBuffer(lidar_data_buffer);
+        });
+
     pimpl_->server.bind("getLidarData", [&](const std::string& lidar_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::LidarData {
         const auto& lidar_data = getVehicleApi(vehicle_name)->getLidarData(lidar_name);
         return RpcLibAdapatorsBase::LidarData(lidar_data);
     });
+
+    pimpl_->server.bind("getImuInfo", [&](const std::string& vehicle_name) -> RpcLibAdapatorsBase::ImuInfo {
+        const auto& imu_info = getVehicleApi(vehicle_name)->getImuInfo();
+        return RpcLibAdapatorsBase::ImuInfo(imu_info);
+        });
+
+    pimpl_->server.bind("getImuDataBuffer", [&](const std::string& vehicle_name) -> RpcLibAdapatorsBase::ImuDataBuffer {
+        const auto& imu_data_buffer = getVehicleApi(vehicle_name)->getImuDataBuffer();
+        return RpcLibAdapatorsBase::ImuDataBuffer(imu_data_buffer);
+        });
 
     pimpl_->server.bind("getImuData", [&](const std::string& imu_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::ImuData {
         const auto& imu_data = getVehicleApi(vehicle_name)->getImuData(imu_name);
@@ -222,6 +249,11 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
         const auto& magnetometer_data = getVehicleApi(vehicle_name)->getMagnetometerData(magnetometer_name);
         return RpcLibAdapatorsBase::MagnetometerData(magnetometer_data);
     });
+
+    pimpl_->server.bind("getGPSDataBuffer", [&](const std::string& vehicle_name) -> RpcLibAdapatorsBase::GPSDataBuffer {
+        const auto& gps_data_buffer = getVehicleApi(vehicle_name)->getGPSDataBuffer();
+        return RpcLibAdapatorsBase::GPSDataBuffer(gps_data_buffer);
+        });
 
     pimpl_->server.bind("getGpsData", [&](const std::string& gps_name, const std::string& vehicle_name) -> RpcLibAdapatorsBase::GpsData {
         const auto& gps_data = getVehicleApi(vehicle_name)->getGpsData(gps_name);
@@ -249,6 +281,10 @@ RpcLibServerBase::RpcLibServerBase(ApiProvider* api_provider, const std::string&
     pimpl_->server.bind("simSetCameraPose", [&](const std::string& camera_name, const RpcLibAdapatorsBase::Pose& pose, 
         const std::string& vehicle_name) -> void {
         getVehicleSimApi(vehicle_name)->setCameraPose(camera_name, pose.to());
+    });
+    pimpl_->server.bind("simSetCameraOrientation", [&](const std::string& camera_name, const RpcLibAdapatorsBase::Quaternionr& orientation, 
+        const std::string& vehicle_name) -> void {
+        getVehicleSimApi(vehicle_name)->setCameraOrientation(camera_name, orientation.to());
     });
 
     pimpl_->server.bind("simSetCameraFov", [&](const std::string& camera_name, float fov_degrees,

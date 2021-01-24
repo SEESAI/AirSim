@@ -673,34 +673,36 @@ bool UAirBlueprintLib::GetLastObstaclePosition(const AActor* actor, const FVecto
     return has_hit;
 }
 
-void UAirBlueprintLib::FollowActor(AActor* follower, const AActor* followee, const FVector& offset, bool fixed_z, float fixed_z_val)
+void UAirBlueprintLib::FollowActor(AActor* follower, const AActor* followee, const FVector& offset, bool fixed_z, float fixed_z_val, bool follow_actor)
 {
     //can we see followee?
     FHitResult hit;
     if (followee == nullptr) {
         return;
     }
-    FVector actor_location = followee->GetActorLocation() + FVector(0, 0, 4);
-    FVector next_location = actor_location + offset;
-    if (fixed_z)
-        next_location.Z = fixed_z_val;
-
-    if (GetObstacle(follower, next_location, actor_location, hit, followee)) {
-        next_location = hit.ImpactPoint + offset;
+    if (follow_actor) {
+        FVector actor_location = followee->GetActorLocation() + FVector(0, 0, 4);
+        FVector next_location = actor_location + offset;
+        if (fixed_z)
+            next_location.Z = fixed_z_val;
 
         if (GetObstacle(follower, next_location, actor_location, hit, followee)) {
-            float next_z = next_location.Z;
-            next_location = hit.ImpactPoint - offset;
-            next_location.Z = next_z;
-        }
-    }
+            next_location = hit.ImpactPoint + offset;
 
-    float dist = (follower->GetActorLocation() - next_location).Size();
-    float offset_dist = offset.Size();
-    float dist_offset = (dist - offset_dist) / offset_dist;
-    float lerp_alpha = common_utils::Utils::clip((dist_offset*dist_offset) * 0.01f + 0.01f, 0.0f, 1.0f);
-    next_location = FMath::Lerp(follower->GetActorLocation(), next_location, lerp_alpha);
-    follower->SetActorLocation(next_location);
+            if (GetObstacle(follower, next_location, actor_location, hit, followee)) {
+                float next_z = next_location.Z;
+                next_location = hit.ImpactPoint - offset;
+                next_location.Z = next_z;
+            }
+        }
+
+        float dist = (follower->GetActorLocation() - next_location).Size();
+        float offset_dist = offset.Size();
+        float dist_offset = (dist - offset_dist) / offset_dist;
+        float lerp_alpha = common_utils::Utils::clip((dist_offset * dist_offset) * 0.01f + 0.01f, 0.0f, 1.0f);
+        next_location = FMath::Lerp(follower->GetActorLocation(), next_location, lerp_alpha);
+        follower->SetActorLocation(next_location);
+    }
 
     FRotator next_rot = UKismetMathLibrary::FindLookAtRotation(follower->GetActorLocation(), followee->GetActorLocation());
     next_rot = FMath::Lerp(follower->GetActorRotation(), next_rot, 0.5f);

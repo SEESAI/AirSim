@@ -158,7 +158,15 @@ msr::airlib::GeoPoint RpcLibClientBase::getHomeGeoPoint(const std::string& vehic
 {
     return pimpl_->client.call("getHomeGeoPoint", vehicle_name).as<RpcLibAdapatorsBase::GeoPoint>().to();
 }
+msr::airlib::ImuInfo RpcLibClientBase::getImuInfo(const std::string& vehicle_name) const
+{
+	return pimpl_->client.call("getImuInfo", vehicle_name).as<RpcLibAdapatorsBase::ImuInfo>().to();
+}
 
+msr::airlib::LidarInfo RpcLibClientBase::getLidarInfo(const std::string& lidar_name, const std::string& vehicle_name) const
+{
+	return pimpl_->client.call("getLidarInfo", lidar_name, vehicle_name).as<RpcLibAdapatorsBase::LidarInfo>().to();
+}
 msr::airlib::LidarData RpcLibClientBase::getLidarData(const std::string& lidar_name, const std::string& vehicle_name) const
 {
     return pimpl_->client.call("getLidarData", lidar_name, vehicle_name).as<RpcLibAdapatorsBase::LidarData>().to();
@@ -187,6 +195,18 @@ msr::airlib::GpsBase::Output RpcLibClientBase::getGpsData(const std::string& gps
 msr::airlib::DistanceSensorData RpcLibClientBase::getDistanceSensorData(const std::string& distance_sensor_name, const std::string& vehicle_name) const
 {
     return pimpl_->client.call("getDistanceSensorData", distance_sensor_name, vehicle_name).as<RpcLibAdapatorsBase::DistanceSensorData>().to();
+}
+msr::airlib::GPSDataBuffer RpcLibClientBase::getGPSDataBuffer(const std::string& vehicle_name) const
+{
+	return pimpl_->client.call("getGPSDataBuffer", vehicle_name).as<RpcLibAdapatorsBase::GPSDataBuffer>().to();
+}
+msr::airlib::ImuDataBuffer RpcLibClientBase::getImuDataBuffer(const std::string& vehicle_name) const
+{
+	return pimpl_->client.call("getImuDataBuffer", vehicle_name).as<RpcLibAdapatorsBase::ImuDataBuffer>().to();
+}
+msr::airlib::LidarDataBuffer RpcLibClientBase::getLidarDataBuffer(const std::string& lidar_name, const std::string& vehicle_name) const
+{
+    return pimpl_->client.call("getLidarDataBuffer", lidar_name, vehicle_name).as<RpcLibAdapatorsBase::LidarDataBuffer>().to();
 }
 
 vector<int> RpcLibClientBase::simGetLidarSegmentation(const std::string& lidar_name, const std::string& vehicle_name) const
@@ -240,6 +260,14 @@ vector<uint8_t> RpcLibClientBase::simGetImage(const std::string& camera_name, Im
         result.clear();
     }
     return result;
+}
+vector<ImageCaptureBase::ImageResponse> RpcLibClientBase::simGetVideoCameraImages(const vector<ImageCaptureBase::ImageRequest>& requests, const int num_images, const std::string& vehicle_name)
+{
+	const auto& response_adaptor = pimpl_->client.call("simGetVideoCameraImages", 
+		RpcLibAdapatorsBase::ImageRequest::from(requests), num_images, vehicle_name)
+		.as<vector<RpcLibAdapatorsBase::ImageResponse>>();
+
+	return RpcLibAdapatorsBase::ImageResponse::to(response_adaptor);
 }
 
 vector<MeshPositionVertexBuffersResponse> RpcLibClientBase::simGetMeshPositionVertexBuffers()
@@ -388,9 +416,10 @@ void RpcLibClientBase::simSetCameraPose(const std::string& camera_name, const Po
 
 void RpcLibClientBase::simSetCameraOrientation(const std::string& camera_name, const Quaternionr& orientation, const std::string& vehicle_name)
 {
-    std::cout << "`simSetCameraOrientation` API has been upgraded to `simSetCameraPose`. Please update your code." << std::endl;
-    Pose pose{Vector3r::Zero(), orientation};
-    RpcLibClientBase::simSetCameraPose(camera_name, pose, vehicle_name);
+    //std::cout << "`simSetCameraOrientation` API has been upgraded to `simSetCameraPose`. Please update your code." << std::endl;
+    //Pose pose{Vector3r::Zero(), orientation};
+    //RpcLibClientBase::simSetCameraPose(camera_name, pose, vehicle_name);
+    pimpl_->client.call("simSetCameraOrientation", camera_name, RpcLibAdapatorsBase::Quaternionr(orientation), vehicle_name);
 }
 
 void RpcLibClientBase::simSetCameraFov(const std::string& camera_name, float fov_degrees, const std::string& vehicle_name)
@@ -442,6 +471,16 @@ RpcLibClientBase* RpcLibClientBase::waitOnLastTask(bool* task_result, float time
     unused(task_result);
 
     return this;
+}
+bool RpcLibClientBase::checkLastTask(bool* task_result, bool* task_complete, float timeout_sec)
+{
+	//should be implemented by derived class if it supports async task,
+	//for example using futures
+	unused(timeout_sec);
+	unused(task_result);
+	unused(task_complete);
+
+	return false;
 }
 
 void RpcLibClientBase::startRecording()

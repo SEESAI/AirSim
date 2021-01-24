@@ -208,6 +208,96 @@ std::vector<uint8_t> PawnSimApi::getImage(const std::string& camera_name, ImageC
         return std::vector<uint8_t>();
 }
 
+bool PawnSimApi::getVideoCameraRequests(std::vector<ImageCaptureBase::ImageRequest>& requests) {
+    // Lock mutex as these methods are on different threads
+    std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
+
+    if (video_camera_requests_.empty())
+        return false;
+
+    // Pass back the latest requests
+    requests = video_camera_requests_;
+    return true;
+}
+
+bool PawnSimApi::saveVideoCameraImages(const std::vector<std::shared_ptr<ImageCaptureBase::ImageResponse>>& responses)
+{
+    // Lock mutex as these methods are on different threads
+    std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
+
+	/// Append new images to the storage vector
+	video_camera_responses_.insert(video_camera_responses_.end(), responses.begin(), responses.end());
+
+	/// If the vector is too long then trim
+	int maxhistory = 10;
+	int numCameras = int(responses.size());
+	int maxlength = maxhistory * numCameras;
+	if (video_camera_responses_.size() > maxlength) {
+		int excesslength = video_camera_responses_.size() - maxlength;
+		video_camera_responses_.erase(video_camera_responses_.begin(), video_camera_responses_.begin() + excesslength);
+	}
+
+	return true;
+}
+
+int PawnSimApi::getVideoCameraImages(const std::vector<ImageCaptureBase::ImageRequest>& requests, int num_images,
+	std::vector<ImageCaptureBase::ImageResponse>& responses)
+{
+
+    // Lock mutex as these methods are on different threads
+    std::vector<std::shared_ptr<ImageCaptureBase::ImageResponse>> latest_images;
+	{
+		std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
+
+		if (video_camera_responses_.empty())
+			return 0;
+
+		latest_images = video_camera_responses_;
+		video_camera_responses_.clear();
+
+		video_camera_requests_ = requests;
+
+		// If user has asked for all images and not supplied requests, then return everything
+		if (requests.empty() && (num_images == 0)) {
+			video_camera_responses_.clear();
+			return 0;
+		}
+	}
+
+	// If user has just supplied names then set image limit to 10;
+	if (num_images == 0)
+		num_images = 10;
+
+	// And filter by camera name and image number 
+	std::vector<int> imagesFound(requests.size(), 0);
+	for (const auto& image : latest_images) {
+
+		// Check if the image matches any requests
+		int cameraIndex = -1;
+		for (int i = 0; i < requests.size(); i++) {
+			const auto& request = requests[i];
+			if ((request.camera_name == image->camera_name) &&
+				(request.image_type == image->image_type) &&
+				(request.compress == image->compress) &&
+				(request.pixels_as_float == image->pixels_as_float)) {
+				cameraIndex = i;
+			}
+		}
+		if (cameraIndex == -1)
+			continue;
+
+		// Check if we've already got enough images of this type
+		if (imagesFound[cameraIndex] >= num_images)
+			continue;
+
+		// Copy the image
+		responses.push_back(std::move(*image));
+		imagesFound[cameraIndex]++;
+	}
+
+	return responses.size();
+}
+
 void PawnSimApi::setRCForceFeedback(float rumble_strength, float auto_center)
 {
     if (joystick_state_.is_initialized) {
@@ -247,7 +337,7 @@ msr::airlib::RCData PawnSimApi::getRCData() const
             rc_data_.throttle, rc_data_.roll, rc_data_.pitch, rc_data_.yaw, Utils::toBinaryString(joystick_state_.buttons).c_str()), LogDebugLevel::Informational);
 
         //TODO: should below be at controller level info?
-        UAirBlueprintLib::LogMessageString("RC Mode: ", rc_data_.getSwitch(0) == 0 ? "Angle" : "Rate", LogDebugLevel::Informational);
+        UAirBlueprintLib::LogMessageString("RC Mode: ", rc_data_.getSwitch(0) == 0 ? "Velocity" : "Angle", LogDebugLevel::Informational);
     }
     //else don't waste time
 
@@ -403,9 +493,11 @@ msr::airlib::CameraInfo PawnSimApi::getCameraInfo(const std::string& camera_name
     msr::airlib::CameraInfo camera_info;
 
     const APIPCamera* camera = getCamera(camera_name);
-    camera_info.pose.position = ned_transform_.toLocalNed(camera->GetActorLocation());
-    camera_info.pose.orientation = ned_transform_.toNed(camera->GetActorRotation().Quaternion());
-    camera_info.fov = camera->GetCameraComponent()->FieldOfView;
+    //camera_info.pose.position = ned_transform_.toLocalNed(camera->GetActorLocation());
+    //camera_info.pose.orientation = ned_transform_.toNed(camera->GetActorRotation().Quaternion());
+    camera_info.pose = camera->getPoseInParentFrame();
+    //camera_info.fov = camera->GetCameraComponent()->FieldOfView;
+    camera_info.fov = camera->getFOV(APIPCamera::ImageType::Scene);
     camera_info.proj_mat = camera->getProjectionMatrix(APIPCamera::ImageType::Scene);
     return camera_info;
 }
@@ -418,6 +510,15 @@ void PawnSimApi::setCameraPose(const std::string& camera_name, const msr::airlib
         camera->setCameraPose(pose_unreal);
     }, true);
 }
+void PawnSimApi::setCameraOrientation(const std::string& camera_name, const msr::airlib::Quaternionr& orientation)
+{
+    UAirBlueprintLib::RunCommandOnGameThread([this, camera_name, orientation]() {
+        APIPCamera* camera = getCamera(camera_name);
+        FQuat quat = ned_transform_.fromNed(orientation);
+        camera->setCameraOrientation(quat.Rotator());
+    }, true);
+}
+
 
 void PawnSimApi::setCameraFoV(const std::string& camera_name, float fov_degrees)
 {
