@@ -245,6 +245,28 @@ public:
         throw std::invalid_argument(std::string(
             "The value cannot be converted to VehicleStateType enum: ").append(val));
     }
+	
+    static std::string toString(const VehicleStateType& val)
+	{
+		if (val == VehicleStateType::Armed)
+			return "Armed";
+		if (val == VehicleStateType::Inactive)
+			return "Inactive";
+		if (val == VehicleStateType::Unknown)
+			return "Unknown";
+		if (val == VehicleStateType::BeingArmed)
+			return "BeingArmed";
+		if (val == VehicleStateType::Active)
+			return "Active";
+		if (val == VehicleStateType::BeingDisarmed)
+			return "BeingDisarmed";
+		if (val == VehicleStateType::Disarmed)
+			return "Disarmed";
+
+		throw std::invalid_argument(std::string(
+			"The value is not a recognised vehicle state"));
+	}
+
 
     const GeoPoint& getHomeGeoPoint() const
     {
@@ -322,11 +344,12 @@ struct PidConfig {
     PidConfig(float kp_val = 0.01f, float ki_val = 0.0f, float kd_val = 0.0f,
         T min_output_val = -1, T max_output_val = 1,
         float time_scale_val = 1.0f / 1000,
-        bool enabled_val = true, T output_bias_val = T(), float iterm_discount_val = 1)
+        bool enabled_val = true, T output_bias_val = T(), float iterm_discount_val = 1, T iterm_initial_val = 0.0f)
         : kp(kp_val), ki(ki_val), kd(kd_val),
         time_scale(time_scale_val),
         min_output(min_output_val), max_output(max_output_val),
-        enabled(enabled_val), output_bias(output_bias_val), iterm_discount(iterm_discount_val)
+        enabled(enabled_val), output_bias(output_bias_val), 
+        iterm_discount(iterm_discount_val), iterm_initial(iterm_initial_val)
     {}
 
     float kp, ki, kd;
@@ -335,6 +358,7 @@ struct PidConfig {
     bool enabled;
     T output_bias;
     float iterm_discount;
+    float iterm_initial;
 
     enum class IntegratorType {
         Standard,

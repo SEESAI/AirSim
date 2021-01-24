@@ -30,6 +30,7 @@ struct ImuSimpleParams {
         //Bias Stability (tau = 500s)
         real_T tau = 500;
         real_T bias_stability = 4.6f / 3600 * M_PIf / 180; //deg/hr converted to rad/sec
+        real_T vrw = 0.24f / sqrt(3600.0f); //m/s/sqrt(hr) converted to m/s/sqrt(s) 
         Vector3r turn_on_bias = Vector3r::Zero(); //assume calibration is done
     } gyro;
 

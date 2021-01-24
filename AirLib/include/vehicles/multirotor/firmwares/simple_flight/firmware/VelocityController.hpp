@@ -33,6 +33,15 @@ public:
             params_->velocity_pid.i[axis], params_->velocity_pid.d[axis]);
         pid_config.iterm_discount = params_->velocity_pid.iterm_discount[axis];
         pid_config.output_bias = params_->velocity_pid.output_bias[axis];
+        if (axis_ == 3) {
+            pid_config.min_output = params_->velocity_pid.min_throttle;
+            pid_config.max_output = params_->velocity_pid.max_throttle;
+        }
+        else {
+            pid_config.min_output = -params_->angle_level_pid.max_limit[axis];
+            pid_config.max_output = params_->angle_level_pid.max_limit[axis];
+        }
+        pid_config.iterm_initial = params_->velocity_pid.iterm_initial[axis];
 
         pid_.reset(new PidController<float>(clock_, pid_config));
 
@@ -82,21 +91,29 @@ public:
         //First get PID output
         const Axis3r& goal_velocity_world = Axis4r::axis4ToXyz(
             goal_->getGoalValue(), true);
-        const Axis4r& goal_velocity_local = Axis4r::xyzToAxis4(
-            state_estimator_->transformToBodyFrame(goal_velocity_world), true);
-        pid_->setGoal(goal_velocity_local[axis_]);
+		TReal yaw = state_estimator_->getAngles().yaw();
+		TReal vx = goal_velocity_world.x() * cos(yaw) + goal_velocity_world.y() * sin(yaw);
+		TReal vy = -goal_velocity_world.x() * sin(yaw) + goal_velocity_world.y() * cos(yaw);
+		TReal vz = goal_velocity_world.z();
+		// ToDo - clip to velocity limit
+        // Note x & y swapped as these axis relate to roll & pitch outputs, y & z -ve (+ve vx req -ve pitch, +ve vz requires less throttle)
+		Axis4r goal_velocity_local(vy, -vx, 0, -vz); 
+		pid_->setGoal(goal_velocity_local[axis_]); 
 
         const Axis3r& measured_velocity_world = state_estimator_->getLinearVelocity();
-        const Axis4r& measured_velocity_local = Axis4r::xyzToAxis4(
-            state_estimator_->transformToBodyFrame(measured_velocity_world), true);
-        pid_->setMeasured(measured_velocity_local[axis_]);
-        pid_->update();
+		vx = measured_velocity_world.x() * cos(yaw) + measured_velocity_world.y() * sin(yaw);
+		vy = -measured_velocity_world.x() * sin(yaw) + measured_velocity_world.y() * cos(yaw);
+		vz = measured_velocity_world.z();
+        // Note x & y swapped as these axis relate to roll & pitch outputs, y & z -ve (+ve vx req -ve pitch, +ve vz requires less throttle)
+        Axis4r measured_velocity_new(vy, -vx, 0, -vz); 
+		pid_->setMeasured(measured_velocity_new[axis_]);
+		pid_->update();
 
         //use this to drive child controller
         switch (axis_)
         {
         case 0: //+vy is +ve roll
-            child_goal_[axis_] = pid_->getOutput() * params_->angle_level_pid.max_limit[axis_];
+            child_goal_[axis_] = pid_->getOutput();
             child_controller_->update();
             output_ = child_controller_->getOutput();
 
@@ -107,13 +124,14 @@ public:
 
             break;
         case 1: //+vx is -ve pitch
-            child_goal_[axis_] = - pid_->getOutput() * params_->angle_level_pid.max_limit[axis_];
+            child_goal_[axis_] = pid_->getOutput();
             child_controller_->update();
             output_ = child_controller_->getOutput();
             break;
         case 3: //+vz is -ve throttle (NED coordinates)
-            output_ = (-pid_->getOutput() + 1) / 2; //-1 to 1 --> 0 to 1
+            output_ = pid_->getOutput(); 
             output_ = std::max(output_, params_->velocity_pid.min_throttle);
+            output_ = std::min(output_, params_->velocity_pid.max_throttle);
             break;
         default:
             throw std::invalid_argument("axis must be 0, 1 or 3 for VelocityController");

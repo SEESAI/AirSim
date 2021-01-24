@@ -405,6 +405,12 @@ public:
             image_data_uint8 = s.image_data_uint8;
             image_data_float = s.image_data_float;
 
+            //TODO: remove bug workaround for https://github.com/rpclib/rpclib/issues/152
+            if (image_data_uint8.size() == 0)
+                image_data_uint8.push_back(0);
+            if (image_data_float.size() == 0)
+                image_data_float.push_back(0);
+
             camera_name = s.camera_name;
             camera_position = Vector3r(s.camera_position);
             camera_orientation = Quaternionr(s.camera_orientation);
@@ -460,6 +466,51 @@ public:
         }
     };
 
+    struct LidarInfo {
+
+		Pose pose;
+		float vertical_fov_lower;
+		float vertical_fov_upper;
+		float horizontal_fov_lower;
+		float horizontal_fov_upper;
+		int channels_per_scan;
+		int scans_per_revolution;
+		float revolutions_per_second;
+
+		MSGPACK_DEFINE_MAP(pose, vertical_fov_lower, vertical_fov_upper, horizontal_fov_lower, horizontal_fov_upper, channels_per_scan, scans_per_revolution, revolutions_per_second);
+
+		LidarInfo()
+		{}
+
+		LidarInfo(const msr::airlib::LidarInfo& s)
+		{
+			pose = s.pose;
+			vertical_fov_lower = s.vertical_fov_lower;
+			vertical_fov_upper = s.vertical_fov_upper;
+			horizontal_fov_lower = s.horizontal_fov_lower;
+			horizontal_fov_upper = s.horizontal_fov_upper;
+			channels_per_scan = s.channels_per_scan;
+			scans_per_revolution = s.scans_per_revolution;
+			revolutions_per_second = s.revolutions_per_second;
+		}
+
+		msr::airlib::LidarInfo to() const
+		{
+			msr::airlib::LidarInfo d;
+
+			d.pose = pose.to();
+			d.vertical_fov_lower = vertical_fov_lower;
+			d.vertical_fov_upper = vertical_fov_upper;
+			d.horizontal_fov_lower = horizontal_fov_lower;
+			d.horizontal_fov_upper = horizontal_fov_upper;
+			d.channels_per_scan = channels_per_scan;
+			d.scans_per_revolution = scans_per_revolution;
+			d.revolutions_per_second = revolutions_per_second;
+
+			return d;
+		}
+	};
+
     struct LidarData {
 
         msr::airlib::TTimePoint time_stamp;    // timestamp
@@ -475,6 +526,9 @@ public:
         {
             time_stamp = s.time_stamp;
             point_cloud = s.point_cloud;
+            //TODO: remove bug workaround for https://github.com/rpclib/rpclib/issues/152
+			if (point_cloud.size() == 0)
+				point_cloud.push_back(0);
             pose = s.pose;
         }
 
@@ -489,6 +543,82 @@ public:
             return d;
         }
     };
+
+    struct LidarDataBuffer {
+
+		Pose sensor_pose_in_world_frame;
+		std::vector<uint64_t> timestamps_ns;    // timestamps
+		std::vector<float> azimuth_angles;  // azimuth_angles
+        std::vector<float> ranges;          // ranges
+
+        MSGPACK_DEFINE_MAP(sensor_pose_in_world_frame, timestamps_ns, azimuth_angles, ranges);
+
+        LidarDataBuffer()
+        {}
+
+        LidarDataBuffer(const msr::airlib::LidarDataBuffer& s)
+        {
+			azimuth_angles = s.azimuth_angles;
+			timestamps_ns = s.timestamps_ns;
+			ranges = s.ranges;
+			sensor_pose_in_world_frame = s.sensor_pose_in_world_frame;
+
+            //TODO: remove bug workaround for https://github.com/rpclib/rpclib/issues/152
+			if (azimuth_angles.size() == 0) {
+				timestamps_ns.push_back(0);
+				ranges.push_back(0);
+				azimuth_angles.push_back(0);
+			}
+        }
+
+        msr::airlib::LidarDataBuffer to() const
+        {
+            msr::airlib::LidarDataBuffer d;
+
+			d.azimuth_angles = azimuth_angles;
+			d.timestamps_ns = timestamps_ns;
+			d.ranges = ranges;
+			d.sensor_pose_in_world_frame = sensor_pose_in_world_frame.to();
+
+            return d;
+        }
+    };
+
+	struct ImuInfo {
+
+		Pose pose;
+		float angle_random_walk;
+		float gyro_bias_stability;
+		float velocity_random_walk;
+		float accelerometer_bias_stability;
+
+		MSGPACK_DEFINE_MAP(pose, angle_random_walk, gyro_bias_stability, velocity_random_walk, accelerometer_bias_stability);
+
+        ImuInfo()
+		{}
+
+        ImuInfo(const msr::airlib::ImuInfo& s)
+		{
+			pose = s.pose;
+			angle_random_walk = s.angle_random_walk;
+			gyro_bias_stability = s.gyro_bias_stability;
+			velocity_random_walk = s.velocity_random_walk;
+			accelerometer_bias_stability = s.accelerometer_bias_stability;
+		}
+
+		msr::airlib::ImuInfo to() const
+		{
+			msr::airlib::ImuInfo d;
+
+			d.pose = pose.to();
+			d.angle_random_walk = angle_random_walk;
+			d.gyro_bias_stability = gyro_bias_stability;
+			d.velocity_random_walk = velocity_random_walk;
+			d.accelerometer_bias_stability = accelerometer_bias_stability;
+
+			return d;
+		}
+	};
 
     struct ImuData {
         msr::airlib::TTimePoint time_stamp;
@@ -521,6 +651,48 @@ public:
             return d;
         }
     };
+
+	struct ImuDataBuffer {
+
+		std::vector<uint64_t> timestamps_ns;
+		std::vector<float> orientation;
+		std::vector<float> angular_velocity;
+		std::vector<float> linear_acceleration;
+
+		MSGPACK_DEFINE_MAP(timestamps_ns, orientation, angular_velocity, linear_acceleration);
+
+        ImuDataBuffer()
+		{}
+
+        ImuDataBuffer(const msr::airlib::ImuDataBuffer& s)
+		{
+			timestamps_ns = s.timestamps_ns;
+			orientation = s.orientation;
+			angular_velocity = s.angular_velocity;
+			linear_acceleration = s.linear_acceleration;
+
+			//TODO: remove bug workaround for https://github.com/rpclib/rpclib/issues/152
+			if (timestamps_ns.size() == 0) {
+				timestamps_ns.push_back(0);
+				orientation.push_back(0);
+				angular_velocity.push_back(0);
+				linear_acceleration.push_back(0);
+			}
+		}
+
+		msr::airlib::ImuDataBuffer to() const
+		{
+			msr::airlib::ImuDataBuffer d;
+
+			d.timestamps_ns = timestamps_ns;
+			d.orientation = orientation;
+			d.angular_velocity = angular_velocity;
+			d.linear_acceleration = linear_acceleration;
+
+			return d;
+		}
+	};
+
 
     struct BarometerData {
         msr::airlib::TTimePoint time_stamp;
@@ -648,6 +820,55 @@ public:
             return d;
         }
     };
+
+	struct GPSDataBuffer {
+
+		std::vector<uint64_t> timestamps_ns;
+		std::vector<double> latitude;  
+		std::vector<double> longitude; 
+		std::vector<float>  altitude;
+		std::vector<float> eph;
+		std::vector<float> epv;
+
+		MSGPACK_DEFINE_MAP(timestamps_ns, latitude, longitude, altitude, eph, epv);
+
+		GPSDataBuffer()
+		{}
+
+		GPSDataBuffer(const msr::airlib::GPSDataBuffer& s)
+		{
+			timestamps_ns = s.timestamps_ns;
+			latitude = s.latitude;
+			longitude = s.longitude;
+			altitude = s.altitude;
+			eph = s.eph;
+			epv = s.epv;
+
+			//TODO: remove bug workaround for https://github.com/rpclib/rpclib/issues/152
+			if (timestamps_ns.size() == 0) {
+				timestamps_ns.push_back(0);
+				latitude.push_back(0);
+				longitude.push_back(0);
+				altitude.push_back(0);
+				eph.push_back(0);
+				epv.push_back(0);
+			}
+		}
+
+		msr::airlib::GPSDataBuffer to() const
+		{
+			msr::airlib::GPSDataBuffer d;
+
+			d.timestamps_ns = timestamps_ns;
+			d.latitude = latitude;
+			d.longitude = longitude;
+			d.altitude = altitude;
+			d.eph = eph;
+			d.epv = epv;
+
+			return d;
+		}
+	};
 
     struct DistanceSensorData {
         msr::airlib::TTimePoint time_stamp;
