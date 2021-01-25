@@ -68,7 +68,7 @@ public: //types
 
 		std::vector<msr::airlib::ImageCaptureBase::ImageRequest> requests;
 
-		VideoCameraSetting(float record_interval_val = 0.05f)
+		VideoCameraSetting(float record_interval_val = 0.10f)
 			: record_interval(record_interval_val)
 			, enabled(false)
 		{

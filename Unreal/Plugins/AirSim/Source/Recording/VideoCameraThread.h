@@ -34,7 +34,6 @@ private:
 
 private:
     FThreadSafeCounter stop_task_counter_;
-    FRenderCommandFence read_pixel_fence_;
     
     static std::unique_ptr<FVideoCameraThread> instance_;
 
@@ -44,8 +43,6 @@ private:
     const msr::airlib::ImageCaptureBase* image_capture_;
     const msr::airlib::Kinematics::State* kinematics_;
     msr::airlib::VehicleSimApiBase* vehicle_sim_api_;
-
-    msr::airlib::TTimePoint next_screenshot_due_;
 
     bool is_ready_;
 };

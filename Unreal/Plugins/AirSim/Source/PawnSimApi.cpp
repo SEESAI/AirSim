@@ -208,11 +208,14 @@ std::vector<uint8_t> PawnSimApi::getImage(const std::string& camera_name, ImageC
         return std::vector<uint8_t>();
 }
 
-std::vector<msr::airlib::ImageCaptureBase::ImageRequest> PawnSimApi::saveVideoCameraImages(
-										const std::vector<ImageCaptureBase::ImageResponse>& responses)
+bool PawnSimApi::saveVideoCameraImages(
+	const std::vector<std::shared_ptr<ImageCaptureBase::ImageResponse>>& responses, 
+	std::vector<ImageCaptureBase::ImageRequest>& newRequests)
 {
-	/// Append new images to the storage vector
+	// Lock mutex to avoid clashing with the getVideoCameraImages method
 	std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
+
+	/// Append new images to the storage vector
 	video_camera_responses_.insert(video_camera_responses_.end(), responses.begin(), responses.end());
 
 	/// If the vector is too long then trim
@@ -224,76 +227,68 @@ std::vector<msr::airlib::ImageCaptureBase::ImageRequest> PawnSimApi::saveVideoCa
 		video_camera_responses_.erase(video_camera_responses_.begin(), video_camera_responses_.begin() + excesslength);
 	}
 
-	// Save the number of camera images
-	number_video_cameras_ = responses.size();
+	// Pass back the latest requests
+	newRequests = video_camera_requests_;
 
-	return video_camera_requests_;
+	return true;
 }
 
-int PawnSimApi::getVideoCameraImages(const std::vector<ImageCaptureBase::ImageRequest>& requests,
-									 int num_images, 
-									 std::vector<ImageCaptureBase::ImageResponse>& responses)
+int PawnSimApi::getVideoCameraImages(const std::vector<ImageCaptureBase::ImageRequest>& requests, int num_images,
+	std::vector<ImageCaptureBase::ImageResponse>& responses)
 {
 
-	// Copy requests & responses (needs Mutex)
-	//ToDo if this is too much memory copying then we could consider transferring a vector of shared pointers instead
+	// Copy requests & responses under Mutex so as not to clash with the saveVideoCameraImages method
+	std::vector<std::shared_ptr<ImageCaptureBase::ImageResponse>> latest_images;
 	{
 		std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
-		responses = video_camera_responses_;
+
+		if (video_camera_responses_.empty())
+			return 0;
+
+		latest_images = video_camera_responses_;
+		video_camera_responses_.clear();
+
 		video_camera_requests_ = requests;
 
 		// If user has asked for all images and not supplied requests, then return everything
 		if (requests.empty() && (num_images == 0)) {
 			video_camera_responses_.clear();
-			return responses.size();
+			return 0;
 		}
 	}
 
-	// If user has just supplied names then set image limit to max
+	// If user has just supplied names then set image limit to 10;
 	if (num_images == 0)
-		num_images = responses.size() / number_video_cameras_;
+		num_images = 10;
 
 	// And filter by camera name and image number 
-	std::vector<ImageCaptureBase::ImageResponse> responsesToReturn;
-	uint64_t most_recent_image_time = 0;
-	for (int image = 0; image < num_images; image++)
-		for (int camera = 0; camera < number_video_cameras_; camera++) {
-			// Work out the current reponse index
-			int index = responses.size() - image * number_video_cameras_ - camera - 1;
-			if (index < 0)
-				break;
+	std::vector<int> imagesFound(requests.size(), 0);
+	for (const auto& image : latest_images) {
 
-			// Compare camera names and keep an image if matching the request (or if there are no names)
-			auto & response = responses[index];
-			bool keepThisResponse = false;
-			if (requests.empty())
-				keepThisResponse = true;
-			else
-				for (const ImageCaptureBase::ImageRequest & request : requests)
-					if ( (request.camera_name == response.camera_name) &&
-						(request.image_type == response.image_type) &&
-						(request.compress == response.compress) &&
-						(request.pixels_as_float == response.pixels_as_float) )
-						keepThisResponse = true;
-
-			// Keep the response and update the time vector
-			if (keepThisResponse) {
-				responsesToReturn.insert(responsesToReturn.begin(), response);
-				most_recent_image_time = std::max(most_recent_image_time, response.time_stamp);
+		// Check if the image matches any requests
+		int cameraIndex = -1;
+		for (int i = 0; i < requests.size(); i++) {
+			const auto& request = requests[i];
+			if ((request.camera_name == image->camera_name) &&
+				(request.image_type == image->image_type) &&
+				(request.compress == image->compress) &&
+				(request.pixels_as_float == image->pixels_as_float)) {
+				cameraIndex = i;
 			}
 		}
-	// Move to responses as this is what is returned
-	responses = responsesToReturn;
+		if (cameraIndex == -1)
+			continue;
 
-	// Remove any images older than the most recent return from storage (so they don't get returned again)
-	std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
-	for (int i = video_camera_responses_.size(); i >= 0 ; i--)
-		if (video_camera_responses_[i].time_stamp <= most_recent_image_time) {
-			video_camera_responses_.erase(video_camera_responses_.begin(), video_camera_responses_.begin() + i);
-			break;
-		}
+		// Check if we've already got enough images of this type
+		if (imagesFound[cameraIndex] >= num_images)
+			continue;
 
-	return responsesToReturn.size();
+		// Copy the image
+		responses.push_back(std::move(*image));
+		imagesFound[cameraIndex]++;
+	}
+
+	return responses.size();
 }
 
 void PawnSimApi::setRCForceFeedback(float rumble_strength, float auto_center)
