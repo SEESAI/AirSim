@@ -51,7 +51,9 @@ void FVideoCameraThread::stopRecording()
 	if (instance_)
 	{
 		instance_->Stop();
-		instance_->EnsureCompletion();
+		// instance_->EnsureCompletion(); // This hangs for some reason...
+		instance_->thread_->Kill(false);
+		instance_.reset();
 	}
 }
 
@@ -153,7 +155,6 @@ void FVideoCameraThread::Stop()
 void FVideoCameraThread::Exit()
 {
 	stop_task_counter_.Increment();
-	EnsureCompletion();
 }
 
 void FVideoCameraThread::EnsureCompletion()
