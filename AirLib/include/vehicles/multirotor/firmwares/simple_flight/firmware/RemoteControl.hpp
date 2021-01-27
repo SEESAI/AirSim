@@ -201,6 +201,11 @@ private:
 
     void updateGoal(const Axis4r& channels)
     {
+        if (!board_inputs_->isRcConnected()) {
+            goal_ = Axis4r(0, 0, 0, 0);
+            return;
+        }
+
         //for 3 way switch, 1/3 value for each position
         if (angle_mode_ < params_->rc.max_angle_level_switch) { 
             //we are in control-by-velocity mode
