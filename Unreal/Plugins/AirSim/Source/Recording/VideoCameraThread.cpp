@@ -61,7 +61,7 @@ bool FVideoCameraThread::Init()
 {
 	if (image_capture_)
 	{
-		UAirBlueprintLib::LogMessage(TEXT("Video camera thread"), TEXT("Started"), LogDebugLevel::Success);
+		UAirBlueprintLib::LogMessage(TEXT("Video Camera: "), TEXT("Started"), LogDebugLevel::Success);
 	}
 	return true;
 }
@@ -78,48 +78,67 @@ uint32 FVideoCameraThread::Run()
 	// Set the first screenshot time to keep images regular
 	msr::airlib::TTimePoint current_airsim_time = msr::airlib::ClockFactory::get()->nowNanos();
 	msr::airlib::TTimePoint next_screenshot_due = record_interval_nanos * (current_airsim_time / record_interval_nanos + 1);
-	msr::airlib::TTimePoint last_picture_taken = 0;
+	msr::airlib::TTimePoint last_picture_taken_time = current_airsim_time;
+	msr::airlib::TTimePoint last_picture_saved_time = current_airsim_time;
 	std::vector<msr::airlib::ImageCaptureBase::ImageRequest> requests = settings_.requests;
+	float dt_frame_lpf = record_interval_nanos / 1e9f;
+	float dt_videos_lpf = record_interval_nanos / 1e9f;
 
 	while (stop_task_counter_.GetValue() == 0)
 	{
-		// Wait until next screenshot due
-		current_airsim_time = msr::airlib::ClockFactory::get()->nowNanos();
-		bool picture_due = current_airsim_time >= next_screenshot_due;
-		if (picture_due)
-		{
-			//Get the images (converting to pointers) according to the requests
-			std::vector<std::shared_ptr<msr::airlib::ImageCaptureBase::ImageResponse>> response_ptrs(requests.size());
-			{
-				std::vector<msr::airlib::ImageCaptureBase::ImageResponse> responses;
-				image_capture_->getImages(requests, responses);
-				for (int i = 0; i < responses.size(); i++) {
-					response_ptrs[i] = std::make_shared<msr::airlib::ImageCaptureBase::ImageResponse >();
-					*response_ptrs[i] = std::move(responses[i]);
-				}
-			}
-			
-			// Set the next screenshot time to keep images regular
-			next_screenshot_due = record_interval_nanos * (current_airsim_time / record_interval_nanos + 1);
-			if (!response_ptrs.empty()) {
-				msr::airlib::TTimePoint current_picture_taken = response_ptrs[0]->time_stamp;
-				uint64_t dtMS = (current_picture_taken - last_picture_taken) / 1e6;
-				UAirBlueprintLib::LogMessage("Video Camera dt", std::to_string(dtMS).c_str(), LogDebugLevel::Success);
-				last_picture_taken = current_picture_taken;
-			}
+		//Check for new requests from the API
+		vehicle_sim_api_->getVideoCameraRequests(requests);
 
-			//Store them in the main vehicle API class (and get any updated image requests)
-			std::vector<msr::airlib::ImageCaptureBase::ImageRequest> new_requests;
-			vehicle_sim_api_->saveVideoCameraImages(response_ptrs, new_requests);
-			if (!new_requests.empty())
-				requests = std::move(new_requests);
+		// Don't go any further if no requests
+		if (requests.empty()) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			last_picture_taken_time = msr::airlib::ClockFactory::get()->nowNanos();
+			continue;
 		}
-		else {
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+		//Get the images according to the requests
+		//Note this blocks until an image is available from the renderer (defined by Unreal frame rate)
+		std::vector<msr::airlib::ImageCaptureBase::ImageResponse> responses;
+		vehicle_sim_api_->getImageCapture()->getImages(requests, responses);
+
+		msr::airlib::TTimePoint this_picture_taken_time = msr::airlib::ClockFactory::get()->nowNanos();
+		if (!responses.empty()) {
+			// If we have an image then set "this picture time" from the image
+			this_picture_taken_time = responses[0].time_stamp;
+		}
+
+		// Work out the (smoothed) frame rate
+		float dtFrame = (this_picture_taken_time - last_picture_taken_time) / 1e9f;
+		dt_frame_lpf += (dtFrame - dt_frame_lpf) / 10;
+		last_picture_taken_time = this_picture_taken_time;
+
+		// Check if we need to save it
+		if (this_picture_taken_time >= next_screenshot_due) {
+			//Store them in the main vehicle API class
+			std::vector<msr::airlib::ImageCaptureBase::ImageRequest> new_requests;
+			std::vector<std::shared_ptr<msr::airlib::ImageCaptureBase::ImageResponse>> response_ptrs(requests.size());
+			for (int i = 0; i < responses.size(); i++) {
+				response_ptrs[i] = std::make_shared<msr::airlib::ImageCaptureBase::ImageResponse >();
+				*response_ptrs[i] = std::move(responses[i]);
+			}
+			vehicle_sim_api_->saveVideoCameraImages(response_ptrs);
+
+			// Report the frame rate (both rendering and saving)
+			float dtVideo = (this_picture_taken_time - last_picture_saved_time) / 1e9f;
+			dt_videos_lpf += (dtVideo - dt_videos_lpf) / 10;
+			last_picture_saved_time = this_picture_taken_time;
+			std::stringstream stream;
+			stream << "Receiving " << responses.size() << ((responses.size() == 1) ? " image at " : " images at ");
+			stream << std::fixed << std::setprecision(1) << (1.f / dt_frame_lpf) << "Hz, saving at ";
+			stream << std::fixed << std::setprecision(1) << (1.f / dt_videos_lpf) << "Hz (" << (dtVideo * 1000) << "ms)";
+			UAirBlueprintLib::LogMessage("Video Camera: ", stream.str().c_str(), LogDebugLevel::Success);
+
+			// Set the next picture prior to its due time (to ensure it is queued correctly)
+			next_screenshot_due = this_picture_taken_time + record_interval_nanos - uint64_t(dtFrame * 1e9f / 2);
 		}
 	}
 
-	UAirBlueprintLib::LogMessage(TEXT("Video camera thread"), TEXT("Stopped"), LogDebugLevel::Success);
+	UAirBlueprintLib::LogMessage(TEXT("Video Camera: "), TEXT("Stopped"), LogDebugLevel::Success);
 
 	return 0;
 }

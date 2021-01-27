@@ -208,12 +208,22 @@ std::vector<uint8_t> PawnSimApi::getImage(const std::string& camera_name, ImageC
         return std::vector<uint8_t>();
 }
 
-bool PawnSimApi::saveVideoCameraImages(
-	const std::vector<std::shared_ptr<ImageCaptureBase::ImageResponse>>& responses, 
-	std::vector<ImageCaptureBase::ImageRequest>& newRequests)
+bool PawnSimApi::getVideoCameraRequests(std::vector<ImageCaptureBase::ImageRequest>& requests) {
+    // Lock mutex as these methods are on different threads
+    std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
+
+    if (video_camera_requests_.empty())
+        return false;
+
+    // Pass back the latest requests
+    requests = video_camera_requests_;
+    return true;
+}
+
+bool PawnSimApi::saveVideoCameraImages(const std::vector<std::shared_ptr<ImageCaptureBase::ImageResponse>>& responses)
 {
-	// Lock mutex to avoid clashing with the getVideoCameraImages method
-	std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
+    // Lock mutex as these methods are on different threads
+    std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
 
 	/// Append new images to the storage vector
 	video_camera_responses_.insert(video_camera_responses_.end(), responses.begin(), responses.end());
@@ -227,9 +237,6 @@ bool PawnSimApi::saveVideoCameraImages(
 		video_camera_responses_.erase(video_camera_responses_.begin(), video_camera_responses_.begin() + excesslength);
 	}
 
-	// Pass back the latest requests
-	newRequests = video_camera_requests_;
-
 	return true;
 }
 
@@ -237,8 +244,8 @@ int PawnSimApi::getVideoCameraImages(const std::vector<ImageCaptureBase::ImageRe
 	std::vector<ImageCaptureBase::ImageResponse>& responses)
 {
 
-	// Copy requests & responses under Mutex so as not to clash with the saveVideoCameraImages method
-	std::vector<std::shared_ptr<ImageCaptureBase::ImageResponse>> latest_images;
+    // Lock mutex as these methods are on different threads
+    std::vector<std::shared_ptr<ImageCaptureBase::ImageResponse>> latest_images;
 	{
 		std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
 

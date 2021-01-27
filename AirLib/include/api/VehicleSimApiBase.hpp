@@ -47,8 +47,8 @@ public:
 
     virtual std::vector<ImageCaptureBase::ImageResponse> getImages(const std::vector<ImageCaptureBase::ImageRequest>& request) const = 0;
     virtual std::vector<uint8_t> getImage(const std::string& camera_name, ImageCaptureBase::ImageType image_type) const = 0;
-    virtual bool saveVideoCameraImages(const std::vector< std::shared_ptr<ImageCaptureBase::ImageResponse>>& responses,
-                                       std::vector <ImageCaptureBase::ImageRequest>& newRequests) = 0;
+    virtual bool getVideoCameraRequests(std::vector<ImageCaptureBase::ImageRequest>& requests) = 0;
+    virtual bool saveVideoCameraImages(const std::vector< std::shared_ptr<ImageCaptureBase::ImageResponse>>& responses) = 0;
     virtual int getVideoCameraImages(const std::vector<ImageCaptureBase::ImageRequest>& requests, int num_images,
                                      std::vector<ImageCaptureBase::ImageResponse>& responses) = 0;
 
