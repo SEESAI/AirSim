@@ -44,5 +44,6 @@ private:
     const msr::airlib::Kinematics::State* kinematics_;
     msr::airlib::VehicleSimApiBase* vehicle_sim_api_;
 
-    bool is_ready_;
+    bool is_ready_ = false;
+    bool is_complete_ = false;
 };
