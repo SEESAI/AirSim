@@ -103,13 +103,14 @@ public:
         const float kMaxLimit = 6.0f; // m/s
 		const float kP_XY = 0.2f;
 		const float kD_XY = 0.0f; // 0.02
+        const float kI_XY = 0.02f;
 		const float kP_Z = 2.0f; // 0.5
         const float kI_Z = 2.0f; // 0.5
 
         Axis4r max_limit = Axis4r(kMaxLimit, kMaxLimit, 0, kMaxLimit); //x, y, yaw, z in meters
 
         Axis4r p = Axis4r(kP_XY, kP_XY, 0.0f, kP_Z); // todo why 2.0f hardcoded
-        Axis4r i = Axis4r(0.0f, 0.0f, 0.0f, kI_Z);
+        Axis4r i = Axis4r(kI_XY, kI_XY, 0.0f, kI_Z);
         Axis4r d = Axis4r(kD_XY, kD_XY, 0.0f, 0.0f);
 
         Axis4r iterm_discount = Axis4r(1, 1, 1, 1);

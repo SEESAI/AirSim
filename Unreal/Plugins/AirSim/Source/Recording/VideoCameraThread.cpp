@@ -31,6 +31,7 @@ void FVideoCameraThread::startRecording(const msr::airlib::ImageCaptureBase* ima
 		instance_->kinematics_ = kinematics;
 		instance_->settings_ = settings;
 		instance_->vehicle_sim_api_ = vehicle_sim_api;
+		instance_->is_complete_ = false;
 		instance_->is_ready_ = true;
 	}
 
@@ -51,7 +52,10 @@ void FVideoCameraThread::stopRecording()
 	if (instance_)
 	{
 		instance_->Stop();
-		// instance_->EnsureCompletion(); // This hangs for some reason...
+		// instance_->EnsureCompletion(); // This hangs for some reason... so using "is_complete_" boolean instead
+		// while (!instance_->is_complete_) // This hangs too - I think the thread is getting stuck somewhere on shutdown
+		std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
 		instance_->thread_->Kill(false);
 		instance_.reset();
 	}
@@ -141,6 +145,9 @@ uint32 FVideoCameraThread::Run()
 	}
 
 	UAirBlueprintLib::LogMessage(TEXT("Video Camera: "), TEXT("Stopped"), LogDebugLevel::Success);
+
+	// Hack to handle "EnsureCompletion" issue hang
+	is_complete_ = true;
 
 	return 0;
 }
