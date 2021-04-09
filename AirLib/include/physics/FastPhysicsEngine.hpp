@@ -281,9 +281,9 @@ private:
 
         if (useSimpleDrag) {
             /// Simple bluff spherical body drag oposite to body direction with no torque
-            constexpr real_T dragCoeff = 0.5; // Sphere
-            constexpr real_T area = M_PI * 0.2 * 0.2; // 20cm radius sphere
-            const real_T drag_force = 0.5 * air_density * pow(relative_vel.norm(), 2) * dragCoeff * area;
+            constexpr real_T dragCoeff = 0.5f; // Sphere
+            constexpr real_T area = real_T(M_PI) * 0.2f * 0.2f; // 20cm radius sphere
+            const real_T drag_force = real_T(0.5f) * air_density * powf(relative_vel.norm(), 2) * dragCoeff * area;
             wrench.force = drag_force * -relative_vel.normalized();
         }
         else {
