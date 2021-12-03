@@ -301,6 +301,21 @@ protected:
         firmware_->offboardApi().setGoalAndMode(&goal, &mode, message);
     }
 
+    virtual void commandAcceleration(float ax, float ay, float az, const YawMode& yaw_mode) override
+    {
+      //Utils::log(Utils::stringf("commandVelocity %f, %f, %f, %f", vx, vy, vz, yaw_mode.yaw_or_rate));
+
+      typedef simple_flight::GoalModeType GoalModeType;
+      simple_flight::GoalMode mode(GoalModeType::AccelerationWorld, GoalModeType::AccelerationWorld,
+                                   yaw_mode.is_rate ? GoalModeType::AngleRate : GoalModeType::AngleLevel,
+                                   GoalModeType::AccelerationWorld);
+
+      simple_flight::Axis4r goal(ay, ax, Utils::degreesToRadians(yaw_mode.yaw_or_rate), az);
+
+      std::string message;
+      firmware_->offboardApi().setGoalAndMode(&goal, &mode, message);
+    }
+
     virtual void commandVelocityZ(float vx, float vy, float z, const YawMode& yaw_mode) override
     {
         //Utils::log(Utils::stringf("commandVelocityZ %f, %f, %f, %f", vx, vy, z, yaw_mode.yaw_or_rate));
