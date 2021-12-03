@@ -387,3 +387,4 @@ PythonClient/docs/_build
 
 # clion folders
 .idea/
+cmake/cmake-build-*/
