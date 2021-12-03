@@ -384,3 +384,6 @@ build_docs/
 
 # api docs
 PythonClient/docs/_build
+
+# clion folders
+.idea/

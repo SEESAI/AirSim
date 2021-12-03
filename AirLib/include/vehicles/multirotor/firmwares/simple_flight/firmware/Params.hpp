@@ -122,6 +122,11 @@ public:
         float max_throttle = 0.9f;
     } velocity_pid;
 
+    struct Acceleration {
+      const float min_thrust = 0.f;
+      const float max_thrust = 20.f;
+    } acceleration;
+
     struct Takeoff {
         float takeoff_z = -2.0f;
         //float velocity = -1.0f;
