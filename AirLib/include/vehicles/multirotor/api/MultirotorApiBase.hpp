@@ -34,7 +34,11 @@ protected: //must be implemented
     virtual void commandVelocity(float vx, float vy, float vz, const YawMode& yaw_mode) = 0;
     // we don't force all implementations to provide acceleration control
     virtual void commandAcceleration(float ax, float ay, float az, const YawMode& yaw_mode) {
-      throw std::runtime_error("commandAcceleration not implemented");
+        unused(ax);
+        unused(ay);
+        unused(az);
+        unused(yaw_mode);
+        throw std::runtime_error("commandAcceleration not implemented");
     }
     virtual void commandVelocityZ(float vx, float vy, float z, const YawMode& yaw_mode) = 0;
     virtual void commandPosition(float x, float y, float z, const YawMode& yaw_mode) = 0;

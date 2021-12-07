@@ -202,16 +202,17 @@ bool MultirotorApiBase::moveByAcceleration(float ax, float ay, float az,
                                            float duration,
                                            DrivetrainType drivetrain,
                                            const YawMode &yaw_mode) {
-  // todo We skip safety check and drivetrain check here - not required yet.
-  if (duration <= 0) {
-    commandAcceleration(ax, ay, az, yaw_mode);
-    return true;
-  }
+    unused(drivetrain);
+    // todo We skip safety check and drivetrain check here - not required yet.
+    if (duration <= 0) {
+        commandAcceleration(ax, ay, az, yaw_mode);
+        return true;
+    }
 
-  return waitForFunction([&]() {
-      commandAcceleration(ax, ay, az, yaw_mode);
-      return false;
-  }, duration).isTimeout();
+    return waitForFunction([&]() {
+        commandAcceleration(ax, ay, az, yaw_mode);
+        return false;
+    }, duration).isTimeout();
 }
 
 
