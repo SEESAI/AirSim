@@ -30,17 +30,17 @@ public:
     switch (axis_) {
     case 0:
       child_controller_.reset(new AngleLevelController(params_, clock_));
-      child_mode_[axis_] = GoalModeType::AngleLevel; // vy = roll
+      child_mode_[axis_] = GoalModeType::AngleLevel; // ay = roll
       break;
     case 1:
       child_controller_.reset(new AngleLevelController(params_, clock_));
-      child_mode_[axis_] = GoalModeType::AngleLevel; // vx = - pitch
+      child_mode_[axis_] = GoalModeType::AngleLevel; // ax = - pitch
       break;
     case 2:
       // we control yaw
       throw std::invalid_argument(
           "axis must be 0, 1 or 3 but it was " + std::to_string(axis_) +
-          " because yaw cannot be controlled by VelocityController");
+          " because yaw cannot be controlled by AccelerationController");
     case 3:
       // not really required
       // output of parent controller is -1 to 1 which
@@ -94,12 +94,12 @@ public:
 
       break;
     case 1: //+ax is -ve pitch
-      child_goal_[axis_] = ax;
+      child_goal_[axis_] = -ax;
       child_controller_->update();
       output_ = child_controller_->getOutput();
       break;
     case 3: //+az is -ae thrust (NED coordinates)
-      output_ = az;
+      output_ = -az;
       output_ = std::max(output_, params_->acceleration.min_thrust);
       output_ = std::min(output_, params_->acceleration.max_thrust);
       break;

@@ -303,8 +303,6 @@ protected:
 
     virtual void commandAcceleration(float ax, float ay, float az, const YawMode& yaw_mode) override
     {
-      //Utils::log(Utils::stringf("commandVelocity %f, %f, %f, %f", vx, vy, vz, yaw_mode.yaw_or_rate));
-
       typedef simple_flight::GoalModeType GoalModeType;
       simple_flight::GoalMode mode(GoalModeType::AccelerationWorld, GoalModeType::AccelerationWorld,
                                    yaw_mode.is_rate ? GoalModeType::AngleRate : GoalModeType::AngleLevel,
