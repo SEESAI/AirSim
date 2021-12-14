@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include "AngleLevelController.hpp"
 #include "Params.hpp"
 #include "PidController.hpp"
