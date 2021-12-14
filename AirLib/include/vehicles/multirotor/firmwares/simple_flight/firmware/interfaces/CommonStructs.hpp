@@ -285,7 +285,8 @@ enum class GoalModeType : int {
     AngleRate,
     VelocityWorld,
     PositionWorld,
-    ConstantOutput
+    ConstantOutput,
+    AccelerationWorld
 };
 
 class GoalMode : public Axis4<GoalModeType> {

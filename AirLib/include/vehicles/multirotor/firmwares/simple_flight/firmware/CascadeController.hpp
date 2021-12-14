@@ -10,6 +10,7 @@
 #include "AngleLevelController.hpp"
 #include "PassthroughController.hpp"
 #include "ConstantOutputController.hpp"
+#include "AccelerationController.hpp"
 #include "VelocityController.hpp"
 #include "PositionController.hpp"
 #include "common/common_utils/Utils.hpp"
@@ -85,6 +86,9 @@ public:
                     break;
                 case GoalModeType::ConstantOutput:
                     axis_controllers_[axis].reset(new ConstantOutputController());
+                    break;
+                case GoalModeType::AccelerationWorld:
+                    axis_controllers_[axis].reset(new AccelerationController(params_, clock_));
                     break;
                 default:
                     throw std::invalid_argument("Axis controller type is not yet implemented for axis " 

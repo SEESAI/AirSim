@@ -97,6 +97,11 @@ MultirotorRpcLibServer::MultirotorRpcLibServer(ApiProvider* api_provider, string
         return getVehicleApi(vehicle_name)->moveByVelocity(vx, vy, vz, duration, drivetrain, yaw_mode.to()); 
     });
     (static_cast<rpc::server*>(getServer()))->
+    bind("moveByAcceleration", [&](float ax, float ay, float az, float duration, DrivetrainType drivetrain,
+        const MultirotorRpcLibAdapators::YawMode& yaw_mode, const std::string& vehicle_name) -> bool {
+      return getVehicleApi(vehicle_name)->moveByAcceleration(ax, ay, az, duration, drivetrain, yaw_mode.to());
+    });
+    (static_cast<rpc::server*>(getServer()))->
         bind("moveByVelocityZ", [&](float vx, float vy, float z, float duration, DrivetrainType drivetrain, 
             const MultirotorRpcLibAdapators::YawMode& yaw_mode, const std::string& vehicle_name) -> bool {
             return getVehicleApi(vehicle_name)->moveByVelocityZ(vx, vy, z, duration, drivetrain, yaw_mode.to()); 

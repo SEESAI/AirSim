@@ -143,6 +143,14 @@ MultirotorRpcLibClient* MultirotorRpcLibClient::moveByVelocityAsync(float vx, fl
     return this;
 }
 
+MultirotorRpcLibClient* MultirotorRpcLibClient::moveByAccelerationAsync(float ax, float ay, float az, float duration,
+    DrivetrainType drivetrain, const YawMode &yaw_mode, const std::string &vehicle_name)
+{
+    pimpl_->last_future = static_cast<rpc::client*>(getClient())->async_call("moveByAcceleration", ax, ay, az, duration,
+        drivetrain, MultirotorRpcLibAdapators::YawMode(yaw_mode), vehicle_name);
+    return this;
+}
+
 MultirotorRpcLibClient* MultirotorRpcLibClient::moveByVelocityZAsync(float vx, float vy, float z, float duration, 
     DrivetrainType drivetrain, const YawMode& yaw_mode, const std::string& vehicle_name)
 {
