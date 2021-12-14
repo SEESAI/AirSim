@@ -78,7 +78,7 @@ public:
     // Convert acceleration setpoint to thrust vector
     Vector3r body_z = Vector3r( ax, ay, 9.81f).normalized();
     // todo: add estimator instead of constant value
-    static constexpr TReal hover_thrust = 0.6f;
+    static constexpr TReal hover_thrust = 0.58f;
     TReal collective_thrust = az * (hover_thrust / 9.81f) - hover_thrust;
     // project thrust to planned body attitude
     collective_thrust /= (Vector3r(0, 0, 1).dot(body_z));
