@@ -68,18 +68,22 @@ public:
     IAxisController::update();
 
     // Convert acceleration to linearised body frame
-    const Axis3r &goal_acc_world =
-        Axis4r::axis4ToXyz(goal_->getGoalValue(), true);
+    const Axis3r &goal_acc_world = Axis4r::axis4ToXyz(goal_->getGoalValue(), true);
     TReal yaw = state_estimator_->getAngles().yaw();
     TReal ax = goal_acc_world.x() * cos(yaw) + goal_acc_world.y() * sin(yaw);
     TReal ay = -goal_acc_world.x() * sin(yaw) + goal_acc_world.y() * cos(yaw);
     TReal az = goal_acc_world.z();
 
     // Convert acceleration setpoint to thrust vector
-    Vector3r body_z = Vector3r( ax, ay, 9.81f).normalized();
+    static constexpr float G = 9.81f;
+    static constexpr float MAX_ACC_XY = G / 1.41f;
+    // We allow maximum roll or pitch angles of ~45 deg.
+    ax = std::min(std::max(ax, -MAX_ACC_XY), MAX_ACC_XY);
+    ay = std::min(std::max(ay, -MAX_ACC_XY), MAX_ACC_XY);
+    Vector3r body_z = Vector3r(ax, ay, G).normalized();
     // todo: add estimator instead of constant value
     static constexpr TReal hover_thrust = 0.58f;
-    TReal collective_thrust = az * (hover_thrust / 9.81f) - hover_thrust;
+    TReal collective_thrust = az * (hover_thrust / G) - hover_thrust;
     // project thrust to planned body attitude
     collective_thrust /= (Vector3r(0, 0, 1).dot(body_z));
 
@@ -96,11 +100,11 @@ public:
       output_ = child_controller_->getOutput();
       break;
     case 3: //+az is -ae thrust (NED coordinates)
-      output_ = std::max(std::min(-collective_thrust, params_->acceleration.max_thrust), params_->acceleration.min_thrust);
+      output_ = std::max(std::min(-collective_thrust, params_->acceleration.max_thrust),
+                         params_->acceleration.min_thrust);
       break;
     default:
-      throw std::invalid_argument(
-          "axis must be 0, 1 or 3 for VelocityController");
+      throw std::invalid_argument("axis must be 0, 1 or 3 for VelocityController");
     }
   }
 
