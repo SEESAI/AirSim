@@ -67,41 +67,36 @@ public:
   virtual void update() override {
     IAxisController::update();
 
-    // First get PID output
+    // Convert acceleration to linearised body frame
     const Axis3r &goal_acc_world =
         Axis4r::axis4ToXyz(goal_->getGoalValue(), true);
     TReal yaw = state_estimator_->getAngles().yaw();
     TReal ax = goal_acc_world.x() * cos(yaw) + goal_acc_world.y() * sin(yaw);
     TReal ay = -goal_acc_world.x() * sin(yaw) + goal_acc_world.y() * cos(yaw);
     TReal az = goal_acc_world.z();
-    // ToDo - clip to accel limit
-    // Note x & y swapped as these axis relate to roll & pitch outputs, y & z
-    // -ve (+ve vx req -ve pitch, +ve vz requires less throttle)
+
+    // Convert acceleration setpoint to thrust vector
+    Vector3r body_z = Vector3r( ax, ay, 9.81f).normalized();
+    // todo: add estimator instead of constant value
+    static constexpr TReal hover_thrust = 0.6f;
+    TReal collective_thrust = az * (hover_thrust / 9.81f) - hover_thrust;
+    // project thrust to planned body attitude
+    collective_thrust /= (Vector3r(0, 0, 1).dot(body_z));
 
     // use this to drive child controller
     switch (axis_) {
     case 0: //+ay is +ae roll
-      child_goal_[axis_] = ay;
+      child_goal_[axis_] = asin(body_z.y() / body_z.z());
       child_controller_->update();
       output_ = child_controller_->getOutput();
-
-      // if (std::abs(goal_velocity_local[axis_] -
-      // measured_velocity_local[axis_]) > 1)
-      //     msr::airlib::Utils::log(msr::airlib::Utils::stringf("VC:
-      //     %i\t%f\t%f\t%f",
-      //         axis_, goal_velocity_local[axis_],
-      //         measured_velocity_local[axis_], output_));
-
       break;
     case 1: //+ax is -ve pitch
-      child_goal_[axis_] = -ax;
+      child_goal_[axis_] = -asin(body_z.x() / body_z.z());
       child_controller_->update();
       output_ = child_controller_->getOutput();
       break;
     case 3: //+az is -ae thrust (NED coordinates)
-      output_ = -az;
-      output_ = std::max(output_, params_->acceleration.min_thrust);
-      output_ = std::min(output_, params_->acceleration.max_thrust);
+      output_ = std::clamp(-collective_thrust, params_->acceleration.min_thrust, params_->acceleration.max_thrust);
       break;
     default:
       throw std::invalid_argument(
@@ -117,6 +112,7 @@ public:
   virtual const GoalMode &getGoalMode() const override { return child_mode_; }
 
 private:
+
   unsigned int axis_;
   const IGoal *goal_;
   const IStateEstimator *state_estimator_;

@@ -32,10 +32,10 @@ public:
         float action_request_tolerance = 0.1f;
 
         //milliseconds while sticks should stay in position
-        uint64_t arm_duration = 100; 
-        uint64_t disarm_duration = 100; 
+        uint64_t arm_duration = 100;
+        uint64_t disarm_duration = 100;
         uint64_t neutral_duration = 100;
-        
+
         Axis4<int16_t> channels = Axis4<int16_t>(0, 3, 1, 2);
 
         TReal max_angle_level_switch = 0.3f;
@@ -52,14 +52,14 @@ public:
         //max_xxx_rate > 5 would introduce wobble/oscillations
         const float kMaxLimit = 3.5f; // (rad/s - 2.5 ~= 143 deg/s, 3.5 ~= 200deg/s)
         const float kP_RollPitch = 0.25f;
-		const float kP_Yaw = 0.2f;
+        const float kP_Yaw = 0.2f;
         const float kI = 0.0f;
         const float kD_RollPitch = 0.f;
-		const float kD_Yaw = 0.f;
+        const float kD_Yaw = 0.f;
 
         Axis3r max_limit = Axis3r(kMaxLimit, kMaxLimit, kMaxLimit); //roll, pitch, yaw - in radians/sec
 
-        //p_xxx_rate params are sensitive to gyro noise. Values higher than 0.5 would require 
+        //p_xxx_rate params are sensitive to gyro noise. Values higher than 0.5 would require
         //noise filtration
         Axis4r p = Axis4r(kP_RollPitch, kP_RollPitch, kP_Yaw, 1.0f);
         Axis4r i = Axis4r(kI, kI, kI, 0.0f);
@@ -76,7 +76,7 @@ public:
 		const float kP_Yaw = 2.8f;
         const float kI = 0.0f;
         const float kD = 0.0f;
-        
+
         //max_pitch/roll_angle > 5.5 would produce verticle thrust that is not enough to keep vehicle in air at extremities of controls
         Axis4r max_limit = Axis4r(pi / 4.0f, pi / 4.0f, pi, 1.0f); //roll, pitch, yaw - in radians/sec
 
@@ -101,10 +101,10 @@ public:
     struct VelocityPid {
         const float kMinThrottle = std::min(1.0f, Params::min_armed_throttle());
         const float kMaxLimit = 6.0f; // m/s
-		const float kP_XY = 0.2f;
-		const float kD_XY = 0.0f; // 0.02
+        const float kP_XY = 0.2f;
+        const float kD_XY = 0.0f; // 0.02
         const float kI_XY = 0.02f;
-		const float kP_Z = 2.0f; // 0.5
+        const float kP_Z = 2.0f; // 0.5
         const float kI_Z = 2.0f; // 0.5
 
         Axis4r max_limit = Axis4r(kMaxLimit, kMaxLimit, 0, kMaxLimit); //x, y, yaw, z in meters
@@ -116,15 +116,15 @@ public:
         Axis4r iterm_discount = Axis4r(1, 1, 1, 1);
         Axis4r iterm_initial = Axis4r(0, 0, 0, 0.8f);
         Axis4r output_bias = Axis4r(0, 0, 0, 0);
-                
+
         //we keep min throttle higher so that if we are angling a lot, its still supported
         float min_throttle = kMinThrottle ;
         float max_throttle = 0.9f;
     } velocity_pid;
 
     struct Acceleration {
-      const float min_thrust = 0.f;
-      const float max_thrust = 20.f;
+      const float min_thrust = -0.9f;
+      const float max_thrust = -0.1f;
     } acceleration;
 
     struct Takeoff {
