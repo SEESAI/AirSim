@@ -70,11 +70,12 @@ public:
 
     // Convert acceleration setpoint to thrust vector
     static constexpr float G = 9.81f;
-    static constexpr float MAX_ACC_XY = G / 1.41f;
+    TReal totalAccZ = G - az;
+    float maxAccXy = totalAccZ / 1.41f;
     // We allow maximum roll or pitch angles of ~45 deg.
-    ax = std::min(std::max(ax, -MAX_ACC_XY), MAX_ACC_XY);
-    ay = std::min(std::max(ay, -MAX_ACC_XY), MAX_ACC_XY);
-    Vector3r body_z = Vector3r(ax, ay, G).normalized();
+    ax = std::min(std::max(ax, -maxAccXy), maxAccXy);
+    ay = std::min(std::max(ay, -maxAccXy), maxAccXy);
+    Vector3r body_z = Vector3r(ax, ay, maxAccXy).normalized();
     // todo: add estimator instead of constant value
     static constexpr TReal hover_thrust = 0.58f;
     TReal collective_thrust = az * (hover_thrust / G) - hover_thrust;
