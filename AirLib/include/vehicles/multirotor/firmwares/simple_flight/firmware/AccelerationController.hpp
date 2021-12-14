@@ -13,7 +13,7 @@
 namespace simple_flight {
 
 class AccelerationController : public IAxisController,
-                           public IGoal // for internal child controller
+                               public IGoal // for internal child controller
 {
 public:
   AccelerationController(Params *params, const IBoardClock *clock = nullptr)
@@ -25,31 +25,24 @@ public:
     goal_ = goal;
     state_estimator_ = state_estimator;
 
-    // we will be setting goal for child controller so we need these two things
     child_mode_ = GoalMode::getUnknown();
+    // The output of this controller is an angle for roll and pitch and a
+    // throttle value. Throttle can directly be set as an output, but for the
+    // angles we need to cascade down to angle controllers.
     switch (axis_) {
     case 0:
-      child_controller_.reset(new AngleLevelController(params_, clock_));
-      child_mode_[axis_] = GoalModeType::AngleLevel; // ay = roll
-      break;
     case 1:
-      child_controller_.reset(new AngleLevelController(params_, clock_));
-      child_mode_[axis_] = GoalModeType::AngleLevel; // ax = - pitch
+      child_controller_ = std::make_unique<AngleLevelController>(params_, clock_);
+      child_mode_[axis_] = GoalModeType::AngleLevel;
       break;
-    case 2:
-      // we control yaw
-      throw std::invalid_argument(
-          "axis must be 0, 1 or 3 but it was " + std::to_string(axis_) +
-          " because yaw cannot be controlled by AccelerationController");
     case 3:
-      // not really required
-      // output of parent controller is -1 to 1 which
-      // we will transform to 0 to 1
-      child_controller_.reset(new PassthroughController());
+      // we output throttle directly, technically don't need this one
+      child_controller_ = std::make_unique<PassthroughController>();
       child_mode_[axis_] = GoalModeType::Passthrough;
       break;
     default:
-      throw std::invalid_argument("axis must be 0 to 2");
+      throw std::invalid_argument("Axis must be 0, 1 or 3. AccelerationController"
+                                  "controller cannot control yaw.");
     }
 
     // initialize child controller
@@ -68,7 +61,8 @@ public:
     IAxisController::update();
 
     // Convert acceleration to linearised body frame
-    const Axis3r &goal_acc_world = Axis4r::axis4ToXyz(goal_->getGoalValue(), true);
+    const Axis3r &goal_acc_world =
+        Axis4r::axis4ToXyz(goal_->getGoalValue(), true);
     TReal yaw = state_estimator_->getAngles().yaw();
     TReal ax = goal_acc_world.x() * cos(yaw) + goal_acc_world.y() * sin(yaw);
     TReal ay = -goal_acc_world.x() * sin(yaw) + goal_acc_world.y() * cos(yaw);
@@ -87,24 +81,25 @@ public:
     // project thrust to planned body attitude
     collective_thrust /= (Vector3r(0, 0, 1).dot(body_z));
 
-    // use this to drive child controller
     switch (axis_) {
     case 0: //+ay is +ae roll
       child_goal_[axis_] = asin(body_z.y() / body_z.z());
       child_controller_->update();
       output_ = child_controller_->getOutput();
       break;
-    case 1: //+ax is -ve pitch
+    case 1: //+ax is -ae pitch
       child_goal_[axis_] = -asin(body_z.x() / body_z.z());
       child_controller_->update();
       output_ = child_controller_->getOutput();
       break;
     case 3: //+az is -ae thrust (NED coordinates)
-      output_ = std::max(std::min(-collective_thrust, params_->acceleration.max_thrust),
-                         params_->acceleration.min_thrust);
+      output_ = std::max(
+          std::min(-collective_thrust, params_->acceleration.max_thrust),
+          params_->acceleration.min_thrust);
       break;
     default:
-      throw std::invalid_argument("axis must be 0, 1 or 3 for VelocityController");
+      throw std::invalid_argument(
+          "axis must be 0, 1 or 3 for VelocityController");
     }
   }
 
@@ -116,7 +111,6 @@ public:
   virtual const GoalMode &getGoalMode() const override { return child_mode_; }
 
 private:
-
   unsigned int axis_;
   const IGoal *goal_;
   const IStateEstimator *state_estimator_;
