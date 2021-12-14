@@ -123,8 +123,8 @@ public:
     } velocity_pid;
 
     struct Acceleration {
-      const float min_thrust = -0.9f;
-      const float max_thrust = -0.1f;
+      const float min_thrust = 0.9f;
+      const float max_thrust = 0.1f;
     } acceleration;
 
     struct Takeoff {
