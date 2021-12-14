@@ -82,8 +82,6 @@ public:
     TReal collective_thrust = az * (hover_thrust / 9.81f) - hover_thrust;
     // project thrust to planned body attitude
     collective_thrust /= (Vector3r(0, 0, 1).dot(body_z));
-    collective_thrust = std::min(collective_thrust, params_->acceleration.max_thrust);
-    collective_thrust = std::max(collective_thrust, params_->acceleration.min_thrust);
 
     // use this to drive child controller
     switch (axis_) {
@@ -98,7 +96,7 @@ public:
       output_ = child_controller_->getOutput();
       break;
     case 3: //+az is -ae thrust (NED coordinates)
-      output_ = collective_thrust;
+      output_ = std::max(std::min(-collective_thrust, params_->acceleration.max_thrust), params_->acceleration.min_thrust);
       break;
     default:
       throw std::invalid_argument(
