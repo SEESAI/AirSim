@@ -94,6 +94,9 @@ public: //implementation of VehicleSimApiBase
     virtual const msr::airlib::Kinematics::State* getGroundTruthKinematics() const override;
     virtual const msr::airlib::Environment* getGroundTruthEnvironment() const override;
     virtual std::string getRecordFileLine(bool is_header_line) const override;
+    virtual bool getVideoCameraRequests(std::vector<ImageCaptureBase::ImageRequest>& requests) override;
+    virtual bool saveVideoCameraImages(const std::vector<std::shared_ptr<ImageCaptureBase::ImageResponse>>& responses) override;
+    virtual int getVideoCameraImages(const std::vector<ImageCaptureBase::ImageRequest>& requests, int num_images, std::vector<ImageCaptureBase::ImageResponse>& responses) override;
     virtual void reportState(msr::airlib::StateReporter& reporter) override;
 
 protected: //additional interface for derived class
@@ -162,6 +165,9 @@ private: //vars
     FVector ground_trace_end_;
     FVector ground_margin_;
     std::unique_ptr<UnrealImageCapture> image_capture_;
+    std::mutex video_camera_API_mutex_;
+    std::vector<ImageCaptureBase::ImageRequest> video_camera_requests_;
+    std::vector<std::shared_ptr<ImageCaptureBase::ImageResponse>> video_camera_responses_;
     std::string log_line_;
 
     mutable msr::airlib::RCData rc_data_;

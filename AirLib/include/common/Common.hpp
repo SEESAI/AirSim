@@ -11,6 +11,7 @@
 #include <unordered_set>
 #include <iostream>
 #include <cstdint>
+#include <mutex>
 #include "common/common_utils/Utils.hpp"
 #include "common_utils/RandomGenerator.hpp"
 #include "VectorMath.hpp"

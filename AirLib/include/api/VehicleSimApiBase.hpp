@@ -61,6 +61,9 @@ namespace airlib
         virtual RCData getRCData() const = 0; //get reading from RC from simulator's host OS
         virtual std::string getVehicleName() const = 0;
         virtual std::string getRecordFileLine(bool is_header_line) const = 0;
+        virtual bool getVideoCameraRequests(std::vector<ImageCaptureBase::ImageRequest>& requests) = 0;
+        virtual bool saveVideoCameraImages(const std::vector<std::shared_ptr<ImageCaptureBase::ImageResponse>>& responses) = 0;
+        virtual int getVideoCameraImages(const std::vector<ImageCaptureBase::ImageRequest>& requests, int num_images, std::vector<ImageCaptureBase::ImageResponse>& responses) = 0;
         virtual void toggleTrace() = 0;
         virtual void setTraceLine(const std::vector<float>& color_rgba, float thickness) = 0;
 
