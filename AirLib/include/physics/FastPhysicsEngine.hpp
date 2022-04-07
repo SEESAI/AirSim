@@ -277,6 +277,18 @@ namespace airlib
 
             // Use relative velocity of the body wrt wind
             const Vector3r relative_vel = linear_vel - wind_world;
+
+            bool useSimpleDrag = true;
+
+            if (useSimpleDrag) {
+                //// Simple bluff spherical body drag opposite to body direction with no torque
+                constexpr real_T dragCoeff = 0.5f; // Sphere
+                constexpr real_T area = real_T(M_PI) * 0.2f * 0.2f; // 20 cm radius sphere
+                const real_T drag_force = real_T(0.5f) * air_density * powf(relative_vel.norm(), 2) * dragCoeff * area;
+                wrench.force = drag_force * -relative_vel.normalized();
+            }
+            else {
+
             const Vector3r linear_vel_body = VectorMath::transformToBodyFrame(relative_vel, orientation);
 
             for (uint vi = 0; vi < body.dragVertexCount(); ++vi) {
@@ -295,6 +307,7 @@ namespace airlib
 
             //convert force to world frame, leave torque to local frame
             wrench.force = VectorMath::transformToWorldFrame(wrench.force, orientation);
+            }
 
             return wrench;
         }
@@ -360,6 +373,21 @@ namespace airlib
 
                 //Utils::log(Utils::stringf("B-WRN %s: ", VectorMath::toString(body_wrench.force).c_str()));
                 //Utils::log(Utils::stringf("D-WRN %s: ", VectorMath::toString(drag_wrench.force).c_str()));
+
+                //{
+                //    std::stringstream stream;
+                //    stream << std::fixed << std::setprecision(1) << drag_wrench.force.x() << ", ";
+                //    stream << std::fixed << std::setprecision(1) << drag_wrench.force.y() << ", ";
+                //    stream << std::fixed << std::setprecision(1) << drag_wrench.force.z() << "";
+                //    UAirBlueprintLib::LogMessage(TEXT("FDrag: "), stream.str().c_str(), LogDebugLevel::Success);    
+                //}
+                //{
+                //    std::stringstream stream;
+                //    stream << std::fixed << std::setprecision(1) << current.twist.linear.x() << ", ";
+                //    stream << std::fixed << std::setprecision(1) << current.twist.linear.y() << ", ";
+                //    stream << std::fixed << std::setprecision(1) << current.twist.linear.z() << "";
+                //    UAirBlueprintLib::LogMessage(TEXT("Velocity: "), stream.str().c_str(), LogDebugLevel::Success);
+                //}
 
                 /************************* Update accelerations due to force and torque ************************/
                 //get new acceleration due to force - we'll use this acceleration in next time step

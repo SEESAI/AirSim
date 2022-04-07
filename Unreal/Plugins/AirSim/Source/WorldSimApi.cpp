@@ -752,6 +752,19 @@ void WorldSimApi::setCameraPose(const msr::airlib::Pose& pose, const CameraDetai
                                              true);
 }
 
+void WorldSimApi::setCameraOrientation(const msr::airlib::Quaternionr& orientation, const CameraDetails& camera_details)
+{
+    APIPCamera* camera = simmode_->getCamera(camera_details);
+    const NedTransform& ned_transform = camera_details.external
+                                        ? simmode_->getGlobalNedTransform()
+                                        : simmode_->getVehicleSimApi(camera_details.vehicle_name)->getNedTransform();
+    UAirBlueprintLib::RunCommandOnGameThread([camera, &orientation, &ned_transform]() {
+        FQuat quat = ned_transform.fromNed(orientation);
+        camera->setCameraOrientation(quat.Rotator());
+    },
+                                             true);
+}
+
 void WorldSimApi::setCameraFoV(float fov_degrees, const CameraDetails& camera_details)
 {
     APIPCamera* camera = simmode_->getCamera(camera_details);

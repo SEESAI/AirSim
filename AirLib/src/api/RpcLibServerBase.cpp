@@ -153,6 +153,12 @@ namespace airlib
             return getWorldSimApi()->getImage(type, CameraDetails(camera_name, vehicle_name, external));
         });
 
+        pimpl_->server.bind("simGetVideoCameraImages", [&](const std::vector<RpcLibAdaptorsBase::ImageRequest>& requests, int num_images, const std::string& vehicle_name) -> vector<RpcLibAdaptorsBase::ImageResponse> {
+            std::vector<ImageCaptureBase::ImageResponse> responses;
+            getVehicleSimApi(vehicle_name)->getVideoCameraImages(RpcLibAdaptorsBase::ImageRequest::to(requests), num_images, responses);
+            return RpcLibAdaptorsBase::ImageResponse::from(responses);
+        });
+
         pimpl_->server.bind("simTestLineOfSightToPoint", [&](const RpcLibAdaptorsBase::GeoPoint& point, const std::string& vehicle_name) -> bool {
             return getVehicleSimApi(vehicle_name)->testLineOfSightToPoint(point.to());
         });
@@ -238,9 +244,29 @@ namespace airlib
             return RpcLibAdaptorsBase::GeoPoint(geo_point);
         });
 
+        pimpl_->server.bind("getLidarInfo", [&](const std::string& lidar_name, const std::string& vehicle_name) -> RpcLibAdaptorsBase::LidarInfo {
+            const auto& lidar_info = getVehicleApi(vehicle_name)->getLidarInfo(lidar_name);
+            return RpcLibAdaptorsBase::LidarInfo(lidar_info);
+        });
+
+        pimpl_->server.bind("getLidarDataBuffer", [&](const std::string& lidar_name, const std::string& vehicle_name) -> RpcLibAdaptorsBase::LidarDataBuffer {
+            const auto& lidar_data_buffer = getVehicleApi(vehicle_name)->getLidarDataBuffer(lidar_name);
+            return RpcLibAdaptorsBase::LidarDataBuffer(lidar_data_buffer);
+        });
+
         pimpl_->server.bind("getLidarData", [&](const std::string& lidar_name, const std::string& vehicle_name) -> RpcLibAdaptorsBase::LidarData {
             const auto& lidar_data = getVehicleApi(vehicle_name)->getLidarData(lidar_name);
             return RpcLibAdaptorsBase::LidarData(lidar_data);
+        });
+
+        pimpl_->server.bind("getImuInfo", [&](const std::string& vehicle_name) -> RpcLibAdaptorsBase::ImuInfo {
+            const auto& imu_info = getVehicleApi(vehicle_name)->getImuInfo();
+            return RpcLibAdaptorsBase::ImuInfo(imu_info);
+        });
+
+        pimpl_->server.bind("getImuDataBuffer", [&](const std::string& vehicle_name) -> RpcLibAdaptorsBase::ImuDataBuffer {
+            const auto& imu_data_buffer = getVehicleApi(vehicle_name)->getImuDataBuffer();
+            return RpcLibAdaptorsBase::ImuDataBuffer(imu_data_buffer);
         });
 
         pimpl_->server.bind("getImuData", [&](const std::string& imu_name, const std::string& vehicle_name) -> RpcLibAdaptorsBase::ImuData {
@@ -256,6 +282,11 @@ namespace airlib
         pimpl_->server.bind("getMagnetometerData", [&](const std::string& magnetometer_name, const std::string& vehicle_name) -> RpcLibAdaptorsBase::MagnetometerData {
             const auto& magnetometer_data = getVehicleApi(vehicle_name)->getMagnetometerData(magnetometer_name);
             return RpcLibAdaptorsBase::MagnetometerData(magnetometer_data);
+        });
+
+        pimpl_->server.bind("getGPSDataBuffer", [&](const std::string& vehicle_name) -> RpcLibAdaptorsBase::GPSDataBuffer {
+            const auto gps_data_buffer = getVehicleApi(vehicle_name)->getGPSDataBuffer();
+            return RpcLibAdaptorsBase::GPSDataBuffer(gps_data_buffer);
         });
 
         pimpl_->server.bind("getGpsData", [&](const std::string& gps_name, const std::string& vehicle_name) -> RpcLibAdaptorsBase::GpsData {
@@ -283,6 +314,10 @@ namespace airlib
 
         pimpl_->server.bind("simSetCameraPose", [&](const std::string& camera_name, const RpcLibAdaptorsBase::Pose& pose, const std::string& vehicle_name, bool external) -> void {
             getWorldSimApi()->setCameraPose(pose.to(), CameraDetails(camera_name, vehicle_name, external));
+        });
+
+        pimpl_->server.bind("simSetCameraOrientation", [&](const std::string& camera_name, const RpcLibAdaptorsBase::Quaternionr& orientation, const std::string& vehicle_name, bool external) -> void {
+            getWorldSimApi()->setCameraOrientation(orientation.to(), CameraDetails(camera_name, vehicle_name, external));
         });
 
         pimpl_->server.bind("simSetCameraFov", [&](const std::string& camera_name, float fov_degrees, const std::string& vehicle_name, bool external) -> void {

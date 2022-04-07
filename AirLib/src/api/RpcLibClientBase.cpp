@@ -174,6 +174,16 @@ __pragma(warning(disable : 4239))
             return pimpl_->client.call("getHomeGeoPoint", vehicle_name).as<RpcLibAdaptorsBase::GeoPoint>().to();
         }
 
+        msr::airlib::ImuInfo RpcLibClientBase::getImuInfo(const std::string& vehicle_name) const
+        {
+            return pimpl_->client.call("getImuInfo", vehicle_name).as<RpcLibAdaptorsBase::ImuInfo>().to();
+        }
+
+        msr::airlib::LidarInfo RpcLibClientBase::getLidarInfo(const std::string& lidar_name, const std::string& vehicle_name) const
+        {
+            return pimpl_->client.call("getLidarInfo", lidar_name, vehicle_name).as<RpcLibAdaptorsBase::LidarInfo>().to();
+        }
+
         msr::airlib::LidarData RpcLibClientBase::getLidarData(const std::string& lidar_name, const std::string& vehicle_name) const
         {
             return pimpl_->client.call("getLidarData", lidar_name, vehicle_name).as<RpcLibAdaptorsBase::LidarData>().to();
@@ -202,6 +212,21 @@ __pragma(warning(disable : 4239))
         msr::airlib::DistanceSensorData RpcLibClientBase::getDistanceSensorData(const std::string& distance_sensor_name, const std::string& vehicle_name) const
         {
             return pimpl_->client.call("getDistanceSensorData", distance_sensor_name, vehicle_name).as<RpcLibAdaptorsBase::DistanceSensorData>().to();
+        }
+
+        msr::airlib::GPSDataBuffer RpcLibClientBase::getGPSDataBuffer(const std::string& vehicle_name) const
+        {
+            return pimpl_->client.call("getGPSDataBuffer", vehicle_name).as<RpcLibAdaptorsBase::GPSDataBuffer>().to();
+        }
+
+        msr::airlib::ImuDataBuffer RpcLibClientBase::getImuDataBuffer(const std::string& vehicle_name) const
+        {
+            return pimpl_->client.call("getImuDataBuffer", vehicle_name).as<RpcLibAdaptorsBase::ImuDataBuffer>().to();
+        }
+
+        msr::airlib::LidarDataBuffer RpcLibClientBase::getLidarDataBuffer(const std::string& lidar_name, const std::string& vehicle_name) const
+        {
+            return pimpl_->client.call("getLidarDataBuffer", lidar_name, vehicle_name).as<RpcLibAdaptorsBase::LidarDataBuffer>().to();
         }
 
         bool RpcLibClientBase::simSetSegmentationObjectID(const std::string& mesh_name, int object_id, bool is_name_regex)
@@ -269,6 +294,17 @@ __pragma(warning(disable : 4239))
                 result.clear();
             }
             return result;
+        }
+
+        vector<ImageCaptureBase::ImageResponse> RpcLibClientBase::simGetVideoCameraImages(const vector<ImageCaptureBase::ImageRequest>& requests, const int num_images, const std::string& vehicle_name)
+        {
+            const auto& response_adaptor = pimpl_->client.call("simGetVideoCameraImages", 
+                                                               RpcLibAdaptorsBase::ImageRequest::from(requests), 
+                                                               num_images, 
+                                                               vehicle_name)
+                                                .as<vector<RpcLibAdaptorsBase::ImageResponse>>();
+
+            return RpcLibAdaptorsBase::ImageResponse::to(response_adaptor);
         }
 
         // Minor TODO: consider msgpack magic for GeoPoint, so we can have one arg instead of three
@@ -446,6 +482,11 @@ __pragma(warning(disable : 4239))
             pimpl_->client.call("simSetCameraPose", camera_name, RpcLibAdaptorsBase::Pose(pose), vehicle_name, external);
         }
 
+        void RpcLibClientBase::simSetCameraOrientation(const std::string& camera_name, const Quaternionr& orientation, const std::string& vehicle_name, bool external)
+        {
+            pimpl_->client.call("simSetCameraOrientation", camera_name, RpcLibAdaptorsBase::Quaternionr(orientation), vehicle_name, external);
+        }
+
         void RpcLibClientBase::simSetCameraFov(const std::string& camera_name, float fov_degrees, const std::string& vehicle_name, bool external)
         {
             pimpl_->client.call("simSetCameraFov", camera_name, fov_degrees, vehicle_name, external);
@@ -495,6 +536,17 @@ __pragma(warning(disable : 4239))
             unused(task_result);
 
             return this;
+        }
+
+        bool RpcLibClientBase::checkLastTask(bool* task_result, bool* task_complete, float timeout_sec)
+        {
+            //should be implemented by derived class if it supports async task,
+            //for example using futures
+            unused(timeout_sec);
+            unused(task_result);
+            unused(task_complete);
+
+            return false;
         }
 
         void RpcLibClientBase::startRecording()

@@ -27,13 +27,58 @@ namespace airlib
 
             //initialize frequency limiter
             freq_limiter_.initialize(params_.update_frequency, params_.startup_delay);
+
+            //reset the LIDAR rotation calculations
+            start_time_ = clock()->nowNanos();
+
+            previous_sectors_since_start_ = 0;
+
+            // Get channel params
+            channels_per_scan_ = params_.number_of_channels;
+            rotation_rate_ = params_.horizontal_rotation_frequency;
+            int points_per_second = params_.points_per_second;
+
+            // Work out the scans per revolution
+            channels_per_scan_ = (channels_per_scan_ > 0) ? channels_per_scan_ : 1;
+            points_per_second = (points_per_second > 0) ? points_per_second : 1;
+            rotation_rate_ = (rotation_rate_ > 0) ? rotation_rate_ : 1.0f;
+            double initial_value = (static_cast<double>(points_per_second) / 
+                (rotation_rate_ * static_cast<double>(channels_per_scan_)));
+            double value_to_fudge_integral_part = 0.0;
+            double value_to_fudge_fraction_part = modf(initial_value, &value_to_fudge_integral_part);
+            double round_half_from_zero_value;
+            if (initial_value < 0.0)
+            {
+                round_half_from_zero_value = value_to_fudge_fraction_part > -0.5 ? value_to_fudge_integral_part : value_to_fudge_integral_part - 1.0;
+            }
+            else
+            {
+                round_half_from_zero_value = value_to_fudge_fraction_part < 0.5 ? value_to_fudge_integral_part : value_to_fudge_integral_part + 1.0;
+            }
+
+            scans_per_revolution_ = static_cast<int>(round_half_from_zero_value);
+            scans_per_revolution_ = (scans_per_revolution_ > 0) ? scans_per_revolution_ : 1;
+
+            // Save the info in case asked for it
+            lidar_info_.vertical_fov_lower = params_.vertical_FOV_lower;
+            lidar_info_.vertical_fov_upper = params_.vertical_FOV_upper;
+            lidar_info_.horizontal_fov_lower = params_.horizontal_FOV_start;
+            lidar_info_.horizontal_fov_upper = params_.horizontal_FOV_end;
+            lidar_info_.channels_per_scan = float(channels_per_scan_);
+            lidar_info_.revolutions_per_second = float(rotation_rate_);
+            lidar_info_.scans_per_revolution = float(scans_per_revolution_);
+            lidar_info_.pose = params_.relative_pose;
+
         }
 
         //*** Start: UpdatableState implementation ***//
         virtual void resetImplementation() override
         {
             freq_limiter_.reset();
-            last_time_ = clock()->nowNanos();
+            start_time_ = clock()->nowNanos();
+            previous_sectors_since_start_ = 0;
+            gauss_dist_.reset();
+            uniform_dist_.reset();
 
             updateOutput();
         }
@@ -70,16 +115,13 @@ namespace airlib
 
     protected:
         virtual void getPointCloud(const Pose& lidar_pose, const Pose& vehicle_pose,
-                                   TTimeDelta delta_time, vector<real_T>& point_cloud, vector<int>& segmentation_cloud) = 0;
+                                   TTimeDelta update_time, vector<real_T>& point_cloud, 
+                                   std::vector<uint64_t> & ts, std::vector<msr::airlib::real_T> & az, std::vector<msr::airlib::real_T> & r,
+                                   vector<int>& segmentation_cloud) = 0;
 
     private: //methods
         void updateOutput()
         {
-            TTimeDelta delta_time = clock()->updateSince(last_time_);
-
-            point_cloud_.clear();
-
-            const GroundTruth& ground_truth = getGroundTruth();
 
             // calculate the pose before obtaining the point-cloud. Before/after is a bit arbitrary
             // decision here. If the pose can change while obtaining the point-cloud (could happen for drones)
@@ -89,31 +131,52 @@ namespace airlib
             //    That could be a bit unintuitive but seems consistent with the position/orientation returned as part of
             //    ImageResponse for cameras and pose returned by getCameraInfo API.
             //    Do we need to convert pose to Global NED frame before returning to clients?
-            Pose lidar_pose = params_.relative_pose + ground_truth.kinematics->pose;
+            TTimePoint update_time = clock()->nowNanos();
+            const GroundTruth& ground_truth = getGroundTruth();
+            point_cloud_.clear();
+            std::vector<uint64_t> ts;
+            std::vector<msr::airlib::real_T> az;
+            std::vector<msr::airlib::real_T> r;
+            msr::airlib::vector<msr::airlib::real_T> pc;
+
             getPointCloud(params_.relative_pose, // relative lidar pose
                           ground_truth.kinematics->pose, // relative vehicle pose
-                          delta_time,
+                          TTimeDelta(update_time),
                           point_cloud_,
+                          ts,
+                          az,
+                          r,
                           segmentation_cloud_);
 
+            Pose lidar_pose = params_.relative_pose + ground_truth.kinematics->pose;
             LidarData output;
             output.point_cloud = point_cloud_;
             output.time_stamp = clock()->nowNanos();
             output.pose = lidar_pose;
             output.segmentation = segmentation_cloud_;
 
-            last_time_ = output.time_stamp;
+            // last_time_ = output.time_stamp;
 
-            setOutput(output);
+            setOutput(update_time, lidar_pose, pc);
+            setOutputBuffer(lidar_pose, ts, az, r, scans_per_revolution_, channels_per_scan_);
         }
 
-    private:
+    protected:
         LidarSimpleParams params_;
+        TTimePoint start_time_;
+        int channels_per_scan_ = 0;
+        int scans_per_revolution_ = 0;
+        int previous_sectors_since_start_ = 0;
+        double rotation_rate_ = 0.0;
+        RandomGeneratorGausianR gauss_dist_ = RandomGeneratorGausianR(0, 1);
+        RandomGeneratorR uniform_dist_ = RandomGeneratorR(0.0f, 1.0f);
+
+    private:
         vector<real_T> point_cloud_;
         vector<int> segmentation_cloud_;
 
         FrequencyLimiter freq_limiter_;
-        TTimePoint last_time_;
+        //TTimePoint last_time_;
     };
 }
 } //namespace

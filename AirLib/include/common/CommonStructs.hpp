@@ -270,6 +270,33 @@ namespace airlib
         }
     };
 
+    struct LidarInfo {
+        Pose pose;
+        float vertical_fov_lower;
+        float vertical_fov_upper;
+        float horizontal_fov_lower;
+        float horizontal_fov_upper;
+        float channels_per_scan;
+        float scans_per_revolution;
+        float revolutions_per_second;
+
+        LidarInfo()
+        {}
+
+    };
+
+    struct ImuInfo {
+        Pose pose;
+        float angle_random_walk;
+        float gyro_bias_stability;
+        float velocity_random_walk;
+        float accelerometer_bias_stability;
+
+        ImuInfo()
+        {}
+
+    };
+
     struct Box2D
     {
         Vector2r min;
@@ -420,6 +447,43 @@ namespace airlib
         std::vector<float> vertices;
         std::vector<uint32_t> indices;
         std::string name;
+    };
+
+    struct GPSDataBuffer {
+
+        vector<uint64_t> timestamps_ns;
+        vector<double> latitude;
+        vector<double> longitude;
+        vector<float> altitude;
+        vector<float> eph;
+        vector<float> epv;
+        vector<bool> hasYaw;
+        vector<real_T> yaw;
+
+        GPSDataBuffer()
+        {}
+    };
+
+    struct ImuDataBuffer {
+
+        vector<uint64_t> timestamps_ns;
+        vector<float> orientation;
+        vector<float> angular_velocity;
+        vector<float> linear_acceleration;
+
+        ImuDataBuffer()
+        {}
+    };
+
+    struct LidarDataBuffer {
+
+        Pose sensor_pose_in_world_frame;
+        vector<uint64_t> timestamps_ns;
+        vector<real_T> azimuth_angles;
+        vector<real_T> ranges;
+
+        LidarDataBuffer()
+        {}
     };
 
     // This is a small helper struct to keep camera details together
