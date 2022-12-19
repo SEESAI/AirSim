@@ -925,8 +925,10 @@ namespace airlib_rpclib
             Vector3r velocity;
             msr::airlib::GpsBase::GnssFixType fix_type;
             uint64_t time_utc = 0;
+            bool hasYaw = false;
+            float yaw = 0.f;
 
-            MSGPACK_DEFINE_MAP(geo_point, eph, epv, velocity, fix_type, time_utc);
+            MSGPACK_DEFINE_MAP(geo_point, eph, epv, velocity, fix_type, time_utc, hasYaw, yaw);
 
             GnssReport()
             {
@@ -940,6 +942,8 @@ namespace airlib_rpclib
                 velocity = s.velocity;
                 fix_type = s.fix_type;
                 time_utc = s.time_utc;
+                hasYaw = s.hasYaw;
+                yaw = s.yaw;
             }
 
             msr::airlib::GpsBase::GnssReport to() const
@@ -952,6 +956,8 @@ namespace airlib_rpclib
                 d.velocity = velocity.to();
                 d.fix_type = fix_type;
                 d.time_utc = time_utc;
+                d.hasYaw = hasYaw;
+                d.yaw = yaw;
 
                 return d;
             }
@@ -996,8 +1002,10 @@ namespace airlib_rpclib
             std::vector<float> altitude;
             std::vector<float> eph;
             std::vector<float> epv;
+            std::vector<bool> hasYaw;
+            std::vector<float> yaw;
 
-            MSGPACK_DEFINE_MAP(timestamps_ns, latitude, longitude, altitude, eph, epv);
+            MSGPACK_DEFINE_MAP(timestamps_ns, latitude, longitude, altitude, eph, epv, hasYaw, yaw);
 
             GPSDataBuffer()
             {}
@@ -1010,6 +1018,8 @@ namespace airlib_rpclib
                 altitude = s.altitude;
                 eph = s.eph;
                 epv = s.epv;
+                hasYaw = s.hasYaw;
+                yaw = s.yaw;
 
                 //TODO: remove bug workaround for https://github.com/rpclib/rpclib/issues/152
                 if (timestamps_ns.size() == 0) {
@@ -1032,6 +1042,8 @@ namespace airlib_rpclib
                 d.altitude = altitude;
                 d.eph = eph;
                 d.epv = epv;
+                d.hasYaw = hasYaw;
+                d.yaw = yaw;
 
                 return d;
             }

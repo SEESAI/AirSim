@@ -92,6 +92,8 @@ namespace airlib
             Vector3r velocity;
             GnssFixType fix_type;
             uint64_t time_utc = 0;
+            bool hasYaw = false;
+            real_T yaw = 0.f;
         };
 
         struct NavSatFix
@@ -137,6 +139,8 @@ namespace airlib
             output_buffer_.altitude = output_buffer_internal_.altitude;
             output_buffer_.eph = output_buffer_internal_.eph;
             output_buffer_.epv = output_buffer_internal_.epv;
+            output_buffer_.hasYaw = output_buffer_internal_.hasYaw;
+            output_buffer_.yaw = output_buffer_internal_.yaw;
 
             // Clear the buffer
             output_buffer_internal_.timestamps_ns.clear();
@@ -145,6 +149,8 @@ namespace airlib
             output_buffer_internal_.altitude.clear();
             output_buffer_internal_.eph.clear();
             output_buffer_internal_.epv.clear();
+            output_buffer_internal_.hasYaw.clear();
+            output_buffer_internal_.yaw.clear();
 
             return output_buffer_;
         }
@@ -162,6 +168,8 @@ namespace airlib
             output_buffer_internal_.altitude.push_back(output.gnss.geo_point.altitude);
             output_buffer_internal_.eph.push_back(output.gnss.eph);
             output_buffer_internal_.epv.push_back(output.gnss.epv);
+            output_buffer_internal_.hasYaw.push_back(output.gnss.hasYaw);
+            output_buffer_internal_.yaw.push_back(output.gnss.yaw);
 
             // Trim to be a sensible size
             unsigned max_buffer_length = 100; // Hard coded for now - may wish to make this 1s of data
@@ -178,6 +186,10 @@ namespace airlib
                     output_buffer_internal_.eph.end() - max_buffer_length);
                 output_buffer_internal_.epv.erase(output_buffer_internal_.epv.begin(),
                     output_buffer_internal_.epv.end() - max_buffer_length);
+                output_buffer_internal_.hasYaw.erase(output_buffer_internal_.hasYaw.begin(),
+                    output_buffer_internal_.hasYaw.end() - max_buffer_length);
+                output_buffer_internal_.yaw.erase(output_buffer_internal_.yaw.begin(),
+                    output_buffer_internal_.yaw.end() - max_buffer_length);
             }
         }
 
