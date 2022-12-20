@@ -457,6 +457,8 @@ namespace airlib
         vector<float> altitude;
         vector<float> eph;
         vector<float> epv;
+        vector<bool> hasYaw;
+        vector<real_T> yaw;
 
         GPSDataBuffer()
         {}
