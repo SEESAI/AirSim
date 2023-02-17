@@ -277,24 +277,36 @@ namespace airlib
 
             // Use relative velocity of the body wrt wind
             const Vector3r relative_vel = linear_vel - wind_world;
-            const Vector3r linear_vel_body = VectorMath::transformToBodyFrame(relative_vel, orientation);
 
-            for (uint vi = 0; vi < body.dragVertexCount(); ++vi) {
-                const auto& vertex = body.getDragVertex(vi);
-                const Vector3r vel_vertex = linear_vel_body + angular_vel_body.cross(vertex.getPosition());
-                const real_T vel_comp = vertex.getNormal().dot(vel_vertex);
-                //if vel_comp is -ve then we cull the face. If velocity too low then drag is not generated
-                if (vel_comp > kDragMinVelocity) {
-                    const Vector3r drag_force = vertex.getNormal() * (-vertex.getDragFactor() * air_density * vel_comp * vel_comp);
-                    const Vector3r drag_torque = vertex.getPosition().cross(drag_force);
+            bool use_simple_drag = true;
 
-                    wrench.force += drag_force;
-                    wrench.torque += drag_torque;
-                }
+            if (use_simple_drag) {
+                // Simple bluff spherical body drag opposite to body direction with no torque
+                constexpr real_T drag_coeff = 0.5f; // Sphere
+                constexpr real_T area = real_T(M_PI) * 0.2f * 0.2f; // 20 cm radius sphere
+                const real_T drag_force = real_T(0.5f) * air_density * powf(relative_vel.norm(), 2) * drag_coeff * area;
+                wrench.force = drag_force * -relative_vel.normalized();
             }
+            else {
+                const Vector3r linear_vel_body = VectorMath::transformToBodyFrame(relative_vel, orientation);
 
-            //convert force to world frame, leave torque to local frame
-            wrench.force = VectorMath::transformToWorldFrame(wrench.force, orientation);
+                for (uint vi = 0; vi < body.dragVertexCount(); ++vi) {
+                    const auto& vertex = body.getDragVertex(vi);
+                    const Vector3r vel_vertex = linear_vel_body + angular_vel_body.cross(vertex.getPosition());
+                    const real_T vel_comp = vertex.getNormal().dot(vel_vertex);
+                    //if vel_comp is -ve then we cull the face. If velocity too low then drag is not generated
+                    if (vel_comp > kDragMinVelocity) {
+                        const Vector3r drag_force = vertex.getNormal() * (-vertex.getDragFactor() * air_density * vel_comp * vel_comp);
+                        const Vector3r drag_torque = vertex.getPosition().cross(drag_force);
+
+                        wrench.force += drag_force;
+                        wrench.torque += drag_torque;
+                    }
+                }
+
+                //convert force to world frame, leave torque to local frame
+                wrench.force = VectorMath::transformToWorldFrame(wrench.force, orientation);
+            }
 
             return wrench;
         }

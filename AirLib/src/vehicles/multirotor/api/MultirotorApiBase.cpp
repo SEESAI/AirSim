@@ -252,6 +252,23 @@ namespace airlib
             .isTimeout();
     }
 
+    bool MultirotorApiBase::moveByAcceleration(float ax, float ay, float az, float duration, DrivetrainType drivetrain, const YawMode& yaw_mode)
+    {
+        unused(drivetrain);
+        // TODO: We skip safety check and drivetrain check here - not required yet.
+        if (duration <= 0) {
+            commandAcceleration(ax, ay, az, yaw_mode);
+            return true;
+        }
+
+        return waitForFunction([&]() {
+                   commandAcceleration(ax, ay, az, yaw_mode);
+                   return false;
+                },
+                                duration)
+            .isTimeout();
+    }
+
     bool MultirotorApiBase::moveByVelocityZ(float vx, float vy, float z, float duration, DrivetrainType drivetrain, const YawMode& yaw_mode)
     {
         SingleTaskCall lock(this);

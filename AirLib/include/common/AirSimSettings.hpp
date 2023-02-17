@@ -83,6 +83,21 @@ namespace airlib
             }
         };
 
+        struct VideoCameraSetting
+        {
+            bool enabled;
+            float record_interval;
+
+            std::map<std::string, std::vector<ImageCaptureBase::ImageRequest>> requests;
+
+            VideoCameraSetting(float record_interval_val = 0.10f)
+                : enabled(false)
+                , record_interval(record_interval_val)
+            {
+                requests.clear();
+            }
+        };
+
         struct PawnPath
         {
             std::string pawn_bp;
@@ -101,6 +116,8 @@ namespace airlib
         {
             int remote_control_id = -1;
             bool allow_api_when_disconnected = false;
+            float max_velocity = 5.0f;
+            float max_angle_rate = 3.0f;
         };
 
         struct Rotation
@@ -116,6 +133,11 @@ namespace airlib
             Rotation(float yaw_val, float pitch_val, float roll_val)
                 : yaw(yaw_val), pitch(pitch_val), roll(roll_val)
             {
+            }
+
+            bool hasNan()
+            {
+                return std::isnan(yaw) || std::isnan(pitch) || std::isnan(roll);
             }
 
             static Rotation nanRotation() noexcept
@@ -387,6 +409,7 @@ namespace airlib
 
         std::vector<SubwindowSetting> subwindow_settings;
         RecordingSetting recording_setting;
+        VideoCameraSetting video_camera_setting;
         SegmentationSetting segmentation_setting;
         TimeOfDaySetting tod_setting;
 
@@ -454,6 +477,7 @@ namespace airlib
 
             //this should be done last because it depends on vehicles (and/or their type) we have
             loadRecordingSetting(settings_json);
+            loadVideoCameraSetting(settings_json);
             loadClockSettings(settings_json);
         }
 
@@ -651,6 +675,8 @@ namespace airlib
                                                               simmode_name == kSimModeTypeMultirotor ? 0 : -1);
                 rc_setting.allow_api_when_disconnected = rc_json.getBool("AllowAPIWhenDisconnected",
                                                                          rc_setting.allow_api_when_disconnected);
+                rc_setting.max_velocity = rc_json.getFloat("MaxLinearVelocity", rc_setting.max_velocity);
+                rc_setting.max_angle_rate = rc_json.getFloat("MaxAngleRate", rc_setting.max_angle_rate);
             }
         }
 
@@ -707,6 +733,40 @@ namespace airlib
                     }
                 }
             }
+        }
+
+        void loadVideoCameraSetting(const Settings& settings_json)
+        {
+            Settings video_camera_json;
+            std::string default_vehicle_name = vehicles.begin()->first;
+            if (settings_json.getChild("VideoCamera", video_camera_json)) {
+                video_camera_setting.enabled = video_camera_json.getBool("Enabled", video_camera_setting.enabled);
+                video_camera_setting.record_interval = video_camera_json.getFloat("CameraInterval", video_camera_setting.record_interval);
+                video_camera_setting.requests.clear();
+
+                Settings req_cameras_settings;
+                if (video_camera_json.getChild("Cameras", req_cameras_settings)) {
+                    for (size_t child_index = 0; child_index < req_cameras_settings.size(); ++child_index) {
+                        Settings req_camera_settings;
+
+                        if (req_camera_settings.getChild(child_index, req_camera_settings)) {
+                            std::string camera_name = getCameraName(req_camera_settings);
+                            ImageType image_type = Utils::toEnum<ImageType>(
+                                req_camera_settings.getInt("ImageType", 0));
+                            bool compress = req_camera_settings.getBool("Compress", true);
+                            bool pixels_as_float = req_camera_settings.getBool("PixelsAsFloat", false);
+                            std::string vehicle_name = req_camera_settings.getString("VehicleName", default_vehicle_name);
+
+                            video_camera_setting.requests[vehicle_name].push_back(ImageCaptureBase::ImageRequest(
+                                camera_name, image_type, pixels_as_float, compress));
+                        }
+                    }
+                }
+            }
+            // Capture front-center by default only
+            if (video_camera_setting.requests.size() == 0)
+                video_camera_setting.requests[default_vehicle_name].push_back(ImageCaptureBase::ImageRequest(
+                    "front_center", ImageType::Scene, false, false));
         }
 
         static void initializeCaptureSettings(CaptureSettingsMap& capture_settings)

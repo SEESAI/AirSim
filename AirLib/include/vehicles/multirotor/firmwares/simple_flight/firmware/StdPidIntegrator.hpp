@@ -18,7 +18,7 @@ public:
 
     virtual void reset() override
     {
-        iterm_int_ = T();
+        iterm_int_ = config_.iterm_initial;
     }
 
     virtual void set(T val) override

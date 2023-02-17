@@ -96,6 +96,7 @@ namespace airlib
         // Camera APIs
         virtual CameraInfo getCameraInfo(const CameraDetails& camera_details) const = 0;
         virtual void setCameraPose(const msr::airlib::Pose& pose, const CameraDetails& camera_details) = 0;
+        virtual void setCameraOrientation(const Quaternionr& orientation, const CameraDetails& camera_details) = 0;
         virtual void setCameraFoV(float fov_degrees, const CameraDetails& camera_details) = 0;
         virtual void setDistortionParam(const std::string& param_name, float value, const CameraDetails& camera_details) = 0;
         virtual std::vector<float> getDistortionParams(const CameraDetails& camera_details) const = 0;

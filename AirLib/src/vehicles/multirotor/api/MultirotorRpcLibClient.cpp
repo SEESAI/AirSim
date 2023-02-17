@@ -127,6 +127,18 @@ __pragma(warning(disable : 4239))
             return this;
         }
 
+        MultirotorRpcLibClient* MultirotorRpcLibClient::moveByAngleZAsync(float pitch, float roll, float z, float yaw, float duration, const std::string& vehicle_name)
+        {
+            pimpl_->last_future = static_cast<rpc::client*>(getClient())->async_call("moveByAngleZ", pitch, roll, z, yaw, duration, vehicle_name);
+            return this;
+        }
+
+        MultirotorRpcLibClient* MultirotorRpcLibClient::moveByAngleThrottleAsync(float pitch, float roll, float throttle, float yaw_rate, float duration, const std::string& vehicle_name)
+        {
+            pimpl_->last_future = static_cast<rpc::client*>(getClient())->async_call("moveByAngleThrottle", pitch, roll, throttle, yaw_rate, duration, vehicle_name);
+            return this;
+        }
+
         MultirotorRpcLibClient* MultirotorRpcLibClient::moveByAngleRatesThrottleAsync(float roll_rate, float pitch_rate, float yaw_rate, float throttle, float duration, const std::string& vehicle_name)
         {
             pimpl_->last_future = static_cast<rpc::client*>(getClient())->async_call("moveByAngleRatesThrottle", roll_rate, pitch_rate, yaw_rate, throttle, duration, vehicle_name);
@@ -137,6 +149,13 @@ __pragma(warning(disable : 4239))
                                                                             DrivetrainType drivetrain, const YawMode& yaw_mode, const std::string& vehicle_name)
         {
             pimpl_->last_future = static_cast<rpc::client*>(getClient())->async_call("moveByVelocity", vx, vy, vz, duration, drivetrain, MultirotorRpcLibAdaptors::YawMode(yaw_mode), vehicle_name);
+            return this;
+        }
+
+        MultirotorRpcLibClient* MultirotorRpcLibClient::moveByAccelerationAsync(float ax, float ay, float az, float duration,
+                                                                                DrivetrainType drivetrain, const YawMode& yaw_mode, const std::string& vehicle_name)
+        {
+            pimpl_->last_future = static_cast<rpc::client*>(getClient())->async_call("moveByAcceleration", ax, ay, az, duration, drivetrain, MultirotorRpcLibAdaptors::YawMode(yaw_mode), vehicle_name);
             return this;
         }
 
@@ -263,6 +282,44 @@ __pragma(warning(disable : 4239))
                 *task_result = result;
 
             return this;
+        }
+
+        //as above but returns true if future still valid, false otherwise
+        bool MultirotorRpcLibClient::checkLastTask(bool* task_result, bool* task_complete, float timeout_sec)
+        {
+            bool valid = false;
+            bool complete = false;
+            bool result = false;
+            //check whether future is valid
+            //TODO: need to return something if result is not complete
+            if (pimpl_->last_future.valid()) {
+                if (std::isnan(timeout_sec) || timeout_sec == Utils::max<float>()) {
+                    result = pimpl_->last_future.get().as<bool>();
+                    valid = true;
+                    complete = true;
+                }
+                else {
+                    auto future_status = pimpl_->last_future.wait_for(std::chrono::duration<double>(timeout_sec));
+                    if (future_status == std::future_status::ready) {
+                        result = pimpl_->last_future.get().as<bool>();
+                        valid = true;
+                        complete = true;
+                    }
+                }
+            }
+            else {
+                complete = true;
+                valid = false;
+            }
+            
+            if (valid)
+                if (task_result)
+                    *task_result = result;
+            
+            if (task_complete)
+                *task_complete = complete;
+            
+            return valid;
         }
     }
 } //namespace

@@ -607,6 +607,52 @@ namespace airlib_rpclib
             }
         };
 
+        struct LidarInfo 
+        {
+            Pose pose;
+            float vertical_fov_lower;
+            float vertical_fov_upper;
+            float horizontal_fov_lower;
+            float horizontal_fov_upper;
+            int channels_per_scan;
+            int scans_per_revolution;
+            float revolutions_per_second;
+
+            MSGPACK_DEFINE_MAP(pose, vertical_fov_lower, vertical_fov_upper, horizontal_fov_lower, horizontal_fov_upper, channels_per_scan, scans_per_revolution, revolutions_per_second);
+
+            LidarInfo()
+            {
+            }
+
+            LidarInfo(const msr::airlib::LidarInfo& s)
+            {
+                pose = s.pose;
+                vertical_fov_lower = s.vertical_fov_lower;
+                vertical_fov_upper = s.vertical_fov_upper;
+                horizontal_fov_lower = s.horizontal_fov_lower;
+                horizontal_fov_upper = s.horizontal_fov_upper;
+                channels_per_scan = s.channels_per_scan;
+                scans_per_revolution = s.scans_per_revolution;
+                revolutions_per_second = s.revolutions_per_second;
+            }
+
+            msr::airlib::LidarInfo to() const
+            {
+                msr::airlib::LidarInfo d;
+
+                d.pose = pose.to();
+                d.vertical_fov_lower = vertical_fov_lower;
+                d.vertical_fov_upper = vertical_fov_upper;
+                d.horizontal_fov_lower = horizontal_fov_lower;
+                d.horizontal_fov_upper = horizontal_fov_upper;
+                d.channels_per_scan = channels_per_scan;
+                d.scans_per_revolution = scans_per_revolution;
+                d.revolutions_per_second = revolutions_per_second;
+
+                return d;
+            }
+        };
+
         struct LidarData
         {
 
@@ -642,6 +688,77 @@ namespace airlib_rpclib
             }
         };
 
+        struct LidarDataBuffer
+        {
+            Pose sensor_pose_in_world_frame;
+            std::vector<uint64_t> timestamps_ns; // timestamps
+            std::vector<float> azimuth_angles; // azimuth angles
+            std::vector<float> ranges; // ranges
+
+            MSGPACK_DEFINE_MAP(sensor_pose_in_world_frame, timestamps_ns, azimuth_angles, ranges);
+
+            LidarDataBuffer()
+            {
+            }
+
+            LidarDataBuffer(const msr::airlib::LidarDataBuffer& s)
+            {
+                azimuth_angles = s.azimuth_angles;
+                timestamps_ns = s.timestamps_ns;
+                ranges = s.ranges;
+                sensor_pose_in_world_frame = s.sensor_pose_in_world_frame;
+            }
+
+            msr::airlib::LidarDataBuffer to() const
+            {
+                msr::airlib::LidarDataBuffer d;
+
+                d.azimuth_angles = azimuth_angles;
+                d.timestamps_ns = timestamps_ns;
+                d.ranges = ranges;
+                d.sensor_pose_in_world_frame = sensor_pose_in_world_frame.to();
+
+                return d;
+            }
+        };
+
+        struct ImuInfo
+        {
+            Pose pose;
+            float angle_random_walk;
+            float gyro_bias_stability;
+            float velocity_random_walk;
+            float accelerometer_bias_stability;
+
+            MSGPACK_DEFINE_MAP(pose, angle_random_walk, gyro_bias_stability, velocity_random_walk, accelerometer_bias_stability);
+
+            ImuInfo()
+            {
+            }
+
+            ImuInfo(const msr::airlib::ImuInfo& s)
+            {
+                pose = s.pose;
+                angle_random_walk = s.angle_random_walk;
+                gyro_bias_stability = s.gyro_bias_stability;
+                velocity_random_walk = s.velocity_random_walk;
+                accelerometer_bias_stability = s.accelerometer_bias_stability;
+            }
+
+            msr::airlib::ImuInfo to() const
+            {
+                msr::airlib::ImuInfo d;
+
+                d.pose = pose.to();
+                d.angle_random_walk = angle_random_walk;
+                d.gyro_bias_stability = gyro_bias_stability;
+                d.velocity_random_walk = velocity_random_walk;
+                d.accelerometer_bias_stability = accelerometer_bias_stability;
+
+                return d;
+            }
+        };
+
         struct ImuData
         {
             msr::airlib::TTimePoint time_stamp;
@@ -671,6 +788,40 @@ namespace airlib_rpclib
                 d.orientation = orientation.to();
                 d.angular_velocity = angular_velocity.to();
                 d.linear_acceleration = linear_acceleration.to();
+
+                return d;
+            }
+        };
+
+        struct ImuDataBuffer 
+        {
+            std::vector<uint64_t> timestamps_ns;
+            std::vector<float> orientation;
+            std::vector<float> angular_velocity;
+            std::vector<float> linear_acceleration;
+
+            MSGPACK_DEFINE_MAP(timestamps_ns, orientation, angular_velocity, linear_acceleration);
+
+            ImuDataBuffer()
+            {
+            }
+
+            ImuDataBuffer(const msr::airlib::ImuDataBuffer& s)
+            {
+                timestamps_ns = s.timestamps_ns;
+                orientation = s.orientation;
+                angular_velocity = s.angular_velocity;
+                linear_acceleration = s.linear_acceleration;
+            }
+
+            msr::airlib::ImuDataBuffer to() const
+            {
+                msr::airlib::ImuDataBuffer d;
+
+                d.timestamps_ns = timestamps_ns;
+                d.orientation = orientation;
+                d.angular_velocity = angular_velocity;
+                d.linear_acceleration = linear_acceleration;
 
                 return d;
             }
@@ -748,8 +899,10 @@ namespace airlib_rpclib
             Vector3r velocity;
             msr::airlib::GpsBase::GnssFixType fix_type;
             uint64_t time_utc = 0;
+            bool has_yaw = false;
+            float yaw = 0.f;
 
-            MSGPACK_DEFINE_MAP(geo_point, eph, epv, velocity, fix_type, time_utc);
+            MSGPACK_DEFINE_MAP(geo_point, eph, epv, velocity, fix_type, time_utc, has_yaw, yaw);
 
             GnssReport()
             {
@@ -763,6 +916,8 @@ namespace airlib_rpclib
                 velocity = s.velocity;
                 fix_type = s.fix_type;
                 time_utc = s.time_utc;
+                has_yaw = s.has_yaw;
+                yaw = s.yaw;
             }
 
             msr::airlib::GpsBase::GnssReport to() const
@@ -775,6 +930,8 @@ namespace airlib_rpclib
                 d.velocity = velocity.to();
                 d.fix_type = fix_type;
                 d.time_utc = time_utc;
+                d.has_yaw = has_yaw;
+                d.yaw = yaw;
 
                 return d;
             }
@@ -806,6 +963,52 @@ namespace airlib_rpclib
                 d.time_stamp = time_stamp;
                 d.gnss = gnss.to();
                 d.is_valid = is_valid;
+
+                return d;
+            }
+        };
+
+        struct GpsDataBuffer
+        {
+            std::vector<uint64_t> timestamps_ns;
+            std::vector<double> latitude;
+            std::vector<double> longitude;
+            std::vector<float> altitude;
+            std::vector<float> eph;
+            std::vector<float> epv;
+            std::vector<bool> has_yaw;
+            std::vector<float> yaw;
+
+            MSGPACK_DEFINE_MAP(timestamps_ns, latitude, longitude, altitude, eph, epv, has_yaw, yaw);
+
+            GpsDataBuffer()
+            {
+            }
+
+            GpsDataBuffer(const msr::airlib::GpsDataBuffer& s)
+            {
+                timestamps_ns = s.timestamps_ns;
+                latitude = s.latitude;
+                longitude = s.longitude;
+                altitude = s.altitude;
+                eph = s.eph;
+                epv = s.epv;
+                has_yaw = s.has_yaw;
+                yaw = s.yaw;
+            }
+
+            msr::airlib::GpsDataBuffer to() const
+            {
+                msr::airlib::GpsDataBuffer d;
+
+                d.timestamps_ns = timestamps_ns;
+                d.latitude = latitude;
+                d.longitude = longitude;
+                d.altitude = altitude;
+                d.eph = eph;
+                d.epv = epv;
+                d.has_yaw = has_yaw;
+                d.yaw = yaw;
 
                 return d;
             }

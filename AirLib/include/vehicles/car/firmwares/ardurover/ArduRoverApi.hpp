@@ -277,10 +277,10 @@ namespace airlib
 
                 // Add sensor outputs in the array
                 for (uint i = 0; i < count_lidars; ++i) {
-                    const auto* lidar = static_cast<const LidarSimple*>(sensors_->getByType(SensorBase::SensorType::Lidar, i));
+                    auto* lidar = static_cast<LidarSimple*>(sensors_->getByType(SensorBase::SensorType::Lidar, i));
 
                     if (lidar && lidar->getParams().external_controller) {
-                        const auto& lidar_output = lidar->getOutput();
+                        auto& lidar_output = static_cast<LidarBase*>(lidar)->getOutput();
                         std::copy(lidar_output.point_cloud.begin(), lidar_output.point_cloud.end(), std::ostream_iterator<real_T>(buf, ","));
                         // AP backend only takes in a single Lidar sensor data currently
                         break;

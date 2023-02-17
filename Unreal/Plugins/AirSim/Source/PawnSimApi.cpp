@@ -220,7 +220,7 @@ msr::airlib::RCData PawnSimApi::getRCData() const
         UAirBlueprintLib::LogMessageString("Joystick (T,R,P,Y,Buttons): ", Utils::stringf("%f, %f, %f %f, %s", rc_data_.throttle, rc_data_.roll, rc_data_.pitch, rc_data_.yaw, Utils::toBinaryString(joystick_state_.buttons).c_str()), LogDebugLevel::Informational);
 
         //TODO: should below be at controller level info?
-        UAirBlueprintLib::LogMessageString("RC Mode: ", rc_data_.getSwitch(0) == 0 ? "Angle" : "Rate", LogDebugLevel::Informational);
+        UAirBlueprintLib::LogMessageString("RC Mode: ", rc_data_.getSwitch(0) == 0 ? "Velocity" : "Angle", LogDebugLevel::Informational);
     }
     //else don't waste time
 
@@ -567,6 +567,94 @@ std::string PawnSimApi::getRecordFileLine(bool is_header_line) const
        << kinematics->pose.orientation.y() << "\t" << kinematics->pose.orientation.z() << "\t";
 
     return ss.str();
+}
+
+bool PawnSimApi::getVideoCameraRequests(std::vector<ImageCaptureBase::ImageRequest>& requests) {
+    // Lock mutex as these methods are on different threads
+    std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
+
+    if (video_camera_requests_.empty())
+        return false;
+    
+    // Pass back the latest requests
+    requests = video_camera_requests_;
+    return true;
+}
+
+bool PawnSimApi::saveVideoCameraImages(const std::vector<std::shared_ptr<ImageCaptureBase::ImageResponse>>& responses)
+{
+    // Lock mutex as these methods are on different threads
+    std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
+
+    // Append new images to the storage vector
+    video_camera_responses_.insert(video_camera_responses_.end(), responses.begin(), responses.end());
+
+    // If the vector is too long then trim
+    int max_history = 10;
+    int numCameras = int(responses.size());
+    int max_length = max_history * numCameras;
+    if (video_camera_responses_.size() > max_length) {
+        int excess_length = video_camera_responses_.size() - max_length;
+        video_camera_responses_.erase(video_camera_responses_.begin(), video_camera_responses_.begin() + excess_length);
+    }
+
+    return true;
+}
+
+int PawnSimApi::getVideoCameraImages(const std::vector<ImageCaptureBase::ImageRequest>& requests, int num_images, std::vector<ImageCaptureBase::ImageResponse>& responses)
+{
+    // Lock mutex as these methods are on different threads
+    std::vector<std::shared_ptr<ImageCaptureBase::ImageResponse>> latest_images;
+    {
+        std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
+
+        if (video_camera_responses_.empty())
+            return 0;
+        
+        latest_images = video_camera_responses_;
+        video_camera_responses_.clear();
+
+        video_camera_requests_ = requests;
+
+        // If user has asked for all images and not supplied requests, then return everything
+        if (requests.empty() && (num_images == 0)) {
+            video_camera_responses_.clear();
+            return 0;
+        }
+    }
+
+    // If user has just supplied names then set image limit to 10
+    if (num_images == 0)
+        num_images = 10;
+    
+    // And filter by camera name and image number
+    std::vector<int> imagesFound(requests.size(), 0);
+    for (const auto& image : latest_images) {
+        // Check if the image matches any requests
+        int cameraIndex = -1;
+        for (int i = 0; i < requests.size(); i++) {
+            const auto& request = requests[i];
+            if ((request.camera_name == image->camera_name) &&
+                (request.image_type == image->image_type) &&
+                (request.compress == image->compress) &&
+                (request.pixels_as_float == image->pixels_as_float)) {
+                    cameraIndex = i;
+                }
+        }
+
+        if (cameraIndex == -1)
+            continue;
+        
+        // Check if we've already got enough images of this type
+        if (imagesFound[cameraIndex] >= num_images)
+            continue;
+        
+        // Copy the image
+        responses.push_back(std::move(*image));
+        imagesFound[cameraIndex]++;
+    }
+
+    return responses.size();
 }
 
 msr::airlib::VehicleApiBase* PawnSimApi::getVehicleApiBase() const

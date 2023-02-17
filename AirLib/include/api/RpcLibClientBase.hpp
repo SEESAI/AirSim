@@ -72,6 +72,7 @@ namespace airlib
         //task management APIs
         void cancelLastTask(const std::string& vehicle_name = "");
         virtual RpcLibClientBase* waitOnLastTask(bool* task_result = nullptr, float timeout_sec = Utils::nan<float>());
+        virtual bool checkLastTask(bool* task_result = nullptr, bool* task_complete = nullptr, float timeout_sec = Utils::nan<float>());
 
         bool simSetSegmentationObjectID(const std::string& mesh_name, int object_id, bool is_name_regex = false);
         int simGetSegmentationObjectID(const std::string& mesh_name) const;
@@ -100,6 +101,11 @@ namespace airlib
         bool simRunConsoleCommand(const std::string& command);
 
         // sensor APIs
+        // sensor info
+        msr::airlib::ImuInfo getImuInfo(const std::string& vehicle_name = "") const;
+        msr::airlib::LidarInfo getLidarInfo(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
+
+        // sensor data 
         msr::airlib::LidarData getLidarData(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
         msr::airlib::ImuBase::Output getImuData(const std::string& imu_name = "", const std::string& vehicle_name = "") const;
         msr::airlib::BarometerBase::Output getBarometerData(const std::string& barometer_name = "", const std::string& vehicle_name = "") const;
@@ -107,12 +113,18 @@ namespace airlib
         msr::airlib::GpsBase::Output getGpsData(const std::string& gps_name = "", const std::string& vehicle_name = "") const;
         msr::airlib::DistanceSensorData getDistanceSensorData(const std::string& distance_sensor_name = "", const std::string& vehicle_name = "") const;
 
+        // sensor buffer
+        msr::airlib::GpsDataBuffer getGpsDataBuffer(const std::string& vehicle_name = "") const;
+        msr::airlib::ImuDataBuffer getImuDataBuffer(const std::string& vehicle_name = "") const;
+        msr::airlib::LidarDataBuffer getLidarDataBuffer(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
+
         Pose simGetVehiclePose(const std::string& vehicle_name = "") const;
         void simSetVehiclePose(const Pose& pose, bool ignore_collision, const std::string& vehicle_name = "");
         void simSetTraceLine(const std::vector<float>& color_rgba, float thickness = 3.0f, const std::string& vehicle_name = "");
 
         vector<ImageCaptureBase::ImageResponse> simGetImages(vector<ImageCaptureBase::ImageRequest> request, const std::string& vehicle_name = "", bool external = false);
         vector<uint8_t> simGetImage(const std::string& camera_name, ImageCaptureBase::ImageType type, const std::string& vehicle_name = "", bool external = false);
+        vector<ImageCaptureBase::ImageResponse> simGetVideoCameraImages(const vector<ImageCaptureBase::ImageRequest>& request = {}, const int num_images = 0, const std::string& vehicle_name = "");
 
         //CinemAirSim
         std::vector<std::string> simGetPresetLensSettings(const std::string& camera_name, const std::string& vehicle_name = "", bool external = false);
@@ -146,6 +158,7 @@ namespace airlib
         std::vector<float> simGetDistortionParams(const std::string& camera_name, const std::string& vehicle_name = "", bool external = false);
         void simSetCameraPose(const std::string& camera_name, const Pose& pose, const std::string& vehicle_name = "", bool external = false);
         void simSetCameraFov(const std::string& camera_name, float fov_degrees, const std::string& vehicle_name = "", bool external = false);
+        void simSetCameraOrientation(const std::string& camera_name, const Quaternionr& orientation, const std::string& vehicle_name = "", bool external = false);
 
         bool simCreateVoxelGrid(const Vector3r& position, const int& x_size, const int& y_size, const int& z_size, const float& res, const std::string& output_file);
         msr::airlib::Kinematics::State simGetGroundTruthKinematics(const std::string& vehicle_name = "") const;

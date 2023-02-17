@@ -81,6 +81,10 @@ namespace airlib
             output.gnss.eph = eph;
             output.gnss.epv = epv;
             output.gnss.velocity = ground_truth.kinematics->twist.linear;
+            output.gnss.has_yaw = true;
+            real_T pitch, roll, yaw;
+            VectorMath::toEulerianAngle(ground_truth.kinematics->pose.orientation, pitch, roll, yaw);
+            output.gnss.yaw = yaw;
             output.is_valid = true;
 
             output.gnss.fix_type =

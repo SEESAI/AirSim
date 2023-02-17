@@ -33,6 +33,14 @@ namespace airlib
         virtual void commandAngleRatesZ(float roll_rate, float pitch_rate, float yaw_rate, float z) = 0;
         virtual void commandAngleRatesThrottle(float roll_rate, float pitch_rate, float yaw_rate, float throttle) = 0;
         virtual void commandVelocity(float vx, float vy, float vz, const YawMode& yaw_mode) = 0;
+        // we don't force all implementations to provide acceleration control
+        virtual void commandAcceleration(float ax, float ay, float az, const YawMode& yaw_mode) {
+            unused(ax);
+            unused(ay);
+            unused(az);
+            unused(yaw_mode);
+            throw std::runtime_error("commandAcceleration not implemented");
+        }
         virtual void commandVelocityZ(float vx, float vy, float z, const YawMode& yaw_mode) = 0;
         virtual void commandPosition(float x, float y, float z, const YawMode& yaw_mode) = 0;
 
@@ -101,6 +109,7 @@ namespace airlib
         virtual bool moveByAngleRatesZ(float roll_rate, float pitch_rate, float yaw_rate, float z, float duration);
         virtual bool moveByAngleRatesThrottle(float roll_rate, float pitch_rate, float yaw_rate, float throttle, float duration);
         virtual bool moveByVelocity(float vx, float vy, float vz, float duration, DrivetrainType drivetrain, const YawMode& yaw_mode);
+        virtual bool moveByAcceleration(float ax, float ay, float az, float duration, DrivetrainType drivetrain, const YawMode& yaw_mode);
         virtual bool moveByVelocityZ(float vx, float vy, float z, float duration, DrivetrainType drivetrain, const YawMode& yaw_mode);
         virtual bool moveOnPath(const vector<Vector3r>& path, float velocity, float timeout_sec, DrivetrainType drivetrain, const YawMode& yaw_mode,
                                 float lookahead, float adaptive_lookahead);

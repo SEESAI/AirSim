@@ -86,6 +86,7 @@ public:
     // Camera APIs
     virtual msr::airlib::CameraInfo getCameraInfo(const CameraDetails& camera_details) const override;
     virtual void setCameraPose(const msr::airlib::Pose& pose, const CameraDetails& camera_details) override;
+    virtual void setCameraOrientation(const msr::airlib::Quaternionr& orientation, const CameraDetails& camera_details) override;
     virtual void setCameraFoV(float fov_degrees, const CameraDetails& camera_details) override;
     virtual void setDistortionParam(const std::string& param_name, float value, const CameraDetails& camera_details) override;
     virtual std::vector<float> getDistortionParams(const CameraDetails& camera_details) const override;

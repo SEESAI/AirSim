@@ -69,7 +69,9 @@ public:
 
     void setupCameraFromSettings(const CameraSetting& camera_setting, const NedTransform& ned_transform);
     void setCameraPose(const msr::airlib::Pose& relative_pose);
+    void setCameraOrientation(const FRotator& rotator);
     void setCameraFoV(float fov_degrees);
+    float getFOV(const ImageType image_type) const;
     msr::airlib::CameraInfo getCameraInfo() const;
     std::vector<float> getDistortionParams() const;
     void setDistortionParam(const std::string& param_name, float value);
@@ -81,6 +83,7 @@ public:
     UDetectionComponent* getDetectionComponent(const ImageType type, bool if_active) const;
 
     msr::airlib::Pose getPose() const;
+    msr::airlib::Pose getPoseInParentFrame() const;
 
 private: //members
     UPROPERTY()

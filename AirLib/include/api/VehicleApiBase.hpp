@@ -114,16 +114,71 @@ Some methods may not be applicable to specific vehicle in which case an exceptio
         }
 
         // Lidar APIs
-        virtual const LidarData& getLidarData(const std::string& lidar_name) const
+        virtual const LidarInfo& getLidarInfo(const std::string& lidar_name) const
         {
             auto* lidar = static_cast<const LidarBase*>(findSensorByName(lidar_name, SensorBase::SensorType::Lidar));
+            if (lidar == nullptr)
+                throw VehicleControllerException(Utils::stringf("No lidar with name %s exist on vehicle", lidar_name.c_str()));
+            
+            return lidar->getInfo();
+        }
+
+        virtual const LidarData& getLidarData(const std::string& lidar_name) const
+        {
+            LidarBase* lidar = nullptr;
+
+            // Find lidar with the given name (for empty input name, return the first one found)
+            // Not efficient but should suffice given small number of lidars
+            uint count_lidars = getSensors().size(SensorBase::SensorType::Lidar);
+            for (uint i = 0; i < count_lidars; i++) {
+                LidarBase* current_lidar = static_cast<LidarBase*>(getSensors().getByType(SensorBase::SensorType::Lidar, i));
+                if (current_lidar != nullptr && (current_lidar->getName() == lidar_name || lidar_name == "")) {
+                    lidar = current_lidar;
+                    break;
+                }
+            }
+
             if (lidar == nullptr)
                 throw VehicleControllerException(Utils::stringf("No lidar with name %s exist on vehicle", lidar_name.c_str()));
 
             return lidar->getOutput();
         }
 
+        virtual const LidarDataBuffer& getLidarDataBuffer(const std::string& lidar_name) const
+        {
+            LidarBase* lidar = nullptr;
+
+            // Find lidar with the given name (for empty input name, return the first one found)
+            // Not efficient but should suffice given small number of lidars
+            uint count_lidars = getSensors().size(SensorBase::SensorType::Lidar);
+            for (uint i = 0; i < count_lidars; i++) {
+                LidarBase* current_lidar = static_cast<LidarBase*>(getSensors().getByType(SensorBase::SensorType::Lidar, i));
+                if (current_lidar != nullptr && (current_lidar->getName() == lidar_name || lidar_name == "")) {
+                    lidar = current_lidar;
+                    break;
+                }
+            }
+
+            if (lidar == nullptr)
+                throw VehicleControllerException(Utils::stringf("No lidar with name %s exist on vehicle", lidar_name.c_str()));
+            
+            return lidar->getOutputBuffer();
+        }
+
         // IMU API
+        virtual const ImuInfo getImuInfo() const
+        {
+            // just take the first imu - assuming there is one
+            uint count_imu_sensors = getSensors().size(SensorBase::SensorType::Imu);
+            if (count_imu_sensors == 0) {
+                ImuInfo i;
+                return i;
+            }
+
+            auto* imu = static_cast<const ImuBase*>(getSensors().getByType(SensorBase::SensorType::Imu, 0));
+            return imu->getInfo();
+        }
+
         virtual const ImuBase::Output& getImuData(const std::string& imu_name) const
         {
             auto* imu = static_cast<const ImuBase*>(findSensorByName(imu_name, SensorBase::SensorType::Imu));
@@ -131,6 +186,19 @@ Some methods may not be applicable to specific vehicle in which case an exceptio
                 throw VehicleControllerException(Utils::stringf("No IMU with name %s exist on vehicle", imu_name.c_str()));
 
             return imu->getOutput();
+        }
+
+        virtual ImuDataBuffer getImuDataBuffer() const
+        {
+            // just take the first imu - assuming there is one
+            uint count_imu_sensors = getSensors().size(SensorBase::SensorType::Imu);
+            if (count_imu_sensors == 0) {
+                ImuDataBuffer i;
+                return i;
+            }
+
+            ImuBase* imu = static_cast<ImuBase*>(getSensors().getByType(SensorBase::SensorType::Imu, 0));
+            return imu->getOutputBuffer();
         }
 
         // Barometer API
@@ -161,6 +229,18 @@ Some methods may not be applicable to specific vehicle in which case an exceptio
                 throw VehicleControllerException(Utils::stringf("No gps with name %s exist on vehicle", gps_name.c_str()));
 
             return gps->getOutput();
+        }
+
+        virtual GpsDataBuffer getGpsDataBuffer() const
+        {
+            uint count_gps_sensors = getSensors().size(SensorBase::SensorType::Gps);
+            if (count_gps_sensors == 0) {
+                GpsDataBuffer g;
+                return g;
+            }
+
+            GpsBase* gps = static_cast<GpsBase*>(getSensors().getByType(SensorBase::SensorType::Gps, 0));
+            return gps->getOutputBuffer();
         }
 
         // Distance Sensor API
