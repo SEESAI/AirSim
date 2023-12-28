@@ -89,7 +89,7 @@ namespace airlib
         {
             GeoPoint geo_point;
             real_T eph, epv; //GPS HDOP/VDOP horizontal/vertical dilution of position (unitless), 0-100%
-            Vector3r velocity;
+            Vector3r velocity = Vector3r::Zero();
             GnssFixType fix_type;
             uint64_t time_utc = 0;
             bool has_yaw = false;
