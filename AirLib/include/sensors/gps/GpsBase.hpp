@@ -94,6 +94,9 @@ namespace airlib
             uint64_t time_utc = 0;
             bool has_yaw = false;
             real_T yaw = 0.f;
+            real_T yaw_uncertainty; // standard deviation in yaw measurement [rad]
+            real_T speed_uncertainty; // standard deviation in speed measurement [m/s]
+            real_T course_uncertainty; // standard deviation in course measurement [rad]
         };
 
         struct NavSatFix
