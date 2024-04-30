@@ -18,9 +18,9 @@ namespace airlib
     public:
         struct State
         {
-            Pose pose;
-            Twist twist;
-            Accelerations accelerations;
+            Pose pose{};
+            Twist twist{};
+            Accelerations accelerations{};
 
             static State zero()
             {

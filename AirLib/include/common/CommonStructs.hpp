@@ -15,7 +15,8 @@ namespace airlib
     //velocity
     struct Twist
     {
-        Vector3r linear, angular;
+        Vector3r linear = Vector3r::Zero();
+        Vector3r angular = Vector3r::Zero();
 
         Twist()
         {
@@ -105,8 +106,8 @@ namespace airlib
 
     struct Accelerations
     {
-        Vector3r linear;
-        Vector3r angular;
+        Vector3r linear = Vector3r::Zero();
+        Vector3r angular = Vector3r::Zero();
 
         Accelerations()
         {
@@ -126,8 +127,8 @@ namespace airlib
 
     struct PoseWithCovariance
     {
-        VectorMath::Pose pose;
-        vector<real_T> covariance; //36 elements, 6x6 matrix
+        VectorMath::Pose pose{};
+        vector<real_T> covariance{}; //36 elements, 6x6 matrix
 
         PoseWithCovariance()
             : covariance(36, 0)
