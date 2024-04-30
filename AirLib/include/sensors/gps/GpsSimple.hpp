@@ -80,6 +80,7 @@ namespace airlib
             output.gnss.geo_point = ground_truth.environment->getState().geo_point;
             output.gnss.eph = eph;
             output.gnss.epv = epv;
+            std::cout << "GNSS velocity: " << output.gnss.velocity << ", Ground Truth Kinematics Linear: " << ground_truth.kinematics->twist.linear << std::endl;
             output.gnss.velocity = ground_truth.kinematics->twist.linear;
             output.gnss.has_yaw = true;
             real_T pitch, roll, yaw;
