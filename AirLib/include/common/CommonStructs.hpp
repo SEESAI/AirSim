@@ -197,9 +197,9 @@ namespace airlib
 
     struct HomeGeoPoint
     {
-        GeoPoint home_geo_point;
-        double lat_rad, lon_rad;
-        double cos_lat, sin_lat;
+        GeoPoint home_geo_point {};
+        double lat_rad = 0.0, lon_rad = 0.0;
+        double cos_lat = 0.0, sin_lat = 0.0;
 
         HomeGeoPoint()
         {
@@ -239,7 +239,7 @@ namespace airlib
         real_T penetration_depth = 0;
         TTimePoint time_stamp = 0;
         unsigned int collision_count = 0;
-        std::string object_name;
+        std::string object_name {};
         int object_id = -1;
 
         CollisionInfo()
@@ -257,12 +257,13 @@ namespace airlib
 
     struct CameraInfo
     {
-        Pose pose;
-        float fov;
+        Pose pose {};
+        float fov = 0.0;
         ProjectionMatrix proj_mat;
 
         CameraInfo()
         {
+            proj_mat.setTo(0.0);
         }
 
         CameraInfo(const Pose& pose_val, float fov_val, const ProjectionMatrix& proj_mat_val)

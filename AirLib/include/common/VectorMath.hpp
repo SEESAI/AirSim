@@ -99,8 +99,8 @@ namespace airlib
         struct Transform
         {
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-            Vector3T translation;
-            QuaternionT rotation;
+            Vector3T translation = Vector3T::Zero();
+            QuaternionT rotation = QuaternionT::Identity();
         };
 
         class RandomVectorT

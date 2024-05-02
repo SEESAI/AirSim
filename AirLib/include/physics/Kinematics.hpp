@@ -102,8 +102,8 @@ namespace airlib
         }
 
     private: //fields
-        State initial_;
-        State current_;
+        State initial_ = State::zero();
+        State current_ = State::zero();
     };
 }
 } //namespace

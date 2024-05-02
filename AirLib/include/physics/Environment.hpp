@@ -21,14 +21,14 @@ namespace airlib
         struct State
         {
             //these fields must be set at initialization time
-            Vector3r position;
-            GeoPoint geo_point;
+            Vector3r position = Vector3r::Zero();
+            GeoPoint geo_point {};
 
             //these fields are computed
-            Vector3r gravity;
-            real_T air_pressure;
-            real_T temperature;
-            real_T air_density;
+            Vector3r gravity = Vector3r::Zero();
+            real_T air_pressure = 0.0;
+            real_T temperature = 0.0;
+            real_T air_density = 0.0;
 
             State()
             {

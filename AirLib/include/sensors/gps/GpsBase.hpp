@@ -87,16 +87,16 @@ namespace airlib
 
         struct GnssReport
         {
-            GeoPoint geo_point;
-            real_T eph, epv; //GPS HDOP/VDOP horizontal/vertical dilution of position (unitless), 0-100%
+            GeoPoint geo_point {};
+            real_T eph = 0.0, epv = 0.0; //GPS HDOP/VDOP horizontal/vertical dilution of position (unitless), 0-100%
             Vector3r velocity = Vector3r::Zero();
-            GnssFixType fix_type;
+            GnssFixType fix_type = GNSS_FIX_NO_FIX;
             uint64_t time_utc = 0;
             bool has_yaw = false;
             real_T yaw = 0.f;
-            real_T yaw_uncertainty; // standard deviation in yaw measurement [rad]
-            real_T speed_uncertainty; // standard deviation in speed measurement [m/s]
-            real_T course_uncertainty; // standard deviation in course measurement [rad]
+            real_T yaw_uncertainty = 0.0; // standard deviation in yaw measurement [rad]
+            real_T speed_uncertainty = 0.0; // standard deviation in speed measurement [m/s]
+            real_T course_uncertainty = 0.0; // standard deviation in course measurement [rad]
         };
 
         struct NavSatFix
@@ -109,8 +109,8 @@ namespace airlib
 
         struct Output
         { //same as ROS message
-            TTimePoint time_stamp;
-            GnssReport gnss;
+            TTimePoint time_stamp = 0;
+            GnssReport gnss {};
             bool is_valid = false;
         };
 
