@@ -85,8 +85,8 @@ namespace airlib
             real_T pitch, roll, yaw;
             VectorMath::toEulerianAngle(ground_truth.kinematics->pose.orientation, pitch, roll, yaw);
             output.gnss.yaw = yaw;
-            output.gnss.speed_uncertainty = 10.0f * output.gnss.eph; // assume update frequency of 10Hz
-            output.gnss.course_uncertainty = std::min<real_T>(10.0f * output.gnss.eph / output.gnss.velocity.norm(), 1e2); // assume update frequency of 10Hz
+            output.gnss.speed_uncertainty = std::max<real_T>(0.04, output.gnss.eph);
+            output.gnss.course_uncertainty = std::clamp<real_T>(output.gnss.eph / output.gnss.velocity.norm(), 0.08, 1e2);
 
             output.gnss.fix_type =
                 output.gnss.eph <= params_.eph_min_3d   ? GnssFixType::GNSS_FIX_3D_FIX
