@@ -220,6 +220,14 @@ Some methods may not be applicable to specific vehicle in which case an exceptio
 
             return magnetometer->getOutput();
         }
+        virtual const Vector3r &getMagnetometerGroundTruthMagneticField(const std::string &magnetometer_name) const
+        {
+            auto* magnetometer = static_cast<const MagnetometerBase*>(findSensorByName(magnetometer_name, SensorBase::SensorType::Magnetometer));
+            if (magnetometer == nullptr)
+                throw VehicleControllerException(Utils::stringf("No magnetometer with name %s exist on vehicle", magnetometer_name.c_str()));
+
+            return magnetometer->getGroundTruthMagneticField();
+        }
 
         // Gps API
         virtual const GpsBase::Output& getGpsData(const std::string& gps_name) const

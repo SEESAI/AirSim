@@ -64,6 +64,13 @@ namespace airlib
         }
         //*** End: UpdatableObject implementation ***//
 
+        //*** Start: MagnetomerBase implementation ***//
+        [[nodiscard]] const Vector3r& getGroundTruthMagneticField() const override
+        {
+            return magnetic_field_true_;
+        }
+        //*** End: MagnetomerBase implementation ***//
+
         virtual ~MagnetometerSimple() = default;
 
     private: //methods
@@ -106,7 +113,7 @@ namespace airlib
         RandomVectorGaussianR noise_vec_;
         Vector3r bias_vec_;
 
-        Vector3r magnetic_field_true_;
+        Vector3r magnetic_field_true_ = Vector3r::Zero();
         MagnetometerSimpleParams params_;
 
         FrequencyLimiter freq_limiter_;

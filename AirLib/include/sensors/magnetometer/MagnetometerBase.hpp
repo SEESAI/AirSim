@@ -41,6 +41,8 @@ namespace airlib
             return output_;
         }
 
+        [[nodiscard]] virtual const Vector3r &getGroundTruthMagneticField() const = 0;
+
     protected:
         void setOutput(const Output& output)
         {
