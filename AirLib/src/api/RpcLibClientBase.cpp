@@ -204,6 +204,11 @@ __pragma(warning(disable : 4239))
             return pimpl_->client.call("getMagnetometerData", magnetometer_name, vehicle_name).as<RpcLibAdaptorsBase::MagnetometerData>().to();
         }
 
+        msr::airlib::Vector3r RpcLibClientBase::getGroundTruthMagneticField(const std::string& magnetometer_name, const std::string& vehicle_name) const
+        {
+            return pimpl_->client.call("getGroundTruthMagneticField", magnetometer_name, vehicle_name).as<RpcLibAdaptorsBase::Vector3r>().to();
+        }
+
         msr::airlib::GpsBase::Output RpcLibClientBase::getGpsData(const std::string& gps_name, const std::string& vehicle_name) const
         {
             return pimpl_->client.call("getGpsData", gps_name, vehicle_name).as<RpcLibAdaptorsBase::GpsData>().to();
@@ -303,8 +308,8 @@ __pragma(warning(disable : 4239))
                                                                RpcLibAdaptorsBase::ImageRequest::from(requests),
                                                                num_images,
                                                                vehicle_name)
-                                                .as<vector<RpcLibAdaptorsBase::ImageResponse>>();
-            
+                                               .as<vector<RpcLibAdaptorsBase::ImageResponse>>();
+
             return RpcLibAdaptorsBase::ImageResponse::to(response_adaptor);
         }
 

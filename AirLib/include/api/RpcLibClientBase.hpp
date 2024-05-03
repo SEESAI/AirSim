@@ -96,29 +96,30 @@ namespace airlib
         bool isApiControlEnabled(const std::string& vehicle_name = "") const;
         void enableApiControl(bool is_enabled, const std::string& vehicle_name = "");
 
-        msr::airlib::GeoPoint getHomeGeoPoint(const std::string& vehicle_name = "") const;
+        [[nodiscard]] msr::airlib::GeoPoint getHomeGeoPoint(const std::string& vehicle_name = "") const;
 
         bool simRunConsoleCommand(const std::string& command);
 
         // sensor APIs
         // sensor info
-        msr::airlib::ImuInfo getImuInfo(const std::string& vehicle_name = "") const;
-        msr::airlib::LidarInfo getLidarInfo(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
+        [[nodiscard]] msr::airlib::ImuInfo getImuInfo(const std::string& vehicle_name = "") const;
+        [[nodiscard]] msr::airlib::LidarInfo getLidarInfo(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
 
         // sensor data 
-        msr::airlib::LidarData getLidarData(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
-        msr::airlib::ImuBase::Output getImuData(const std::string& imu_name = "", const std::string& vehicle_name = "") const;
-        msr::airlib::BarometerBase::Output getBarometerData(const std::string& barometer_name = "", const std::string& vehicle_name = "") const;
-        msr::airlib::MagnetometerBase::Output getMagnetometerData(const std::string& magnetometer_name = "", const std::string& vehicle_name = "") const;
-        msr::airlib::GpsBase::Output getGpsData(const std::string& gps_name = "", const std::string& vehicle_name = "") const;
-        msr::airlib::DistanceSensorData getDistanceSensorData(const std::string& distance_sensor_name = "", const std::string& vehicle_name = "") const;
+        [[nodiscard]] msr::airlib::LidarData getLidarData(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
+        [[nodiscard]] msr::airlib::ImuBase::Output getImuData(const std::string& imu_name = "", const std::string& vehicle_name = "") const;
+        [[nodiscard]] msr::airlib::BarometerBase::Output getBarometerData(const std::string& barometer_name = "", const std::string& vehicle_name = "") const;
+        [[nodiscard]] msr::airlib::MagnetometerBase::Output getMagnetometerData(const std::string& magnetometer_name = "", const std::string& vehicle_name = "") const;
+        [[nodiscard]] msr::airlib::Vector3r getGroundTruthMagneticField(const std::string& magnetometer_name = "", const std::string& vehicle_name = "") const;
+        [[nodiscard]] msr::airlib::GpsBase::Output getGpsData(const std::string& gps_name = "", const std::string& vehicle_name = "") const;
+        [[nodiscard]] msr::airlib::DistanceSensorData getDistanceSensorData(const std::string& distance_sensor_name = "", const std::string& vehicle_name = "") const;
 
         // sensor buffer
-        msr::airlib::GpsDataBuffer getGpsDataBuffer(const std::string& vehicle_name = "") const;
-        msr::airlib::ImuDataBuffer getImuDataBuffer(const std::string& vehicle_name = "") const;
-        msr::airlib::LidarDataBuffer getLidarDataBuffer(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
+        [[nodiscard]] msr::airlib::GpsDataBuffer getGpsDataBuffer(const std::string& vehicle_name = "") const;
+        [[nodiscard]] msr::airlib::ImuDataBuffer getImuDataBuffer(const std::string& vehicle_name = "") const;
+        [[nodiscard]] msr::airlib::LidarDataBuffer getLidarDataBuffer(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
 
-        Pose simGetVehiclePose(const std::string& vehicle_name = "") const;
+        [[nodiscard]] Pose simGetVehiclePose(const std::string& vehicle_name = "") const;
         void simSetVehiclePose(const Pose& pose, bool ignore_collision, const std::string& vehicle_name = "");
         void simSetTraceLine(const std::vector<float>& color_rgba, float thickness = 3.0f, const std::string& vehicle_name = "");
 
@@ -151,9 +152,9 @@ namespace airlib
         vector<MeshPositionVertexBuffersResponse> simGetMeshPositionVertexBuffers();
         bool simAddVehicle(const std::string& vehicle_name, const std::string& vehicle_type, const Pose& pose, const std::string& pawn_path = "");
 
-        CollisionInfo simGetCollisionInfo(const std::string& vehicle_name = "") const;
+        [[nodiscard]] CollisionInfo simGetCollisionInfo(const std::string& vehicle_name = "") const;
 
-        CameraInfo simGetCameraInfo(const std::string& camera_name, const std::string& vehicle_name = "", bool external = false) const;
+        [[nodiscard]] CameraInfo simGetCameraInfo(const std::string& camera_name, const std::string& vehicle_name = "", bool external = false) const;
         void simSetDistortionParam(const std::string& camera_name, const std::string& param_name, float value, const std::string& vehicle_name = "", bool external = false);
         std::vector<float> simGetDistortionParams(const std::string& camera_name, const std::string& vehicle_name = "", bool external = false);
         void simSetCameraPose(const std::string& camera_name, const Pose& pose, const std::string& vehicle_name = "", bool external = false);
@@ -161,9 +162,9 @@ namespace airlib
         void simSetCameraOrientation(const std::string& camera_name, const Quaternionr& orientation, const std::string& vehicle_name = "", bool external = false);
 
         bool simCreateVoxelGrid(const Vector3r& position, const int& x_size, const int& y_size, const int& z_size, const float& res, const std::string& output_file);
-        msr::airlib::Kinematics::State simGetGroundTruthKinematics(const std::string& vehicle_name = "") const;
+        [[nodiscard]] msr::airlib::Kinematics::State simGetGroundTruthKinematics(const std::string& vehicle_name = "") const;
         void simSetKinematics(const Kinematics::State& state, bool ignore_collision, const std::string& vehicle_name = "");
-        msr::airlib::Environment::State simGetGroundTruthEnvironment(const std::string& vehicle_name = "") const;
+        [[nodiscard]] msr::airlib::Environment::State simGetGroundTruthEnvironment(const std::string& vehicle_name = "") const;
         std::vector<std::string> simSwapTextures(const std::string& tags, int tex_id = 0, int component_id = 0, int material_id = 0);
         bool simSetObjectMaterial(const std::string& object_name, const std::string& material_name, const int component_id = 0);
         bool simSetObjectMaterialFromTexture(const std::string& object_name, const std::string& texture_path, const int component_id = 0);
@@ -176,13 +177,13 @@ namespace airlib
         void simSetWind(const Vector3r& wind) const;
         vector<string> listVehicles();
 
-        std::string getSettingsString() const;
+        [[nodiscard]] std::string getSettingsString() const;
 
-        std::vector<std::string> simListAssets() const;
+        [[nodiscard]] std::vector<std::string> simListAssets() const;
 
     protected:
         void* getClient();
-        const void* getClient() const;
+        [[nodiscard]] const void* getClient() const;
 
     private:
         struct impl;
