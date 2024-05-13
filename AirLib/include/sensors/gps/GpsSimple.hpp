@@ -5,6 +5,8 @@
 #define msr_airlib_Gps_hpp
 
 #include <random>
+#include <algorithm>
+
 #include "common/Common.hpp"
 #include "GpsSimpleParams.hpp"
 #include "GpsBase.hpp"
