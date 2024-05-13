@@ -5,7 +5,6 @@
 #define msr_airlib_Gps_hpp
 
 #include <random>
-#include <algorithm>
 
 #include "common/Common.hpp"
 #include "GpsSimpleParams.hpp"
@@ -88,7 +87,7 @@ namespace airlib
             VectorMath::toEulerianAngle(ground_truth.kinematics->pose.orientation, pitch, roll, yaw);
             output.gnss.yaw = yaw;
             output.gnss.speed_uncertainty = std::max<real_T>(0.04, output.gnss.eph);
-            output.gnss.course_uncertainty = std::clamp<real_T>(output.gnss.eph / output.gnss.velocity.norm(), 0.08, 1e2);
+            output.gnss.course_uncertainty = std::min<real_T>(std::max<real_T>(output.gnss.eph / output.gnss.velocity.norm(), 0.08), 1e2);
 
             output.gnss.fix_type =
                 output.gnss.eph <= params_.eph_min_3d   ? GnssFixType::GNSS_FIX_3D_FIX
