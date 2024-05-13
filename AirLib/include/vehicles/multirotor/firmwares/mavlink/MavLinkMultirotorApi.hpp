@@ -1209,22 +1209,15 @@ namespace airlib
                     qgc_proxy_ = nullptr;
                 }
                 else {
-#ifdef _WIN32
-#pragma warning(push)
-#pragma warning(disable : 4996)
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated"
+                    connection->subscribe([=
+#if __cplusplus >= 202002L
+                                                ,
+                                            this
 #endif
-                    connection->subscribe([=](std::shared_ptr<mavlinkcom::MavLinkConnection> connection_val, const mavlinkcom::MavLinkMessage& msg) {
+                    ](std::shared_ptr<mavlinkcom::MavLinkConnection> connection_val, const mavlinkcom::MavLinkMessage& msg) {
                         unused(connection_val);
                         processQgcMessages(msg);
                     });
-#ifdef _WIN32
-#pragma warning(pop)
-#elif defined (__GNUC__)
-#pragma GCC diagnostic pop
-#endif
                 }
             }
             return qgc_proxy_ != nullptr;
@@ -1326,22 +1319,15 @@ namespace airlib
             }
 
             // start listening to the SITL connection.
-#ifdef _WIN32
-#pragma warning(push)
-#pragma warning(disable : 4996)
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated"
+            connection_->subscribe([=
+#if __cplusplus >= 202002L
+                                                ,
+                                            this
 #endif
-            connection_->subscribe([=](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
+            ](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
                 unused(connection);
                 processMavMessages(msg);
             });
-#ifdef _WIN32
-#pragma warning(pop)
-#elif defined (__GNUC__)
-#pragma GCC diagnostic pop
-#endif
 
             hil_node_ = std::make_shared<mavlinkcom::MavLinkNode>(connection_info_.sim_sysid, connection_info_.sim_compid);
             hil_node_->connect(connection_);
@@ -1452,22 +1438,15 @@ namespace airlib
             // listen to this UDP mavlink connection also
             auto mavcon = mav_vehicle_->getConnection();
             if (mavcon != nullptr && mavcon != connection_) {
-#ifdef _WIN32
-#pragma warning(push)
-#pragma warning(disable : 4996)
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated"
+                mavcon->subscribe([=
+#if __cplusplus >= 202002L
+                                                ,
+                                            this
 #endif
-                mavcon->subscribe([=](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
+                ](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
                     unused(connection);
                     processControlMessages(msg);
                 });
-#ifdef _WIN32
-#pragma warning(pop)
-#elif defined (__GNUC__)
-#pragma GCC diagnostic pop
-#endif
             }
             else {
                 mav_vehicle_->connect(connection_);
@@ -1531,23 +1510,16 @@ namespace airlib
                     hil_node_ = std::make_shared<mavlinkcom::MavLinkNode>(connection_info_.sim_sysid, connection_info_.sim_compid);
                     hil_node_->connect(connection_);
                     addStatusMessage(Utils::stringf("Connected to PX4 over serial port: %s", port_name_auto.c_str()));
-#ifdef _WIN32
-#pragma warning(push)
-#pragma warning(disable : 4996)
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated"
-#endif
                     // start listening to the HITL connection.
-                    connection_->subscribe([=](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
+                    connection_->subscribe([=
+#if __cplusplus >= 202002L
+                                                ,
+                                            this
+#endif
+                    ](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
                         unused(connection);
                         processMavMessages(msg);
                     });
-#ifdef _WIN32
-#pragma warning(pop)
-#elif defined (__GNUC__)
-#pragma GCC diagnostic pop
-#endif
 
                     mav_vehicle_ = std::make_shared<mavlinkcom::MavLinkVehicle>(connection_info_.vehicle_sysid, connection_info_.vehicle_compid);
 
