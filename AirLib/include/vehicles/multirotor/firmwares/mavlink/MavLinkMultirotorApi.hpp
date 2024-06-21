@@ -1209,7 +1209,11 @@ namespace airlib
                     qgc_proxy_ = nullptr;
                 }
                 else {
-                    connection->subscribe([=, this](std::shared_ptr<mavlinkcom::MavLinkConnection> connection_val, const mavlinkcom::MavLinkMessage& msg) {
+                    connection->subscribe([=
+#if __cplusplus >= 202002L
+                    , this
+#endif
+                    ](std::shared_ptr<mavlinkcom::MavLinkConnection> connection_val, const mavlinkcom::MavLinkMessage& msg) {
                         unused(connection_val);
                         processQgcMessages(msg);
                     });
@@ -1314,7 +1318,11 @@ namespace airlib
             }
 
             // start listening to the SITL connection.
-            connection_->subscribe([=, this](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
+            connection_->subscribe([=
+#if __cplusplus >= 202002L
+            , this
+#endif
+            ](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
                 unused(connection);
                 processMavMessages(msg);
             });
@@ -1428,7 +1436,11 @@ namespace airlib
             // listen to this UDP mavlink connection also
             auto mavcon = mav_vehicle_->getConnection();
             if (mavcon != nullptr && mavcon != connection_) {
-                mavcon->subscribe([=,this](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
+                mavcon->subscribe([=
+#if __cplusplus >= 202002L
+                ,this
+#endif
+                ](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
                     unused(connection);
                     processControlMessages(msg);
                 });
@@ -1497,7 +1509,11 @@ namespace airlib
                     addStatusMessage(Utils::stringf("Connected to PX4 over serial port: %s", port_name_auto.c_str()));
 
                     // start listening to the HITL connection.
-                    connection_->subscribe([=, this](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
+                    connection_->subscribe([=
+#if __cplusplus >= 202002L
+                    , this
+#endif
+                    ](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
                         unused(connection);
                         processMavMessages(msg);
                     });
