@@ -115,8 +115,8 @@ namespace airlib
 
         struct State
         {
-            Vector3r gyroscope_bias;
-            Vector3r accelerometer_bias;
+            Vector3r gyroscope_bias = Vector3r::Zero();
+            Vector3r accelerometer_bias = Vector3r::Zero();
         } state_;
 
         TTimePoint last_time_;

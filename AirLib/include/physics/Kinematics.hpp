@@ -18,9 +18,9 @@ namespace airlib
     public:
         struct State
         {
-            Pose pose;
-            Twist twist;
-            Accelerations accelerations;
+            Pose pose{};
+            Twist twist{};
+            Accelerations accelerations{};
 
             static State zero()
             {
@@ -102,8 +102,8 @@ namespace airlib
         }
 
     private: //fields
-        State initial_;
-        State current_;
+        State initial_ = State::zero();
+        State current_ = State::zero();
     };
 }
 } //namespace
