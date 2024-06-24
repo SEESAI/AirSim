@@ -254,6 +254,8 @@ namespace airlib
 
     bool MultirotorApiBase::moveByAcceleration(float ax, float ay, float az, float duration, DrivetrainType drivetrain, const YawMode& yaw_mode)
     {
+        SingleTaskCall lock(this);
+
         unused(drivetrain);
         // TODO: We skip safety check and drivetrain check here - not required yet.
         if (duration <= 0) {

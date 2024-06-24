@@ -1211,8 +1211,7 @@ namespace airlib
                 else {
                     connection->subscribe([=
 #if __cplusplus >= 202002L
-                                                ,
-                                            this
+                    , this
 #endif
                     ](std::shared_ptr<mavlinkcom::MavLinkConnection> connection_val, const mavlinkcom::MavLinkMessage& msg) {
                         unused(connection_val);
@@ -1321,8 +1320,7 @@ namespace airlib
             // start listening to the SITL connection.
             connection_->subscribe([=
 #if __cplusplus >= 202002L
-                                                ,
-                                            this
+            , this
 #endif
             ](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
                 unused(connection);
@@ -1440,8 +1438,7 @@ namespace airlib
             if (mavcon != nullptr && mavcon != connection_) {
                 mavcon->subscribe([=
 #if __cplusplus >= 202002L
-                                                ,
-                                            this
+                ,this
 #endif
                 ](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
                     unused(connection);
@@ -1510,11 +1507,11 @@ namespace airlib
                     hil_node_ = std::make_shared<mavlinkcom::MavLinkNode>(connection_info_.sim_sysid, connection_info_.sim_compid);
                     hil_node_->connect(connection_);
                     addStatusMessage(Utils::stringf("Connected to PX4 over serial port: %s", port_name_auto.c_str()));
+
                     // start listening to the HITL connection.
                     connection_->subscribe([=
 #if __cplusplus >= 202002L
-                                                ,
-                                            this
+                    , this
 #endif
                     ](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
                         unused(connection);
