@@ -1,7 +1,13 @@
 ﻿cmake_minimum_required(VERSION 3.5.0)
 project(AirSim)
 
-add_subdirectory("rpclib_wrapper")
+
+if (NIX)
+  find_package(rpclib REQUIRED)
+elseif (UNIX)
+  add_subdirectory("rpclib_wrapper")
+endif ()
+
 add_subdirectory("AirLib")
 add_subdirectory("MavLinkCom")
 add_subdirectory("AirLibUnitTests")
