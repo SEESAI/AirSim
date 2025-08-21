@@ -7,10 +7,14 @@ LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../cmake-modules")
 INCLUDE("${CMAKE_CURRENT_LIST_DIR}/../cmake-modules/CommonSetup.cmake")
 CommonSetup()
 
+file(GLOB_RECURSE ${PROJECT_NAME}_HEADERS 
+  LIST_DIRECTORIES false
+  ${AIRSIM_ROOT}/${PROJECT_NAME}/include/*.hpp
+)
+
 include_directories(
   ${AIRSIM_ROOT}/MavLinkCom
   ${AIRSIM_ROOT}/MavLinkCom/common_utils
-  ${AIRSIM_ROOT}/MavLinkCom/include
 )
 
 
@@ -50,7 +54,22 @@ ENDIF()
 
 
 
-add_library(MavLinkCom STATIC ${MAVLINK_SOURCES})
+add_library(${PROJECT_NAME} STATIC ${MAVLINK_SOURCES})
+target_include_directories(
+  ${PROJECT_NAME}
+  PUBLIC $<BUILD_INTERFACE:${AIRSIM_ROOT}/MavLinkCom/include>
+  PUBLIC $<INSTALL_INTERFACE:include>
+)
+
+target_sources(
+  ${PROJECT_NAME}
+  PUBLIC
+    FILE_SET HEADERS
+    BASE_DIRS ${AIRSIM_ROOT}/${PROJECT_NAME}/include
+    FILES "${${PROJECT_NAME}_HEADERS}"
+)
+
 
 CommonTargetLink()
+
 
