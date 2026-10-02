@@ -4,6 +4,7 @@
 #ifndef MavLinkCom_MavLinkVideoStream_hpp
 #define MavLinkCom_MavLinkVideoStream_hpp
 
+#include <cstdint>
 #include <vector>
 #include <memory>
 #include "MavLinkConnection.hpp"

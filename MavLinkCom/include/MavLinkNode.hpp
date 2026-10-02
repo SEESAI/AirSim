@@ -4,6 +4,7 @@
 #ifndef MavLinkCom_MavLinkNode_hpp
 #define MavLinkCom_MavLinkNode_hpp
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 #include "AsyncResult.hpp"

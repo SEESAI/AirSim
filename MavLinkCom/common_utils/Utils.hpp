@@ -5,6 +5,7 @@
 #define mavlink_utils_Utils_hpp
 
 #include "StrictMode.hpp"
+#include <cstdint>
 #include <chrono>
 #include <thread>
 #include <memory>

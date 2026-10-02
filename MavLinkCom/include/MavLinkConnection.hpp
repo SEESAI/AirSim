@@ -4,6 +4,7 @@
 #ifndef MavLinkCom_MavLinkConnection_hpp
 #define MavLinkCom_MavLinkConnection_hpp
 
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <string>

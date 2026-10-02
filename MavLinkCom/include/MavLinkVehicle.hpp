@@ -7,6 +7,7 @@
 #include "MavLinkNode.hpp"
 #include "AsyncResult.hpp"
 #include "VehicleState.hpp"
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>

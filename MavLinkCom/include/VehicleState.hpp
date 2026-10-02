@@ -4,6 +4,7 @@
 #ifndef MavLinkCom_VehicleState_hpp
 #define MavLinkCom_VehicleState_hpp
 
+#include <cstdint>
 #include <vector>
 #include <string>
 

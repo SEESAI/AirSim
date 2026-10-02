@@ -4,6 +4,7 @@
 #ifndef MavLinkCom_MavLinkFtpClient_hpp
 #define MavLinkCom_MavLinkFtpClient_hpp
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
