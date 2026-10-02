@@ -82,7 +82,7 @@ public:
             throw std::invalid_argument("axis must be 0, 1 or 2 for AngleRateController");
         }
         pid_->setGoal(body_rate_goal);
-        
+
         // Previous code - replaced by the above
         // pid_->setGoal(goal_->getGoalValue()[axis_]);
         pid_->setMeasured(state_estimator_->getAngularVelocity()[axis_]);

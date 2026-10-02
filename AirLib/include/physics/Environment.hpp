@@ -22,7 +22,7 @@ namespace airlib
         {
             //these fields must be set at initialization time
             Vector3r position = Vector3r::Zero();
-            GeoPoint geo_point {};
+            GeoPoint geo_point{};
 
             //these fields are computed
             Vector3r gravity = Vector3r::Zero();

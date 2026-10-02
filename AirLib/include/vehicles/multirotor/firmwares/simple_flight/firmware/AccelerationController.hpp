@@ -67,7 +67,7 @@ public:
         IAxisController::update();
 
         // Convert acceleration to linearised body frame
-        const Axis3r &goal_acc_world = Axis4r::axis4ToXyz(
+        const Axis3r& goal_acc_world = Axis4r::axis4ToXyz(
             goal_->getGoalValue(), true);
         TReal yaw = state_estimator_->getAngles().yaw();
         TReal ax = goal_acc_world.x() * cos(yaw) + goal_acc_world.y() * sin(yaw);
@@ -108,8 +108,8 @@ public:
     }
 
     virtual TReal getOutput() override
-    { 
-        return output_; 
+    {
+        return output_;
     }
 
     /********************  IGoal ********************/

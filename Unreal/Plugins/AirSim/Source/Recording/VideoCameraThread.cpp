@@ -63,8 +63,7 @@ bool FVideoCameraThread::Init()
 {
     for (const auto& vehicle_sim_api : vehicle_sim_apis_) {
         auto vehicle_name = vehicle_sim_api->getVehicleName();
-        if (image_captures_[vehicle_name])
-        {
+        if (image_captures_[vehicle_name]) {
             UAirBlueprintLib::LogMessage(TEXT("Video Camera: "), TEXT("Started"), LogDebugLevel::Success);
         }
     }
@@ -88,8 +87,7 @@ uint32 FVideoCameraThread::Run()
     float dt_frame_lpf = record_interval_nanos / 1e9f;
     float dt_videos_lpf = record_interval_nanos / 1e9f;
 
-    while (stop_task_counter_.GetValue() == 0)
-    {
+    while (stop_task_counter_.GetValue() == 0) {
         // Check for new requests from the API
         for (const auto& vehicle_sim_api : vehicle_sim_apis_) {
             const auto& vehicle_name = vehicle_sim_api->getVehicleName();

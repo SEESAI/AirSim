@@ -569,13 +569,14 @@ std::string PawnSimApi::getRecordFileLine(bool is_header_line) const
     return ss.str();
 }
 
-bool PawnSimApi::getVideoCameraRequests(std::vector<ImageCaptureBase::ImageRequest>& requests) {
+bool PawnSimApi::getVideoCameraRequests(std::vector<ImageCaptureBase::ImageRequest>& requests)
+{
     // Lock mutex as these methods are on different threads
     std::lock_guard<std::mutex> APIoutput_lock(video_camera_API_mutex_);
 
     if (video_camera_requests_.empty())
         return false;
-    
+
     // Pass back the latest requests
     requests = video_camera_requests_;
     return true;
@@ -610,7 +611,7 @@ int PawnSimApi::getVideoCameraImages(const std::vector<ImageCaptureBase::ImageRe
 
         if (video_camera_responses_.empty())
             return 0;
-        
+
         latest_images = video_camera_responses_;
         video_camera_responses_.clear();
 
@@ -626,7 +627,7 @@ int PawnSimApi::getVideoCameraImages(const std::vector<ImageCaptureBase::ImageRe
     // If user has just supplied names then set image limit to 10
     if (num_images == 0)
         num_images = 10;
-    
+
     // And filter by camera name and image number
     std::vector<int> imagesFound(requests.size(), 0);
     for (const auto& image : latest_images) {
@@ -638,17 +639,17 @@ int PawnSimApi::getVideoCameraImages(const std::vector<ImageCaptureBase::ImageRe
                 (request.image_type == image->image_type) &&
                 (request.compress == image->compress) &&
                 (request.pixels_as_float == image->pixels_as_float)) {
-                    cameraIndex = i;
-                }
+                cameraIndex = i;
+            }
         }
 
         if (cameraIndex == -1)
             continue;
-        
+
         // Check if we've already got enough images of this type
         if (imagesFound[cameraIndex] >= num_images)
             continue;
-        
+
         // Copy the image
         responses.push_back(std::move(*image));
         imagesFound[cameraIndex]++;

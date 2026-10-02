@@ -266,8 +266,8 @@ namespace airlib
         return waitForFunction([&]() {
                    commandAcceleration(ax, ay, az, yaw_mode);
                    return false;
-                },
-                                duration)
+               },
+                               duration)
             .isTimeout();
     }
 

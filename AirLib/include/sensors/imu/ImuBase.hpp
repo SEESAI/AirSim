@@ -94,13 +94,13 @@ namespace airlib
             unsigned max_buffer_length = 1000; // Hard coded for now - may wish to make this 1s of data
             if (output_buffer_internal_.timestamps_ns.size() > max_buffer_length) {
                 output_buffer_internal_.timestamps_ns.erase(output_buffer_internal_.timestamps_ns.begin(),
-                    output_buffer_internal_.timestamps_ns.end() - max_buffer_length);
+                                                            output_buffer_internal_.timestamps_ns.end() - max_buffer_length);
                 output_buffer_internal_.orientation.erase(output_buffer_internal_.orientation.begin(),
-                    output_buffer_internal_.orientation.end() - max_buffer_length * 4);
+                                                          output_buffer_internal_.orientation.end() - max_buffer_length * 4);
                 output_buffer_internal_.angular_velocity.erase(output_buffer_internal_.angular_velocity.begin(),
-                    output_buffer_internal_.angular_velocity.end() - max_buffer_length * 3);
+                                                               output_buffer_internal_.angular_velocity.end() - max_buffer_length * 3);
                 output_buffer_internal_.linear_acceleration.erase(output_buffer_internal_.linear_acceleration.begin(),
-                    output_buffer_internal_.linear_acceleration.end() - max_buffer_length * 3);
+                                                                  output_buffer_internal_.linear_acceleration.end() - max_buffer_length * 3);
             }
         }
 

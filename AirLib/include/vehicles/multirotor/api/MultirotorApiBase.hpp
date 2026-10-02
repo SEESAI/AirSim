@@ -34,7 +34,8 @@ namespace airlib
         virtual void commandAngleRatesThrottle(float roll_rate, float pitch_rate, float yaw_rate, float throttle) = 0;
         virtual void commandVelocity(float vx, float vy, float vz, const YawMode& yaw_mode) = 0;
         // we don't force all implementations to provide acceleration control
-        virtual void commandAcceleration(float ax, float ay, float az, const YawMode& yaw_mode) {
+        virtual void commandAcceleration(float ax, float ay, float az, const YawMode& yaw_mode)
+        {
             unused(ax);
             unused(ay);
             unused(az);

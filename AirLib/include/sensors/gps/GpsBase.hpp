@@ -87,7 +87,7 @@ namespace airlib
 
         struct GnssReport
         {
-            GeoPoint geo_point {};
+            GeoPoint geo_point{};
             real_T eph = 0.0, epv = 0.0; //GPS HDOP/VDOP horizontal/vertical dilution of position (unitless), 0-100%
             Vector3r velocity = Vector3r::Zero();
             GnssFixType fix_type = GNSS_FIX_NO_FIX;
@@ -110,7 +110,7 @@ namespace airlib
         struct Output
         { //same as ROS message
             TTimePoint time_stamp = 0;
-            GnssReport gnss {};
+            GnssReport gnss{};
             bool is_valid = false;
         };
 
@@ -179,21 +179,21 @@ namespace airlib
             unsigned max_buffer_length = 100; // Hard coded for now - may wish to make this 1s of data
             if (output_buffer_internal_.timestamps_ns.size() > max_buffer_length) {
                 output_buffer_internal_.timestamps_ns.erase(output_buffer_internal_.timestamps_ns.begin(),
-                    output_buffer_internal_.timestamps_ns.end() - max_buffer_length);
+                                                            output_buffer_internal_.timestamps_ns.end() - max_buffer_length);
                 output_buffer_internal_.latitude.erase(output_buffer_internal_.latitude.begin(),
-                    output_buffer_internal_.latitude.end() - max_buffer_length);
+                                                       output_buffer_internal_.latitude.end() - max_buffer_length);
                 output_buffer_internal_.longitude.erase(output_buffer_internal_.longitude.begin(),
-                    output_buffer_internal_.longitude.end() - max_buffer_length);
+                                                        output_buffer_internal_.longitude.end() - max_buffer_length);
                 output_buffer_internal_.altitude.erase(output_buffer_internal_.altitude.begin(),
-                    output_buffer_internal_.altitude.end() - max_buffer_length);
+                                                       output_buffer_internal_.altitude.end() - max_buffer_length);
                 output_buffer_internal_.eph.erase(output_buffer_internal_.eph.begin(),
-                    output_buffer_internal_.eph.end() - max_buffer_length);
+                                                  output_buffer_internal_.eph.end() - max_buffer_length);
                 output_buffer_internal_.epv.erase(output_buffer_internal_.epv.begin(),
-                    output_buffer_internal_.epv.end() - max_buffer_length);
+                                                  output_buffer_internal_.epv.end() - max_buffer_length);
                 output_buffer_internal_.has_yaw.erase(output_buffer_internal_.has_yaw.begin(),
-                    output_buffer_internal_.has_yaw.end() - max_buffer_length);
+                                                      output_buffer_internal_.has_yaw.end() - max_buffer_length);
                 output_buffer_internal_.yaw.erase(output_buffer_internal_.yaw.begin(),
-                    output_buffer_internal_.yaw.end() - max_buffer_length);
+                                                  output_buffer_internal_.yaw.end() - max_buffer_length);
             }
         }
 

@@ -197,7 +197,7 @@ namespace airlib
 
     struct HomeGeoPoint
     {
-        GeoPoint home_geo_point {};
+        GeoPoint home_geo_point{};
         double lat_rad = 0.0, lon_rad = 0.0;
         double cos_lat = 0.0, sin_lat = 0.0;
 
@@ -239,7 +239,7 @@ namespace airlib
         real_T penetration_depth = 0;
         TTimePoint time_stamp = 0;
         unsigned int collision_count = 0;
-        std::string object_name {};
+        std::string object_name{};
         int object_id = -1;
 
         CollisionInfo()
@@ -257,7 +257,7 @@ namespace airlib
 
     struct CameraInfo
     {
-        Pose pose {};
+        Pose pose{};
         float fov = 0.0;
         ProjectionMatrix proj_mat;
 
@@ -469,7 +469,7 @@ namespace airlib
         }
     };
 
-    struct ImuDataBuffer 
+    struct ImuDataBuffer
     {
         vector<uint64_t> timestamps_ns;
         vector<float> orientation;

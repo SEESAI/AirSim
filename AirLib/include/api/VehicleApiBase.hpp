@@ -119,7 +119,7 @@ Some methods may not be applicable to specific vehicle in which case an exceptio
             auto* lidar = static_cast<const LidarBase*>(findSensorByName(lidar_name, SensorBase::SensorType::Lidar));
             if (lidar == nullptr)
                 throw VehicleControllerException(Utils::stringf("No lidar with name %s exist on vehicle", lidar_name.c_str()));
-            
+
             return lidar->getInfo();
         }
 
@@ -161,7 +161,7 @@ Some methods may not be applicable to specific vehicle in which case an exceptio
 
             if (lidar == nullptr)
                 throw VehicleControllerException(Utils::stringf("No lidar with name %s exist on vehicle", lidar_name.c_str()));
-            
+
             return lidar->getOutputBuffer();
         }
 
@@ -220,7 +220,7 @@ Some methods may not be applicable to specific vehicle in which case an exceptio
 
             return magnetometer->getOutput();
         }
-        virtual const Vector3r &getMagnetometerGroundTruthMagneticField(const std::string &magnetometer_name) const
+        virtual const Vector3r& getMagnetometerGroundTruthMagneticField(const std::string& magnetometer_name) const
         {
             auto* magnetometer = static_cast<const MagnetometerBase*>(findSensorByName(magnetometer_name, SensorBase::SensorType::Magnetometer));
             if (magnetometer == nullptr)

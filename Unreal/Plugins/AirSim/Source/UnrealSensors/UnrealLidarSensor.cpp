@@ -60,7 +60,7 @@ void UnrealLidarSensor::createLasers()
     if (channels_per_scan_ > 1)
         delta_angle = (polar_end - polar_start) /
                       static_cast<float>(channels_per_scan_ - 1);
-    
+
     // store vertical angles for each laser
     laser_polar_angles_.clear();
     for (int32 i = 0; i < channels_per_scan_; ++i) {
@@ -71,9 +71,9 @@ void UnrealLidarSensor::createLasers()
     // calculate horizontal angle distance between each laser
     delta_angle = 0;
     if (scans_per_revolution_ > 1)
-        delta_angle = (azimuth_end - azimuth_start) / 
+        delta_angle = (azimuth_end - azimuth_start) /
                       static_cast<float>(scans_per_revolution_);
-    
+
     // store horizontal angles for each laser
     laser_azimuth_angles_.clear();
     for (int32 i = 0; i < scans_per_revolution_; ++i) {
@@ -84,7 +84,7 @@ void UnrealLidarSensor::createLasers()
 
 // returns a point-cloud for the tick
 void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const msr::airlib::Pose& vehicle_pose,
-                                      const msr::airlib::TTimeDelta update_time, msr::airlib::vector<msr::airlib::real_T>& point_cloud, 
+                                      const msr::airlib::TTimeDelta update_time, msr::airlib::vector<msr::airlib::real_T>& point_cloud,
                                       std::vector<uint64_t>& ts, std::vector<msr::airlib::real_T>& az, std::vector<msr::airlib::real_T>& r,
                                       msr::airlib::vector<int>& segmentation_cloud)
 {
@@ -152,7 +152,7 @@ void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const
     // If we're not at a new sector then give up
     if (sectorsSinceStart <= previous_sectors_since_start_)
         return;
-    
+
     // Work out the number of sectors in this scan, capped to 1 revolution
     int32 numSectors = (sectorsSinceStart - previous_sectors_since_start_);
     numSectors = (numSectors < scans_per_revolution_) ? numSectors : scans_per_revolution_;
@@ -185,7 +185,8 @@ void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const
             if (uniform_dist_.next() < params_.point_loss_likelihood) {
                 // Delete random points
                 r.emplace_back(0);
-            } else {
+            }
+            else {
                 Vector3r point;
                 // int segId = -1;
                 // int laser = 0;
@@ -197,7 +198,8 @@ void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const
                     // Add random early returns
                     if (uniform_dist_.next() < (params_.random_return_likelihood * range / params_.range)) {
                         range_new = uniform_dist_.next() * range;
-                    } else {
+                    }
+                    else {
                         // Add random noise
                         range_new = range + gauss_dist_.next() * params_.range_stddev;
                     }
@@ -213,10 +215,12 @@ void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const
                         point_cloud.emplace_back(point.y());
                         point_cloud.emplace_back(point.z());
                         r.emplace_back(range_new);
-                    } else {
+                    }
+                    else {
                         r.emplace_back(0);
                     }
-                } else {
+                }
+                else {
                     r.emplace_back(0);
                 }
             }
@@ -233,28 +237,28 @@ void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const
 // {
 //     // start position
 //     Vector3r start = VectorMath::add(lidar_pose, vehicle_pose).position;
-// 
+//
 //     // We need to compose rotations here rather than rotate a vector by a quaternion
 //     // Hence using coordOrientationAdd(..) rather than rotateQuaternion(..)
-// 
+//
 //     // get ray quaternion in lidar frame (angles must be in radians)
 //     msr::airlib::Quaternionr ray_q_l = msr::airlib::VectorMath::toQuaternion(
 //         msr::airlib::Utils::degreesToRadians(vertical_angle), //pitch - rotation around Y axis
 //         0, //roll  - rotation around X axis
 //         msr::airlib::Utils::degreesToRadians(horizontal_angle)); //yaw   - rotation around Z axis
-// 
+//
 //     // get ray quaternion in body frame
 //     msr::airlib::Quaternionr ray_q_b = VectorMath::coordOrientationAdd(ray_q_l, lidar_pose.orientation);
-// 
+//
 //     // get ray quaternion in world frame
 //     msr::airlib::Quaternionr ray_q_w = VectorMath::coordOrientationAdd(ray_q_b, vehicle_pose.orientation);
-// 
+//
 //     // get ray vector (end position)
 //     Vector3r end = VectorMath::rotateVector(VectorMath::front(), ray_q_w, true) * params.range + start;
-// 
+//
 //     FHitResult hit_result = FHitResult(ForceInit);
 //     bool is_hit = UAirBlueprintLib::GetObstacle(actor_, ned_transform_->fromLocalNed(start), ned_transform_->fromLocalNed(end), hit_result, actor_, ECC_Visibility);
-// 
+//
 //     if (is_hit) {
 //         //Store the segmentation id of the hit object.
 //         auto hitActor = hit_result.GetActor();
@@ -265,7 +269,7 @@ void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const
 //                 segmentationID = segmentationID == -1 ? meshComponents[i]->CustomDepthStencilValue : segmentationID;
 //             }
 //         }
-// 
+//
 //         if (false && UAirBlueprintLib::IsInGameThread()) {
 //             // Debug code for very specific cases.
 //             // Mostly shouldn't be needed. Use SimModeBase::drawLidarDebugPoints()
@@ -278,7 +282,7 @@ void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const
 //                 0.1 //point leaves a trail on moving object
 //             );
 //         }
-// 
+//
 //         // decide the frame for the point-cloud
 //         if (params.data_frame == AirSimSettings::kVehicleInertialFrame) {
 //             // current detault behavior; though it is probably not very useful.
@@ -288,25 +292,25 @@ void UnrealLidarSensor::getPointCloud(const msr::airlib::Pose& lidar_pose, const
 //         else if (params.data_frame == AirSimSettings::kSensorLocalFrame) {
 //             // point in vehicle intertial frame
 //             Vector3r point_v_i = ned_transform_->toLocalNed(hit_result.ImpactPoint);
-// 
+//
 //             // tranform to lidar frame
 //             point = VectorMath::transformToBodyFrame(point_v_i, lidar_pose + vehicle_pose, true);
-// 
+//
 //             // The above should be same as first transforming to vehicle-body frame and then to lidar frame
 //             //    Vector3r point_v_b = VectorMath::transformToBodyFrame(point_v_i, vehicle_pose, true);
 //             //    point = VectorMath::transformToBodyFrame(point_v_b, lidar_pose, true);
-// 
+//
 //             // On the client side, if it is needed to transform this data back to the world frame,
 //             // then do the equivalent of following,
 //             //     Vector3r point_w = VectorMath::transformToWorldFrame(point, lidar_pose + vehicle_pose, true);
 //             // See SimModeBase::drawLidarDebugPoints()
-// 
+//
 //             // TODO: Optimization -- instead of doing this for every point, it should be possible to do this
 //             // for the point-cloud together? Need to look into matrix operations to do this together for all points.
 //         }
 //         else
 //             throw std::runtime_error("Unknown requested data frame");
-// 
+//
 //         return true;
 //     }
 //     else {
@@ -334,7 +338,7 @@ bool UnrealLidarSensor::shootLaser(const msr::airlib::Pose& lidar_pose, const ms
         msr::airlib::Utils::degreesToRadians(ray_pitch_angle), // pitch - rotation around Y axis
         0, // roll - rotation around X axis
         msr::airlib::Utils::degreesToRadians(ray_yaw_angle)); // yaw - rotation around Z axis
-    
+
     // get ray quaternion in body frame
     msr::airlib::Quaternionr ray_q_b = VectorMath::coordOrientationAdd(ray_q_l, lidar_pose.orientation);
 
@@ -388,7 +392,7 @@ bool UnrealLidarSensor::shootLaser(const msr::airlib::Pose& lidar_pose, const ms
         }
         else
             throw std::runtime_error("Unknown requested data frame");
-        
+
         return true;
     }
     else {

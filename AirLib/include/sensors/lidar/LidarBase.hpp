@@ -71,8 +71,8 @@ namespace airlib
         }
 
     protected:
-        void setOutputBuffer(Pose& pose, std::vector<uint64_t>& ts, std::vector<msr::airlib::real_T>& az, 
-            std::vector<msr::airlib::real_T>& r, int scans_per_revolution, int channels_per_scan)
+        void setOutputBuffer(Pose& pose, std::vector<uint64_t>& ts, std::vector<msr::airlib::real_T>& az,
+                             std::vector<msr::airlib::real_T>& r, int scans_per_revolution, int channels_per_scan)
         {
             // Append latest data to the buffer
             std::lock_guard<std::mutex> APIoutput_lock(APIoutput_mutex_);

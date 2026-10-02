@@ -130,7 +130,8 @@ public:
         float max_throttle = 0.9f;
     } velocity_pid;
 
-    struct Acceleration {
+    struct Acceleration
+    {
         const float min_thrust = 0.1f;
         const float max_thrust = 0.9f;
     } acceleration;

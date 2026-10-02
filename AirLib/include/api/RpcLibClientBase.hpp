@@ -105,7 +105,7 @@ namespace airlib
         [[nodiscard]] msr::airlib::ImuInfo getImuInfo(const std::string& vehicle_name = "") const;
         [[nodiscard]] msr::airlib::LidarInfo getLidarInfo(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
 
-        // sensor data 
+        // sensor data
         [[nodiscard]] msr::airlib::LidarData getLidarData(const std::string& lidar_name = "", const std::string& vehicle_name = "") const;
         [[nodiscard]] msr::airlib::ImuBase::Output getImuData(const std::string& imu_name = "", const std::string& vehicle_name = "") const;
         [[nodiscard]] msr::airlib::BarometerBase::Output getBarometerData(const std::string& barometer_name = "", const std::string& vehicle_name = "") const;

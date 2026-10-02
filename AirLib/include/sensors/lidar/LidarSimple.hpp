@@ -43,7 +43,7 @@ namespace airlib
             points_per_second = (points_per_second > 0) ? points_per_second : 1;
             rotation_rate_ = (rotation_rate_ > 0) ? rotation_rate_ : 1.0f;
             double initial_value = (static_cast<double>(points_per_second) /
-                (rotation_rate_ * static_cast<double>(channels_per_scan_)));
+                                    (rotation_rate_ * static_cast<double>(channels_per_scan_)));
             double value_to_fudge_integral_part = 0.0;
             double value_to_fudge_fraction_part = modf(initial_value, &value_to_fudge_integral_part);
             double round_half_from_zero_value;
@@ -66,7 +66,6 @@ namespace airlib
             lidar_info_.revolutions_per_second = float(rotation_rate_);
             lidar_info_.scans_per_revolution = float(scans_per_revolution_);
             lidar_info_.pose = params_.relative_pose;
-
         }
 
         //*** Start: UpdatableState implementation ***//
@@ -113,7 +112,7 @@ namespace airlib
 
     protected:
         virtual void getPointCloud(const Pose& lidar_pose, const Pose& vehicle_pose,
-                                   TTimeDelta update_time, vector<real_T>& point_cloud, 
+                                   TTimeDelta update_time, vector<real_T>& point_cloud,
                                    std::vector<uint64_t>& ts, std::vector<real_T>& az, std::vector<real_T>& r,
                                    vector<int>& segmentation_cloud) = 0;
 
@@ -159,7 +158,7 @@ namespace airlib
             setOutput(update_time, lidar_pose, pc);
             setOutputBuffer(lidar_pose, ts, az, r, scans_per_revolution_, channels_per_scan_);
         }
-    
+
     protected:
         LidarSimpleParams params_;
         TTimePoint start_time_;

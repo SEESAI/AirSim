@@ -54,7 +54,7 @@ namespace airlib
 
         const GroundTruth& getGroundTruth() const
         {
-            if(!ground_truth_.kinematics || !ground_truth_.environment){
+            if (!ground_truth_.kinematics || !ground_truth_.environment) {
                 throw std::runtime_error("Sensor not initialised");
             }
             return ground_truth_;

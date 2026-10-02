@@ -607,7 +607,7 @@ namespace airlib_rpclib
             }
         };
 
-        struct LidarInfo 
+        struct LidarInfo
         {
             Pose pose;
             float vertical_fov_lower;
@@ -793,7 +793,7 @@ namespace airlib_rpclib
             }
         };
 
-        struct ImuDataBuffer 
+        struct ImuDataBuffer
         {
             std::vector<uint64_t> timestamps_ns;
             std::vector<float> orientation;

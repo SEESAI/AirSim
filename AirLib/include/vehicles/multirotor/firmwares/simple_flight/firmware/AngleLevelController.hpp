@@ -37,8 +37,7 @@ public:
 
         //initialize level PID
         pid_.reset(new PidController<float>(clock_,
-                                            PidConfig<float>(params_->angle_level_pid.p[axis], params_->angle_level_pid.i[axis], params_->angle_level_pid.d[axis], 
-                                            -params_->angle_rate_pid.max_limit[axis], params_->angle_rate_pid.max_limit[axis])));
+                                            PidConfig<float>(params_->angle_level_pid.p[axis], params_->angle_level_pid.i[axis], params_->angle_level_pid.d[axis], -params_->angle_rate_pid.max_limit[axis], params_->angle_rate_pid.max_limit[axis])));
 
         //initialize rate controller
         rate_controller_.reset(new AngleRateController(params_, clock_));

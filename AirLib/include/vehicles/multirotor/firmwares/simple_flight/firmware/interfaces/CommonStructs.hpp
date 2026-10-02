@@ -277,9 +277,9 @@ public:
             return "BeingDisarmed";
         if (val == VehicleStateType::Disarmed)
             return "Disarmed";
-        
+
         throw std::invalid_argument(std::string(
-                                        "The value cannot be converted to VehicleStateType string"));
+            "The value cannot be converted to VehicleStateType string"));
     }
 
     const GeoPoint& getHomeGeoPoint() const

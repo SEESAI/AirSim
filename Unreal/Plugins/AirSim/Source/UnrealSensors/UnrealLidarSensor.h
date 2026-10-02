@@ -22,7 +22,7 @@ public:
 
 protected:
     virtual void getPointCloud(const msr::airlib::Pose& lidar_pose, const msr::airlib::Pose& vehicle_pose,
-                               msr::airlib::TTimeDelta update_time, msr::airlib::vector<msr::airlib::real_T>& point_cloud, 
+                               msr::airlib::TTimeDelta update_time, msr::airlib::vector<msr::airlib::real_T>& point_cloud,
                                std::vector<uint64_t>& ts, std::vector<msr::airlib::real_T>& az, std::vector<msr::airlib::real_T>& r,
                                msr::airlib::vector<int>& segmentation_cloud) override;
 

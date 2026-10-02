@@ -1211,7 +1211,8 @@ namespace airlib
                 else {
                     connection->subscribe([=
 #if __cplusplus >= 202002L
-                    , this
+                                               ,
+                                           this
 #endif
                     ](std::shared_ptr<mavlinkcom::MavLinkConnection> connection_val, const mavlinkcom::MavLinkMessage& msg) {
                         unused(connection_val);
@@ -1320,7 +1321,8 @@ namespace airlib
             // start listening to the SITL connection.
             connection_->subscribe([=
 #if __cplusplus >= 202002L
-            , this
+                                        ,
+                                    this
 #endif
             ](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
                 unused(connection);
@@ -1438,7 +1440,8 @@ namespace airlib
             if (mavcon != nullptr && mavcon != connection_) {
                 mavcon->subscribe([=
 #if __cplusplus >= 202002L
-                ,this
+                                       ,
+                                   this
 #endif
                 ](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
                     unused(connection);
@@ -1511,7 +1514,8 @@ namespace airlib
                     // start listening to the HITL connection.
                     connection_->subscribe([=
 #if __cplusplus >= 202002L
-                    , this
+                                                ,
+                                            this
 #endif
                     ](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
                         unused(connection);

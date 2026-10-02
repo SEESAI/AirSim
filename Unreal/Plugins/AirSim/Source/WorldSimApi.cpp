@@ -860,8 +860,8 @@ void WorldSimApi::setCameraOrientation(const msr::airlib::Quaternionr& orientati
 {
     APIPCamera* camera = simmode_->getCamera(camera_details);
     const NedTransform& ned_transform = camera_details.external
-                                        ? simmode_->getGlobalNedTransform()
-                                        : simmode_->getVehicleSimApi(camera_details.vehicle_name)->getNedTransform();
+                                            ? simmode_->getGlobalNedTransform()
+                                            : simmode_->getVehicleSimApi(camera_details.vehicle_name)->getNedTransform();
     UAirBlueprintLib::RunCommandOnGameThread([camera, &orientation, &ned_transform]() {
         FQuat quat = ned_transform.fromNed(orientation);
         camera->setCameraOrientation(quat.Rotator());

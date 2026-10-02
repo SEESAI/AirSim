@@ -311,14 +311,14 @@ __pragma(warning(disable : 4239))
                 complete = true;
                 valid = false;
             }
-            
+
             if (valid)
                 if (task_result)
                     *task_result = result;
-            
+
             if (task_complete)
                 *task_complete = complete;
-            
+
             return valid;
         }
     }

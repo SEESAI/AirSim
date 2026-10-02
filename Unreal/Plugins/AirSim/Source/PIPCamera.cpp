@@ -345,7 +345,7 @@ float APIPCamera::getFOV(const APIPCamera::ImageType image_type) const
     float FOVAngle = 0.0f;
     if (capture)
         FOVAngle = capture->FOVAngle;
-    
+
     return FOVAngle;
 }
 
@@ -501,7 +501,7 @@ msr::airlib::Pose APIPCamera::getPoseInParentFrame() const
         bodyPose = ned_transform_->toLocalNed(this->GetAttachParentActor()->GetActorTransform());
     else
         return msr::airlib::Pose::zero();
-    
+
     return cameraPose - bodyPose;
 }
 
